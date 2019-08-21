@@ -29,13 +29,15 @@ public final class KailleraGameImpl implements KailleraGame
 	private int						lastAddressCount = 0;
 	 
 	private static int              chatFloodTime = 3;
-	private int                     maxUsers = 16;
+	private int                     maxUsers = 8;
 	private int                     delay;
 	private String                  aEmulator = "any";
+	private String                  aConnection = "any";
 	private int						maxPing = 1000;
 	private int                     startN = -1;
 	private boolean                 p2P = false;
 	private boolean					sameDelay = false;
+	public boolean					swap = false;
 		
 	private int						highestPing = 0;
 	private int						bufferSize;
@@ -50,6 +52,7 @@ public final class KailleraGameImpl implements KailleraGame
 	private StatsCollector			statsCollector;
 
 	private List<String>			kickedUsers			= new ArrayList<String>();
+	private List<String>			mutedUsers			= new ArrayList<String>();
 
 	private int						status				= KailleraGame.STATUS_WAITING;
 	private boolean					synched				= false;
@@ -80,7 +83,9 @@ public final class KailleraGameImpl implements KailleraGame
 		return id;
 	}
 	
-
+	public List<String> getMutedUsers() {
+		return mutedUsers;
+	}
 	
 	public int getDelay(){
 		return delay;
@@ -91,6 +96,13 @@ public final class KailleraGameImpl implements KailleraGame
 	}
 	public void setAEmulator(String aEmulator){
 		this.aEmulator = aEmulator;
+	}
+	
+	public String getAConnection(){
+		return aConnection;
+	}
+	public void setAConnection(String aConnection){
+		this.aConnection = aConnection;
 	}
 	
 	public PlayerActionQueue[] getPlayerActionQueue(){
@@ -297,6 +309,31 @@ public final class KailleraGameImpl implements KailleraGame
 			log.warn(user + " game chat denied: not in " + this); //$NON-NLS-1$
 			throw new GameChatException(EmuLang.getString("KailleraGameImpl.GameChatErrorNotInGame")); //$NON-NLS-1$
 		}
+		
+		message = message.trim();
+		if (message.length() == 0 || message.startsWith(" ") || message.startsWith("­"))
+			return;
+		
+		if (user.getAccess() == AccessManager.ACCESS_NORMAL)
+		{
+			char[] chars = message.toCharArray();
+			for (int i = 0; i < chars.length; i++)
+			{
+				if (chars[i] < 32)
+				{
+					log.warn(user + " gamechat denied: Illegal characters in message");
+					addEvent(new GameInfoEvent(this, EmuLang.getString("KailleraGameImpl.GameChatDeniedIllegalCharacters"), user));
+					throw new GameChatException(EmuLang.getString("KailleraGameImpl.GameChatDeniedIllegalCharacters"));
+				}
+			}
+
+			if (server.getMaxGameChatLength() > 0 && message.length() > server.getMaxGameChatLength())
+			{
+				log.warn(user + " gamechat denied: Message Length > " + server.getMaxGameChatLength());
+				addEvent(new GameInfoEvent(this, EmuLang.getString("KailleraGameImpl.GameChatDeniedMessageTooLong"), user));
+				throw new GameChatException(EmuLang.getString("KailleraGameImpl.GameChatDeniedMessageTooLong"));
+			}
+		}
 
 		log.info(user + ", " + this + " gamechat: " + message); //$NON-NLS-1$ //$NON-NLS-2$
 		addEvent(new GameChatEvent(this, user, message));
@@ -368,7 +405,7 @@ public final class KailleraGameImpl implements KailleraGame
 				if(access < AccessManager.ACCESS_ADMIN){
 					kickedUsers.add(user.getConnectSocketAddress().getAddress().getHostAddress());
 					try { user.quitGame(); } catch(Exception e) {}
-					throw new JoinGameException("Join Game Error: Spam Protection"); //$NON-NLS-1$	
+					throw new JoinGameException("Spam Protection"); //$NON-NLS-1$	
 				}
 			}
 		}
@@ -386,20 +423,29 @@ public final class KailleraGameImpl implements KailleraGame
 		if(access < AccessManager.ACCESS_ELEVATED && getNumPlayers() >=  getMaxUsers())
 		{
 			log.warn(user + " join game denied: max users reached " + this); //$NON-NLS-1$
-			throw new JoinGameException("Join Game Denied: This room's user capacity has been reached."); //$NON-NLS-1$		
+			throw new JoinGameException("This room's user capacity has been reached."); //$NON-NLS-1$		
 		}
 		
 		if(access < AccessManager.ACCESS_ELEVATED && user.getPing() > getMaxPing())
 		{
 			log.warn(user + " join game denied: max ping reached " + this); //$NON-NLS-1$
-			throw new JoinGameException("Join Game Denied: Your ping is too high for this room."); //$NON-NLS-1$		
+			throw new JoinGameException("Your ping is too high for this room."); //$NON-NLS-1$		
 		}
 
 		if(access < AccessManager.ACCESS_ELEVATED && !aEmulator.equals("any"))
 		{
 			if(!aEmulator.equals(user.getClientType())){
-				log.warn(user + " join game denied: Owner doesn't allow that emulator! " + this); //$NON-NLS-1$
-				throw new JoinGameException("Join Game Denied: Owner only allows emulators that start with: " + aEmulator); //$NON-NLS-1$		
+				log.warn(user + " join game denied: owner doesn't allow that emulator: " + user.getClientType()); //$NON-NLS-1$
+				throw new JoinGameException("Owner only allows emulator version: " + aEmulator); //$NON-NLS-1$		
+			}
+		}
+		
+		if(access < AccessManager.ACCESS_ELEVATED && !aConnection.equals("any"))
+		{
+			if (user.getConnectionType() != getOwner().getConnectionType())
+			{
+				log.warn(user + "join game denied: owner doesn't allow that connection type: " + KailleraUser.CONNECTION_TYPE_NAMES[user.getConnectionType()]); //$NON-NLS-1$
+				throw new JoinGameException("Owner only allows connection type: " + KailleraUser.CONNECTION_TYPE_NAMES[getOwner().getConnectionType()]); //$NON-NLS-1$
 			}
 		}		
 
@@ -415,6 +461,10 @@ public final class KailleraGameImpl implements KailleraGame
 			throw new JoinGameException(EmuLang.getString("KailleraGameImpl.JoinGameDeniedGameIsInProgress")); //$NON-NLS-1$
 		}
 		
+		if (mutedUsers.contains(user.getConnectSocketAddress().getAddress().getHostAddress()))
+		{
+			user.setMute(true);
+		}
 
 		players.add((KailleraUserImpl) user);
 		user.setPlayerNumber(players.size());
@@ -426,15 +476,16 @@ public final class KailleraGameImpl implements KailleraGame
 		
 		//SF MOD - /startn
 		if(getStartN() != -1){
-			if(players.size() >= getStartN())
+			if(players.size() >= getStartN()){
 				try { Thread.sleep(1000); } catch(Exception e) {}
 				try { start(getOwner()); } catch(Exception e) {}
+			}
 		}
 
 		//if(user.equals(owner))
 		//{
 
-			announce("Help: " + getServer().getReleaseInfo().getProductName() + " v" + getServer().getReleaseInfo().getVersionString() + ": " + getServer().getReleaseInfo().getReleaseDate() + " - Visit: www.God-Weapon.com", user);
+			announce("Help: " + getServer().getReleaseInfo().getProductName() + " v" + getServer().getReleaseInfo().getVersionString() + ": " + getServer().getReleaseInfo().getReleaseDate() + " - Visit: https://github.com/God-Weapon", user);
 			announce("************************", user);
 			announce("Type /p2pon to ignore ALL server activity during gameplay.", user);
 			announce("This will reduce lag that you contribute due to a busy server.", user);
@@ -456,6 +507,10 @@ public final class KailleraGameImpl implements KailleraGame
 			}
 			*/
 		//}
+			
+		//new SF MOD - different emulator versions notifications
+		if (access < AccessManager.ACCESS_ADMIN && !user.getClientType().equals(owner.getClientType()) && !owner.getGame().getRomName().startsWith("*"))
+			addEvent(new GameInfoEvent(this, user.getName() + " using different emulator version: " + user.getClientType(), null));
 
 		return (players.indexOf(user) + 1);
 	}
@@ -487,6 +542,10 @@ public final class KailleraGameImpl implements KailleraGame
 			log.warn(user + " start game denied: " + this + " needs at least 2 players"); //$NON-NLS-1$ //$NON-NLS-2$
 			throw new StartGameException(EmuLang.getString("KailleraGameImpl.StartGameDeniedSinglePlayerNotAllowed")); //$NON-NLS-1$
 		}
+		
+		// do not start if not game
+		if(owner.getGame().getRomName().startsWith("*"))
+			return;
 
 		for (KailleraUser player : players)
 		{
@@ -527,7 +586,7 @@ public final class KailleraGameImpl implements KailleraGame
 			KailleraUserImpl player = players.get(i);
 			int playerNumber = (i + 1);			
 			
-			player.setPlayerNumber(playerNumber);
+			if(!swap) player.setPlayerNumber(playerNumber);
 			player.setTimeouts(0);
 			player.setFrameCount(0);
 									
@@ -552,9 +611,9 @@ public final class KailleraGameImpl implements KailleraGame
 				player.setP2P(true);
 				announce("This game is ignoring ALL server activity during gameplay!", player);
 			}
-			else{
+			/*else{
 				player.setP2P(false);
-			}	
+			}*/
 			
 			log.info(this + ": " + player + " is player number " + playerNumber); //$NON-NLS-1$ //$NON-NLS-2$
 			
@@ -565,11 +624,11 @@ public final class KailleraGameImpl implements KailleraGame
 		if (statsCollector != null)
 			statsCollector.gameStarted(server, this);
 		
-		if(user.getConnectionType() > KailleraUser.CONNECTION_TYPE_GOOD || user.getConnectionType() < KailleraUser.CONNECTION_TYPE_GOOD){
+		/*if(user.getConnectionType() > KailleraUser.CONNECTION_TYPE_GOOD || user.getConnectionType() < KailleraUser.CONNECTION_TYPE_GOOD){
 			//sameDelay = true;
-		}
+		}*/
 
-		timeoutMillis = highestPing;
+		//timeoutMillis = highestPing;
 		addEvent(new GameStartedEvent(this));
 	}
 
@@ -612,7 +671,8 @@ public final class KailleraGameImpl implements KailleraGame
 			else{
 				for (int i = 0; i < playerActionQueues.length && i < players.size(); i++){
 					KailleraUserImpl player = players.get(i);
-					if(player != null){
+					// do not show delay if stealth mode
+					if(player != null && !player.getStealth()){
 						frameDelay = ((player.getDelay() + 1) * player.getConnectionType()) - 1;
 						announce("P" + (i + 1) + " Delay = " + player.getDelay() + " (" + frameDelay + " frame delay)", null);
 					}
@@ -685,6 +745,10 @@ public final class KailleraGameImpl implements KailleraGame
 	
 			addEvent(new UserQuitGameEvent(this, user));
 			
+			user.setP2P(false);
+			
+			swap = false;
+			
 			if(status == STATUS_WAITING){
 				for(int i = 0; i < this.getNumPlayers(); i++){
 					getPlayer(i + 1).setPlayerNumber(i + 1);
@@ -716,9 +780,13 @@ public final class KailleraGameImpl implements KailleraGame
 		}
 		
 
-		for (KailleraUserImpl player : players)
+		for (KailleraUserImpl player : players){
+			player.setStatus(KailleraUser.STATUS_IDLE);
+			player.setMute(false);
+			player.setP2P(false);
 			player.setGame(null);
-
+		}
+		
 		if(autoFireDetector != null)
 			autoFireDetector.stop();
 		
