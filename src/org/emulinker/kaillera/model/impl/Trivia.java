@@ -132,6 +132,7 @@ public class Trivia implements Runnable {
         	}
         	ist.close();
         	
+        	server.announce("<Trivia> " + questions.size() + " questions have been loaded!", false, null);
         	
         	//##################
         	//######SCORES######
@@ -157,14 +158,21 @@ public class Trivia implements Runnable {
             	}
             	str = istream.readLine();//New Score
         	}
-        	
-        	server.announce("<Trivia> " + questions.size() + " questions have been loaded!", false, null);
-        	server.announce("<Trivia> " + scores.size() + " scores have been loaded!", false, null);
-        	server.announce("<Trivia> " + "SupraTrivia will begin in 10s!", false, null);
         	ist.close();
+        	
+        	server.announce("<Trivia> " + scores.size() + " scores have been loaded!", false, null);
+        	
+			if(questions.size() == 0){
+				exitThread = true;
+			}
+			else{
+				server.setSwitchTrivia(true);
+				server.announce("<Trivia> " + "SupraTrivia will begin in 10s!", false, null);
+			}
         }
         catch(Exception e){
-        	server.announce("<Trivia> " + "Error Loading SupraTrivia Questions!", false, null);
+        	exitThread = true;
+        	server.announce("<Trivia> " + "Error loading SupraTrivia Questions/Scores!", false, null);
         	//throw new RuntimeException("Error loading SupraTriva Questions! " + e.getMessage());
         }
 	}
@@ -175,9 +183,11 @@ public class Trivia implements Runnable {
 		int temp;
 		Random generator = new Random();
 		
-		temp = generator.nextInt(questions_num.size() - 1);
-		questions_count = questions_num.get(temp);
-		questions_num.remove(temp);
+		if(questions.size() > 1) {
+			temp = generator.nextInt(questions_num.size() - 1);
+			questions_count = questions_num.get(temp);
+			questions_num.remove(temp);
+		}
 		try{Thread.sleep(10000);}catch(Exception e){}
 		
 		while(!exitThread){
@@ -260,12 +270,15 @@ public class Trivia implements Runnable {
 					server.announce("<Trivia> " + "Time's up! The answer is: " + questions.get(questions_count).getAnswer(), false, null);
 				}				
 				
+				if(count == questions.size()) {
+					count = 0;
+					server.announce("<Trivia> " + "***All questions have been exhaused! Restarting list...***", false, null);
+				}
+				
 				//Find questions not repeated
 				if(questions_num.size() == 1){
 					questions_count = questions_num.get(0);
 					questions_num.clear();
-					count = 0;
-					server.announce("<Trivia> " + "***All questions have been exhaused! Restarting list...***", false, null);
 					for(int w = 0; w < questions.size(); w++){
 						questions_num.add(w);
 					}
@@ -437,12 +450,11 @@ public class Trivia implements Runnable {
 			str = first_nick + " = " + first_score + ", ";
 			str = str + second_nick + " = " + second_score + ", ";
 			str = str + third_nick + " = " + third_score;
+			server.announce("<Trivia> " + "(Top 3 Scores of " + scores.size() + ") " + str, false, null);
 		}
 		else{
-			str = "The Winner is: " + first_nick + " with " + first_score + " points!";
+			server.announce("<Trivia> " + "The Winner is: " + first_nick + " with " + first_score + " points!", false, null);
 		}
-		
-		server.announce("<Trivia> " + "(Top 3 Scores of " + scores.size() + ") " + str, false, null);
 	}	
 	
 	
