@@ -4,6 +4,7 @@ import java.text.MessageFormat;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.*;
 
 import org.apache.commons.logging.Log;
@@ -55,7 +56,15 @@ public class EmuLang
 	{
 		try
 		{
-			return RESOURCE_BUNDLE.getString(key);
+			String str = RESOURCE_BUNDLE.getString(key);
+			try {
+				byte[] buff = str.getBytes("ISO-8859-1");
+				str = new String(buff, System.getProperty("emulinker.charset"));
+			}
+			catch (UnsupportedEncodingException e) {
+				e.printStackTrace();
+			}
+			return str;
 		}
 		catch (MissingResourceException e)
 		{
@@ -68,7 +77,15 @@ public class EmuLang
 	{
 		try
 		{
-			return (new MessageFormat(RESOURCE_BUNDLE.getString(key))).format(messageArgs);
+			String str = RESOURCE_BUNDLE.getString(key);
+			try {
+				byte[] buff = str.getBytes("ISO-8859-1");
+				str = new String(buff, System.getProperty("emulinker.charset"));
+			}
+			catch (UnsupportedEncodingException e) {
+				e.printStackTrace();
+			}
+			return (new MessageFormat(str)).format(messageArgs);
 		}
 		catch (MissingResourceException e)
 		{
