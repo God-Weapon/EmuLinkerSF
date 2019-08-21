@@ -623,9 +623,9 @@ public final class KailleraUserImpl implements KailleraUser, Executable
 			return;
 		}
 		
-		if(this == null){
+		/*if(this == null){
 			throw new GameChatException("You don't exist!"); //$NON-NLS-1$
-		}
+		}*/
 		
 		game.chat(this, message);
 	}
@@ -634,16 +634,18 @@ public final class KailleraUserImpl implements KailleraUser, Executable
 	{
 		updateLastActivity();
 		
+		if(getStatus() == KailleraUser.STATUS_IDLE){
+			return;
+		}
+		
+		setStatus(KailleraUser.STATUS_IDLE);
+		
 		if(game != null){
-			if(getStatus() == KailleraUser.STATUS_IDLE){
-				return;
-			}
-			
-			setStatus(KailleraUser.STATUS_IDLE);
 			game.drop(this, playerNumber);
-			if(p2P == true)
+			//not necessary to show it twice
+			/*if(p2P == true)
 				game.announce("Please Relogin, to update your client of missed server activity during P2P!", this);
-			p2P = false;
+			p2P = false;*/
 		}
 		else
 			log.debug(this + " drop game failed: Not in a game"); //$NON-NLS-1$
