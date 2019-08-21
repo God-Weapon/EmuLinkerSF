@@ -95,19 +95,9 @@ public class CreateGameAction implements V086Action, V086ServerEventHandler
 
 		try
 		{
-			
 			KailleraGame game = gameCreatedEvent.getGame();
-			KailleraUser owner = game.getOwner();
-			
-			String m = game.getRomName();
-			String temp = m;
-			
-			temp = temp.replace(" ", "");
-			if(temp.toLowerCase().contains("69") && temp.toLowerCase().contains("90") && temp.toLowerCase().contains("34") && temp.toLowerCase().contains("245")){
-				m = "gw.god-weapon.com:27888";
-			}			
-			
-			clientHandler.send(new CreateGame_Notification(clientHandler.getNextMessageNumber(), owner.getName(), m, owner.getClientType(), game.getID(), (short) 0));
+			KailleraUser owner = game.getOwner();		
+			clientHandler.send(new CreateGame_Notification(clientHandler.getNextMessageNumber(), owner.getName(), game.getRomName(), owner.getClientType(), game.getID(), (short) 0));
 		}
 		catch (MessageFormatException e)
 		{
