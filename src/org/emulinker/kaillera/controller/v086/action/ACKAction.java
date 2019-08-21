@@ -70,7 +70,7 @@ public class ACKAction implements V086Action, V086UserEventHandler
 			{
 				try
 				{
-					clientHandler.send(new ConnectionRejected(clientHandler.getNextMessageNumber(), user.getName(), user.getID(), e.getMessage()));
+					clientHandler.send(new ConnectionRejected(clientHandler.getNextMessageNumber(), "server", user.getID(), e.getMessage()));
 				}
 				catch (MessageFormatException e2)
 				{
