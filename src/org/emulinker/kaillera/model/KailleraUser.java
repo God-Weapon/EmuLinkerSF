@@ -19,7 +19,7 @@ public interface KailleraUser
 	public static final byte		CONNECTION_TYPE_LOW			= 5;
 	public static final byte		CONNECTION_TYPE_BAD			= 6;
 
-	public static final String[]	CONNECTION_TYPE_NAMES		= { "DISABLED", "Lan", "Excellent", "Good", "Average", "Low", "Bad" };
+	public static final String[]	CONNECTION_TYPE_NAMES		= { "DISABLED", "LAN", "Excellent", "Good", "Average", "Low", "Bad" };
 
 	public static final byte		STATUS_PLAYING				= 0;
 	public static final byte		STATUS_IDLE					= 1;
