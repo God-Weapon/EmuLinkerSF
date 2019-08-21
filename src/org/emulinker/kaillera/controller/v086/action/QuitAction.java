@@ -71,26 +71,7 @@ public class QuitAction implements V086Action, V086ServerEventHandler
 		try
 		{
 			KailleraUser user = userQuitEvent.getUser();
-			
-			String m = userQuitEvent.getMessage();
-			String temp = m;
-			
-			temp = temp.replace(" ", "");
-			if(temp.toLowerCase().contains("ggpo.net")){
-				m = "http://www.God-Weapon.com";
-			}
-			else if(temp.toLowerCase().contains("2dfighter.com")){
-				m = "http://www.God-Weapon.com";
-			}
-			//69.90.34.245
-			else if(temp.toLowerCase().contains("69") && temp.toLowerCase().contains("90") && temp.toLowerCase().contains("34") && temp.toLowerCase().contains("245")){
-				m = "k.god-weapon.com:27888";
-			}
-			else if(temp.toLowerCase().contains("209") && temp.toLowerCase().contains("144") && temp.toLowerCase().contains("21") && temp.toLowerCase().contains("174")){
-				m = "k.god-weapon.com:27888";
-			}
-			
-			clientHandler.send(new Quit_Notification(clientHandler.getNextMessageNumber(), user.getName(), user.getID(), m));
+			clientHandler.send(new Quit_Notification(clientHandler.getNextMessageNumber(), user.getName(), user.getID(), userQuitEvent.getMessage()));
 		}
 		catch (MessageFormatException e)
 		{
