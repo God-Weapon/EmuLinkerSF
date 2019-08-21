@@ -219,11 +219,12 @@ public class ConnectController extends UDPServer
 		else
 		{
 			int privatePort = -1;
+			int access = accessManager.getAccess(fromSocketAddress.getAddress());
 
 			try
 			{
 				//SF MOD - Hammer Protection
-				if(connectedCount > 0){
+				if(access < AccessManager.ACCESS_ADMIN && connectedCount > 0){
 					if(lastAddress.equals(fromSocketAddress.getAddress().getHostAddress())){
 						lastAddressCount++;
 						if(lastAddressCount >= 4){
