@@ -62,7 +62,7 @@ public class JoinGameAction implements V086Action, V086GameEventHandler
 		{
 			try
 			{
-				clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(), "server", EmuLang.getString("JoinGameAction.JoinGameDenied") + e.getMessage()));
+				clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(), "server", EmuLang.getString("JoinGameAction.JoinGameDenied", e.getMessage())));
 				clientHandler.send(new QuitGame_Notification(clientHandler.getNextMessageNumber(), clientHandler.getUser().getName(), clientHandler.getUser().getID()));
 			}
 			catch (MessageFormatException e2)
