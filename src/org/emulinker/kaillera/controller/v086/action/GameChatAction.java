@@ -59,14 +59,19 @@ public class GameChatAction implements V086Action, V086GameEventHandler
 			throw new FatalActionException("User does not exist: GameChatAction " + message);
 		}
 	
+		if(clientHandler.getUser().getGame() == null)
+			return;
 	
 		if (((GameChat) message).getMessage().startsWith(ADMIN_COMMAND_ESCAPE_STRING))
 		{
-			if(clientHandler.getUser().getAccess() >= AccessManager.ACCESS_ADMIN || clientHandler.getUser().equals(clientHandler.getUser().getGame().getOwner())){
+			//if(clientHandler.getUser().getAccess() >= AccessManager.ACCESS_ADMIN || clientHandler.getUser().equals(clientHandler.getUser().getGame().getOwner())){
 				try
 				{
-					if(GameOwnerCommandAction.getInstance().isValidCommand(((GameChat) message).getMessage()))
+					if(GameOwnerCommandAction.getInstance().isValidCommand(((GameChat) message).getMessage())){
 						GameOwnerCommandAction.getInstance().performAction(message, clientHandler);
+						if(((GameChat) message).getMessage().equals("/help"))
+							checkCommands(message, clientHandler);
+					}
 					else
 						checkCommands(message, clientHandler);
 					return;
@@ -76,7 +81,7 @@ public class GameChatAction implements V086Action, V086GameEventHandler
 					log.warn("GameOwner command failed: " + e.getMessage());
 				}
 				
-			}
+			//}
 		}	
 		
 		actionCount++;
@@ -108,29 +113,37 @@ public class GameChatAction implements V086Action, V086GameEventHandler
 
 			if(doCommand){
 				if(((GameChat) message).getMessage().equals("/msgon")){
-					clientHandler.getUser().setMsg(true);
-					try {clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(), "server", "Private messages are now on."));} catch(Exception e) {}
+					KailleraUserImpl user = (KailleraUserImpl) clientHandler.getUser();
+					try {
+						clientHandler.getUser().setMsg(true);
+						user.getGame().announce("Private messages are now on.", user); //$NON-NLS-1$ //$NON-NLS-2$
+					}
+					catch(Exception e) {}
 					return;
 				}
 				else if(((GameChat) message).getMessage().equals("/msgoff")){
-					clientHandler.getUser().setMsg(false);
-					try {clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(), "server", "Private messages are now off."));} catch(Exception e) {}
+					KailleraUserImpl user = (KailleraUserImpl) clientHandler.getUser();
+					try {
+						clientHandler.getUser().setMsg(false);
+						user.getGame().announce("Private messages are now off.", user); //$NON-NLS-1$ //$NON-NLS-2$
+					}
+					catch(Exception e) {}
 					return;
 				}		
 				else if(((GameChat) message).getMessage().startsWith("/p2p")){
 					KailleraUserImpl user = (KailleraUserImpl) clientHandler.getUser();
 					if(((GameChat) message).getMessage().equals("/p2pon")){
-						clientHandler.getUser().setP2P(true);
-						
 						if(clientHandler.getUser().getGame().getOwner().equals(clientHandler.getUser())){
 							clientHandler.getUser().getGame().setP2P(true);
 							for(KailleraUserImpl u : clientHandler.getUser().getGame().getPlayers()){
+								u.setP2P(true);
 								if(u.isLoggedIn()){
 									u.getGame().announce("This game will NOT receive any server activity during gameplay!", u);
 								}
 							}
 						}
 						else{
+							clientHandler.getUser().setP2P(true);					
 							for(KailleraUserImpl u : clientHandler.getUser().getGame().getPlayers()){
 								if(u.isLoggedIn()){
 									u.getGame().announce(clientHandler.getUser().getName() + " will NOT receive any server activity during gameplay!", u);
@@ -139,17 +152,17 @@ public class GameChatAction implements V086Action, V086GameEventHandler
 						}
 					}
 					else if(((GameChat) message).getMessage().equals("/p2poff")){
-						clientHandler.getUser().setP2P(false);
-						
 						if(clientHandler.getUser().getGame().getOwner().equals(clientHandler.getUser())){
 							clientHandler.getUser().getGame().setP2P(false);
 							for (KailleraUserImpl u : clientHandler.getUser().getGame().getPlayers()){
+								u.setP2P(false);
 								if(u.isLoggedIn()){
 									u.getGame().announce("This game will NOW receive ALL server activity during gameplay!", u);
 								}
 							}
 						}
 						else{
+							clientHandler.getUser().setP2P(false);
 							for (KailleraUserImpl u : clientHandler.getUser().getGame().getPlayers()){
 								if(u.isLoggedIn()){
 									u.getGame().announce(clientHandler.getUser().getName() + " will NOW receive ALL server activity during gameplay!", u);
@@ -168,7 +181,7 @@ public class GameChatAction implements V086Action, V086GameEventHandler
 					
 					int access = clientHandler.getUser().getServer().getAccessManager().getAccess(clientHandler.getUser().getSocketAddress().getAddress());
 					if (access < AccessManager.ACCESS_SUPERADMIN && clientHandler.getUser().getServer().getAccessManager().isSilenced(clientHandler.getUser().getSocketAddress().getAddress())){
-						try {clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(), "server", "You are silenced!"));} catch(Exception e) {}
+						user1.getGame().announce("You are silenced!", user1);
 						return;
 					}
 		
@@ -187,24 +200,45 @@ public class GameChatAction implements V086Action, V086GameEventHandler
 						
 						if (user == null){
 							user1.getGame().announce("User not found!", user1);
-							try {clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(), "server","User Not Found!")); } catch(Exception e) {}
 							return;
 						}
 		
 						if(user == clientHandler.getUser()){
 							user1.getGame().announce("You can't private message yourself!", user1);
-							try {clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(), "server","You can't private message yourself!")); } catch(Exception e) {}
 							return;					
 						}
 						
 						if(user.getMsg() == false || user.searchIgnoredUsers(clientHandler.getUser().getConnectSocketAddress().getAddress().getHostAddress()) == true){
 							user1.getGame().announce("<" + user.getName() + "> Is not accepting private messages!", user1);
-							try {clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(), "server","<" + user.getName() + "> Is not accepting private messages!")); } catch(Exception e) {}
 							return;						
 						}
 		
 						String m = sb.toString();
 
+						m = m.trim();
+						if (m.length() == 0 || m.startsWith(" ") || m.startsWith("­"))
+							return;
+
+						if (access == AccessManager.ACCESS_NORMAL)
+						{
+							char[] chars = m.toCharArray();
+							for (int i = 0; i < chars.length; i++)
+							{
+								if (chars[i] < 32)
+								{
+									log.warn(user + " /msg denied: Illegal characters in message");
+									user1.getGame().announce("Private Message Denied: Illegal characters in message", user1);
+									return;
+								}
+							}
+
+							if (m.length() > 320)
+							{
+								log.warn(user + " /msg denied: Message Length > " + 320);
+								user1.getGame().announce("Private Message Denied: Message Too Long", user1);
+								return;
+							}
+						}
 						
 						user1.setLastMsgID(user.getID());
 						user.setLastMsgID(user1.getID());
@@ -236,24 +270,45 @@ public class GameChatAction implements V086Action, V086GameEventHandler
 								
 								if (user == null){
 									user1.getGame().announce("User not found!", user1);
-									try {clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(), "server","User Not Found!")); } catch(Exception e1) {}
 									return;
 								}
 		
 								if(user == clientHandler.getUser()){
 									user1.getGame().announce("You can't private message yourself!", user1);
-									try {clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(), "server","You can't private message yourself!")); } catch(Exception e1) {}
 									return;					
 								}
 								
 								if(user.getMsg() == false){
 									user1.getGame().announce("<" + user.getName() + "> Is not accepting private messages!", user1);
-									try {clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(), "server","<" + user.getName() + "> Is not accepting private messages!")); } catch(Exception e1) {}
 									return;						
 								}
 		
 								String m = sb.toString();
 
+								m = m.trim();
+								if (m.length() == 0 || m.startsWith(" ") || m.startsWith("­"))
+									return;
+
+								if (access == AccessManager.ACCESS_NORMAL)
+								{
+									char[] chars = m.toCharArray();
+									for (int i = 0; i < chars.length; i++)
+									{
+										if (chars[i] < 32)
+										{
+											log.warn(user + " /msg denied: Illegal characters in message");
+											user1.getGame().announce("Private Message Denied: Illegal characters in message", user1);
+											return;
+										}
+									}
+
+									if (m.length() > 320)
+									{
+										log.warn(user + " /msg denied: Message Length > " + 320);
+										user1.getGame().announce("Private Message Denied: Message Too Long", user1);
+										return;
+									}
+								}
 								
 								user1.getServer().announce("TO: <" + user.getName() + ">(" + user.getID() + ") <" + clientHandler.getUser().getName() + "> (" + clientHandler.getUser().getID() + "): " + m, false, user1);
 								user.getServer().announce("<" + clientHandler.getUser().getName() + "> (" + clientHandler.getUser().getID() + "): " + m, false, user);						
@@ -272,21 +327,32 @@ public class GameChatAction implements V086Action, V086GameEventHandler
 								return;
 							}
 						}
-						user1.getGame().announce("Private Message Error: /msg <UserID> <message>", user1);
-						return;
+						else{
+							user1.getGame().announce("Private Message Error: /msg <UserID> <message>", user1);
+							return;
+						}
 					}		
 				}
 				else if(((GameChat) message).getMessage().equals("/ignoreall")){
-					clientHandler.getUser().setIgnoreAll(true);
-					try {clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(), "server",clientHandler.getUser().getName() + " is now ignoring everyone!")); } catch(Exception e) {}
+					KailleraUserImpl user = (KailleraUserImpl) clientHandler.getUser();		
+					try {
+						clientHandler.getUser().setIgnoreAll(true);
+						user.getServer().announce(clientHandler.getUser().getName() + " is now ignoring everyone!", false, null); //$NON-NLS-1$ //$NON-NLS-2$
+					}
+					catch(Exception e) {}
 					return;
 				}
 				else if(((GameChat) message).getMessage().equals("/unignoreall")){
-					clientHandler.getUser().setIgnoreAll(false);
-					try {clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(), "server",clientHandler.getUser().getName() + " is now unignoring everyone!")); } catch(Exception e) {}
+					KailleraUserImpl user = (KailleraUserImpl) clientHandler.getUser();
+					try {
+						clientHandler.getUser().setIgnoreAll(false);
+						user.getServer().announce(clientHandler.getUser().getName() + " is now unignoring everyone!", false, null); //$NON-NLS-1$ //$NON-NLS-2$
+					}
+					catch(Exception e) {}
 					return;
 				}
 				else if(((GameChat) message).getMessage().startsWith("/ignore")){
+					KailleraUserImpl user1 = (KailleraUserImpl) clientHandler.getUser();
 					Scanner scanner = new Scanner(((GameChat) message).getMessage()).useDelimiter(" "); //$NON-NLS-1$
 		
 					try
@@ -296,19 +362,19 @@ public class GameChatAction implements V086Action, V086GameEventHandler
 						KailleraUserImpl user = (KailleraUserImpl) clientHandler.getUser().getServer().getUser(userID);
 					
 						if (user == null){
-							try {clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(), "server","User Not Found!")); } catch(Exception e) {}
-							return;
-						}
-						if (user.getAccess() >= AccessManager.ACCESS_MODERATOR){
-							try {clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(), "server","You cannot ignore an admin!")); } catch(Exception e) {}
+							user1.getGame().announce("User not found!", user1);
 							return;
 						}
 						if(user == clientHandler.getUser()){
-							try {clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(), "server","You can't ignore yourself!")); } catch(Exception e) {}
+							user1.getGame().announce("You can't ignore yourself!", user1);
 							return;					
 						}
 						if(clientHandler.getUser().findIgnoredUser(user.getConnectSocketAddress().getAddress().getHostAddress())){
-							try {clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(), "server","You can't ignore a user that is already ignored!")); } catch(Exception e) {}
+							user1.getGame().announce("You can't ignore a user that is already ignored!", user1);
+							return;
+						}
+						if (user.getAccess() >= AccessManager.ACCESS_MODERATOR){
+							user1.getGame().announce("You cannot ignore a moderator or admin!", user1);
 							return;
 						}
 						
@@ -319,12 +385,13 @@ public class GameChatAction implements V086Action, V086GameEventHandler
 					catch (NoSuchElementException e)
 					{
 						KailleraUserImpl user = (KailleraUserImpl) clientHandler.getUser();
-						user.getServer().announce("Ignore User Error: /ignore <UserID>", false, user); //$NON-NLS-1$ //$NON-NLS-2$
+						user.getGame().announce("Ignore User Error: /ignore <UserID>", user); //$NON-NLS-1$ //$NON-NLS-2$
 						log.info("IGNORE USER ERROR: " + user.getName() + ": " + clientHandler.getRemoteSocketAddress().getHostName());
 						return;
 					}
 				}
 				else if(((GameChat) message).getMessage().startsWith("/unignore")){
+					KailleraUserImpl user1 = (KailleraUserImpl) clientHandler.getUser();
 					Scanner scanner = new Scanner(((GameChat) message).getMessage()).useDelimiter(" "); //$NON-NLS-1$
 		
 					try
@@ -334,11 +401,11 @@ public class GameChatAction implements V086Action, V086GameEventHandler
 						KailleraUserImpl user = (KailleraUserImpl) clientHandler.getUser().getServer().getUser(userID);
 										
 						if (user == null){
-							try {clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(), "server","User Not Found!")); } catch(Exception e) {}
+							user1.getGame().announce("User Not Found!", user1);
 							return;
 						}
-						if(clientHandler.getUser().findIgnoredUser(user.getConnectSocketAddress().getAddress().getHostAddress())){
-							try {clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(), "server","You can't unignore a user that isn't ignored!")); } catch(Exception e) {}
+						if(!clientHandler.getUser().findIgnoredUser(user.getConnectSocketAddress().getAddress().getHostAddress())){
+							user1.getGame().announce("You can't unignore a user that isn't ignored", user1);
 							return;
 						}
 					
@@ -346,13 +413,12 @@ public class GameChatAction implements V086Action, V086GameEventHandler
 							user.getServer().announce(clientHandler.getUser().getName() + " is now unignoring <" + user.getName() + "> ID: " + user.getID(), false, null); //$NON-NLS-1$ //$NON-NLS-2$
 						else
 							try {clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(), "server","User Not Found!")); } catch(Exception e) {}
-							
 						return;
 					}
 					catch (NoSuchElementException e)
 					{
 						KailleraUserImpl user = (KailleraUserImpl) clientHandler.getUser();
-						user.getServer().announce("Unignore User Error: /ignore <UserID>", false, user); //$NON-NLS-1$ //$NON-NLS-2$
+						user.getGame().announce("Unignore User Error: /ignore <UserID>", user); //$NON-NLS-1$ //$NON-NLS-2$
 						log.info("UNIGNORE USER ERROR: " + user.getName() + ": " + clientHandler.getRemoteSocketAddress().getHostName());
 						return;
 					}
@@ -361,7 +427,7 @@ public class GameChatAction implements V086Action, V086GameEventHandler
 				else if(((GameChat) message).getMessage().startsWith("/me")){
 					int space = ((GameChat) message).getMessage().indexOf(' ');
 					if (space < 0){
-						try {clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(), "server","Invalid # of Fields!")); } catch(Exception e) {}
+						clientHandler.getUser().getGame().announce("Invalid # of Fields!", clientHandler.getUser());
 						return;
 					}
 				
@@ -372,25 +438,26 @@ public class GameChatAction implements V086Action, V086GameEventHandler
 					
 					int access = clientHandler.getUser().getServer().getAccessManager().getAccess(clientHandler.getUser().getSocketAddress().getAddress());
 					if (access < AccessManager.ACCESS_SUPERADMIN && clientHandler.getUser().getServer().getAccessManager().isSilenced(clientHandler.getUser().getSocketAddress().getAddress())){
-						try {clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(), "server", "You are silenced!"));} catch(Exception e) {}
+						clientHandler.getUser().getGame().announce("You are silenced!", clientHandler.getUser());
 						return;
 					}
 					
-					String m = announcement;
-
+					if(clientHandler.getUser().getServer().checkMe(clientHandler.getUser(), announcement)){
+						String m = announcement;
 					
-					announcement = "*" + clientHandler.getUser().getName() + " " + m;
+						announcement = "*" + clientHandler.getUser().getName() + " " + m;
 					
-					for (KailleraUserImpl user : clientHandler.getUser().getGame().getPlayers()){
-						user.getGame().announce(announcement, user);
+						for (KailleraUserImpl user : clientHandler.getUser().getGame().getPlayers()){
+							user.getGame().announce(announcement, user);
+						}
+						return;
 					}
-					return;
 				}
 				else if(((GameChat) message).getMessage().equals("/help")){	
 					KailleraUserImpl user = (KailleraUserImpl) clientHandler.getUser();
 					user.getGame().announce("/me <message> to make personal message eg. /me is bored ...SupraFast is bored.", user);
 					try { Thread.sleep(20); } catch(Exception e) {}			
-					user.getGame().announce("/msg <UserID> <msg> to PM somebody. /msgon or /msgoff to turn pm on | off.", user);
+					user.getGame().announce("/msg <UserID> <msg> to PM somebody. /msgoff or /msgon to turn pm off | on.", user);
 					try { Thread.sleep(20); } catch(Exception e) {}
 					user.getGame().announce("/ignore <UserID> or /unignore <UserID> or /ignoreall or /unignoreall to ignore users.", user);
 					try { Thread.sleep(20); } catch(Exception e) {}
@@ -398,7 +465,8 @@ public class GameChatAction implements V086Action, V086GameEventHandler
 					try { Thread.sleep(20); } catch(Exception e) {}
 					return;
 				}
-				clientHandler.getUser().getGame().announce("Uknown Command: " + ((GameChat) message).getMessage(), clientHandler.getUser());
+				else
+					clientHandler.getUser().getGame().announce("Unknown Command: " + ((GameChat) message).getMessage(), clientHandler.getUser());
 			}
 			else{
 				clientHandler.getUser().getGame().announce("Denied: Flood Control", clientHandler.getUser());
