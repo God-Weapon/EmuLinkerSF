@@ -1,6 +1,7 @@
 package org.emulinker.kaillera.controller.v086.action;
 
 import org.apache.commons.logging.*;
+import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 import org.emulinker.kaillera.controller.v086.V086Controller;
 import org.emulinker.kaillera.controller.v086.protocol.*;
 import org.emulinker.kaillera.model.exception.GameKickException;
@@ -46,6 +47,15 @@ public class GameKickAction implements V086Action
 		catch (GameKickException e)
 		{
 			log.debug("Failed to kick: " + e.getMessage());
+			//new SF MOD - kick errors notifications
+			try
+			{
+				clientHandler.send(new GameChat_Notification(clientHandler.getNextMessageNumber(), "Error", e.getMessage()));
+			}
+			catch (MessageFormatException ex)
+			{
+				log.error("Failed to contruct GameChat_Notification message: " + e.getMessage(), e);
+			}
 		}
 	}
 }
