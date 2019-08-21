@@ -31,6 +31,7 @@ public class GameOwnerCommandAction implements V086Action
 	public static final String				COMMAND_SWAP            = "/swap"; //$NON-NLS-1$
 	public static final String				COMMAND_KICK            = "/kick"; //$NON-NLS-1$
 	public static final String				COMMAND_EMU             = "/setemu"; //$NON-NLS-1$
+	public static final String				COMMAND_CONN            = "/setconn"; //$NON-NLS-1$
 	public static final String				COMMAND_SAMEDELAY       = "/samedelay"; //$NON-NLS-1$
 	public static final String				COMMAND_NUM             = "/num"; //$NON-NLS-1$
 
@@ -94,6 +95,10 @@ public class GameOwnerCommandAction implements V086Action
 		{
 			return true;
 		}
+		else if (chat.startsWith(COMMAND_CONN))
+		{
+			return true;
+		}
 		else if (chat.startsWith(COMMAND_UNMUTE))
 		{
 			return true;
@@ -136,8 +141,15 @@ public class GameOwnerCommandAction implements V086Action
 		
 		if(!user.equals(game.getOwner()) && user.getAccess() < AccessManager.ACCESS_SUPERADMIN)
 		{
-			log.warn("GameOwner Command Denied: Not game owner: " + game + ": " + user + ": " + chat); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-			return;
+			if (chat.startsWith(COMMAND_HELP))
+			{
+				
+			}
+			else 
+			{		
+				log.warn("GameOwner Command Denied: Not game owner: " + game + ": " + user + ": " + chat); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+				return;
+			}
 		}
 		
 		try
@@ -173,6 +185,10 @@ public class GameOwnerCommandAction implements V086Action
 			else if (chat.startsWith(COMMAND_EMU))
 			{
 				processEmu(chat, game, user, clientHandler);
+			}
+			else if (chat.startsWith(COMMAND_CONN))
+			{
+				processConn(chat, game, user, clientHandler);
 			}
 			else if (chat.startsWith(COMMAND_UNMUTE))
 			{
@@ -217,6 +233,8 @@ public class GameOwnerCommandAction implements V086Action
 
 	private void processHelp(String message, KailleraGameImpl game, KailleraUserImpl admin, V086Controller.V086ClientHandler clientHandler) throws ActionException, MessageFormatException
 	{
+		if(!admin.equals(game.getOwner()) && admin.getAccess() < AccessManager.ACCESS_SUPERADMIN)
+			return;
 		//game.setIndividualGameAnnounce(admin.getPlayerNumber());
 		//game.announce(EmuLang.getString("GameOwnerCommandAction.AvailableCommands")); //$NON-NLS-1$
 		//try { Thread.sleep(20); } catch(Exception e) {}
@@ -234,20 +252,14 @@ public class GameOwnerCommandAction implements V086Action
 		try { Thread.sleep(20); } catch(Exception e) {}	
 		game.announce("/kick <Player#> or /kickall to kick a player(s).", admin); //$NON-NLS-1$
 		try { Thread.sleep(20); } catch(Exception e) {}	
-		game.announce("/setemu <Emulator> To restrict the gameroom to this emulator!", admin); //$NON-NLS-1$
+		game.announce("/setemu To restrict the gameroom to this emulator!", admin); //$NON-NLS-1$
 		try { Thread.sleep(20); } catch(Exception e) {}	
+		game.announce("/setconn To restrict the gameroom to this connection type!", admin); //$NON-NLS-1$
+		try { Thread.sleep(20); } catch(Exception e) {} 
 		game.announce("/lagstat To check who has the most lag spikes or /lagreset to reset lagstat!", admin); //$NON-NLS-1$
 		try { Thread.sleep(20); } catch(Exception e) {}	
-		game.announce("/samedelay {true | false} If you want both want to play at the same delay setting. Default is false.", admin); //$NON-NLS-1$
+		game.announce("/samedelay {true | false} to play at the same delay as player with highest ping. Default is false.", admin); //$NON-NLS-1$
 		try { Thread.sleep(20); } catch(Exception e) {}	
-		game.announce("/me <message> to make personal message eg. /me is bored ...SupraFast is bored.", admin);
-		try { Thread.sleep(20); } catch(Exception e) {}			
-		game.announce("/msg <UserID> <msg> to PM somebody. /msgon or /msgoff to turn pm on | off.", admin);
-		try { Thread.sleep(20); } catch(Exception e) {}
-		game.announce("/ignore <UserID> or /unignore <UserID> or /ignoreall or /unignoreall to ignore users.", admin);
-		try { Thread.sleep(20); } catch(Exception e) {}
-		game.announce("/p2pon or /p2poff this option ignores ALL server activity during gameplay.", admin);
-		try { Thread.sleep(20); } catch(Exception e) {}
 	}
 	
 	private void autoFireHelp(KailleraGameImpl game, KailleraUserImpl admin)
@@ -297,36 +309,29 @@ public class GameOwnerCommandAction implements V086Action
 
 	private void processEmu(String message, KailleraGameImpl game, KailleraUserImpl admin, V086Controller.V086ClientHandler clientHandler) throws ActionException, MessageFormatException
 	{
-		Scanner scanner = new Scanner(message).useDelimiter(" "); //$NON-NLS-1$
-
-		try
-		{
-			scanner.next();
-			String str = scanner.next();
-			
-			if(str.length() < 1){
-				admin.getGame().announce("Invalid Argument!", admin); //$NON-NLS-1$ //$NON-NLS-2$
-				return;				
-			}
-			
-			String m = str;
-			
-			if(admin.getServer().getAccessManager().isSilenced(admin.getSocketAddress().getAddress())){
-				admin.getGame().announce("Chat Denied: You're silenced!", admin); //$NON-NLS-1$ //$NON-NLS-2$
-				return;
-			}
-			
-			
-
-			
-			admin.getGame().setAEmulator(m);
-			admin.getGame().announce("Owner has restricted the emulator to: " + m, null); //$NON-NLS-1$ //$NON-NLS-2$
-			return;
+		String emu = game.getOwner().getClientType();
+		
+		if(message.equals("/setemu any")){
+			emu = "any";
 		}
-		catch (NoSuchElementException e)
-		{
-			admin.getGame().announce("Emulator Set Error: /setemu <Emulator>", admin); //$NON-NLS-1$ //$NON-NLS-2$
-		}	
+		
+		admin.getGame().setAEmulator(emu);
+		admin.getGame().announce("Owner has restricted the emulator to: " + emu, null); //$NON-NLS-1$ //$NON-NLS-2$
+		return;
+	}
+	
+	//new gameowner command /setconn
+	private void processConn(String message, KailleraGameImpl game, KailleraUserImpl admin, V086Controller.V086ClientHandler clientHandler) throws ActionException, MessageFormatException
+	{
+		String conn = KailleraUser.CONNECTION_TYPE_NAMES[game.getOwner().getConnectionType()];
+		
+		if(message.equals("/setconn any")){
+			conn = "any";
+		}
+		
+		admin.getGame().setAConnection(conn);
+		admin.getGame().announce("Owner has restricted the connection type to: " + conn, null); //$NON-NLS-1$ //$NON-NLS-2$
+		return;
 	}
 	
 	private void processNum(String message, KailleraGameImpl game, KailleraUserImpl admin, V086Controller.V086ClientHandler clientHandler) throws ActionException, MessageFormatException
@@ -344,9 +349,10 @@ public class GameOwnerCommandAction implements V086Action
 				if(!player.getStealth())
 					str = str + "P" + player.getPlayerNumber() + ": " + player.getTimeouts() + ", ";
 			}
-			
-			str = str.substring(0, str.length() - ", ".length());
-			game.announce(str + " lag spikes", null);			
+			if(str.length() > 0){
+				str = str.substring(0, str.length() - ", ".length());
+				game.announce(str + " lag spikes", null);		
+			}
 		}
 		else if(message.equals("/lagreset")){
 			for (KailleraUser player : game.getPlayers()){
@@ -377,8 +383,11 @@ public class GameOwnerCommandAction implements V086Action
 			String str = scanner.next();
 			if(str.equals("/muteall")){
 				for(int w = 1; w <= game.getPlayers().size(); w++){
-					if(game.getPlayer(w).getAccess() < AccessManager.ACCESS_ADMIN)
+					// do not mute owner or admin
+					if(game.getPlayer(w).getAccess() < AccessManager.ACCESS_ADMIN && !game.getPlayer(w).equals(game.getOwner())){
 						game.getPlayer(w).setMute(true);
+						game.getMutedUsers().add(game.getPlayer(w).getConnectSocketAddress().getAddress().getHostAddress());
+					}
 				}
 				admin.getGame().announce("All players have been muted!", null); //$NON-NLS-1$ //$NON-NLS-2$
 				return;
@@ -391,17 +400,19 @@ public class GameOwnerCommandAction implements V086Action
 				admin.getGame().announce("Player doesn't exist!", admin); //$NON-NLS-1$ //$NON-NLS-2$
 				return;
 			}
-
-			if(user.getAccess() >= AccessManager.ACCESS_ADMIN && admin.getAccess() != AccessManager.ACCESS_SUPERADMIN){
-				user.getGame().announce("You can't mute an Admin", admin); //$NON-NLS-1$ //$NON-NLS-2$
-				return;					
-			}
 			
 			if(user == clientHandler.getUser()){
 				user.getGame().announce("You can't mute yourself!", admin); //$NON-NLS-1$ //$NON-NLS-2$
 				return;					
 			}
 			
+			if(user.getAccess() >= AccessManager.ACCESS_ADMIN && admin.getAccess() != AccessManager.ACCESS_SUPERADMIN){
+				user.getGame().announce("You can't mute an Admin", admin); //$NON-NLS-1$ //$NON-NLS-2$
+				return;					
+			}
+			
+			// mute by IP
+			game.getMutedUsers().add(user.getConnectSocketAddress().getAddress().getHostAddress());
 			user.setMute(true);
 			KailleraUserImpl user1 = (KailleraUserImpl) clientHandler.getUser();
 			user1.getGame().announce(user.getName() + " has been muted!", null);
@@ -409,7 +420,7 @@ public class GameOwnerCommandAction implements V086Action
 		catch (NoSuchElementException e)
 		{
 			KailleraUserImpl user = (KailleraUserImpl) clientHandler.getUser();
-			user.getGame().announce("Mute Player Error: /mute <PlayerNumber>", admin); //$NON-NLS-1$ //$NON-NLS-2$
+			user.getGame().announce("Mute Player Error: /mute <UserID>", admin); //$NON-NLS-1$ //$NON-NLS-2$
 		}			
 	}
 	
@@ -421,8 +432,10 @@ public class GameOwnerCommandAction implements V086Action
 		{
 			String str = scanner.next();
 			if(str.equals("/unmuteall")){
-				for(int w = 1; w <= game.getPlayers().size(); w++)
+				for(int w = 1; w <= game.getPlayers().size(); w++){
 					game.getPlayer(w).setMute(false);
+					game.getMutedUsers().remove(game.getPlayer(w).getConnectSocketAddress().getAddress().getHostAddress());
+				}
 				admin.getGame().announce("All players have been unmuted!", null); //$NON-NLS-1$ //$NON-NLS-2$
 				return;
 			}
@@ -434,17 +447,18 @@ public class GameOwnerCommandAction implements V086Action
 				admin.getGame().announce("Player doesn't exist!", admin); //$NON-NLS-1$ //$NON-NLS-2$
 				return;
 			}
-
-			if(user.getAccess() >= AccessManager.ACCESS_ADMIN && admin.getAccess() != AccessManager.ACCESS_SUPERADMIN){
-				user.getGame().announce("You can't unmute an Admin", admin); //$NON-NLS-1$ //$NON-NLS-2$
-				return;					
-			}
 			
 			if(user == clientHandler.getUser()){
 				user.getGame().announce("You can't unmute yourself!", admin); //$NON-NLS-1$ //$NON-NLS-2$
 				return;					
 			}
 			
+			if(user.getAccess() >= AccessManager.ACCESS_ADMIN && admin.getAccess() != AccessManager.ACCESS_SUPERADMIN){
+				user.getGame().announce("You can't unmute an Admin", admin); //$NON-NLS-1$ //$NON-NLS-2$
+				return;					
+			}
+			
+			game.getMutedUsers().remove(user.getConnectSocketAddress().getAddress().getHostAddress());
 			user.setMute(false);
 			KailleraUserImpl user1 = (KailleraUserImpl) clientHandler.getUser();
 			user1.getGame().announce(user.getName() + " has been unmuted!", null);
@@ -452,7 +466,7 @@ public class GameOwnerCommandAction implements V086Action
 		catch (NoSuchElementException e)
 		{
 			KailleraUserImpl user = (KailleraUserImpl) clientHandler.getUser();
-			user.getGame().announce("Unmute Player Error: /unmute <PlayerNumber>", admin); //$NON-NLS-1$ //$NON-NLS-2$
+			user.getGame().announce("Unmute Player Error: /unmute <UserID>", admin); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 	}
 	
@@ -482,10 +496,10 @@ public class GameOwnerCommandAction implements V086Action
 	
 	private void processSwap(String message, KailleraGameImpl game, KailleraUserImpl admin, V086Controller.V086ClientHandler clientHandler) throws ActionException, MessageFormatException
 	{
-		if(game.getStatus() != KailleraGame.STATUS_PLAYING){
+		/*if(game.getStatus() != KailleraGame.STATUS_PLAYING){
 			game.announce("Failed: wap Players can only be used during gameplay!", admin);
 			return;
-		}
+		}*/
 		
 		Scanner scanner = new Scanner(message).useDelimiter(" "); //$NON-NLS-1$
 
@@ -503,19 +517,36 @@ public class GameOwnerCommandAction implements V086Action
 				return;			
 			}
 			
-			PlayerActionQueue temp = game.getPlayerActionQueue()[0];
-			for(i = 0; i < str.length(); i++){				
-				KailleraUserImpl player = game.getPlayers().get(i);
-				String w = String.valueOf(str.charAt(i));
-				player.setPlayerNumber(Integer.parseInt(w));
-				if(Integer.parseInt(w) == 1){
-					game.getPlayerActionQueue()[i] = temp;
+			if(test > 0) {
+				int numCount = 0;
+				int[] num = new int[str.length()];
+				// before swap check numbers to prevent errors due to incorrectly entered numbers
+				for(i = 0; i < num.length; i++) {
+		        	num[i] = Integer.parseInt(String.valueOf(str.charAt(i)));
+		        	numCount = 1;
+		        	if (num[i] == 0 || num[i] > game.getPlayers().size())
+		        		break;
+		        	for(int j = 0; j < num.length; j++) {
+		        		if(num[i] != num[j])
+		        			numCount++;
+		        	}
 				}
-				else{
-					game.getPlayerActionQueue()[i] = game.getPlayerActionQueue()[Integer.parseInt(w)-1];
-				}
-				
-				game.announce(player.getName() + " is now Player#: " + player.getPlayerNumber(), null);
+				if(numCount == game.getPlayers().size()) {
+					game.swap = true;
+					//PlayerActionQueue temp = game.getPlayerActionQueue()[0];
+					for(i = 0; i < str.length(); i++){				
+						KailleraUserImpl player = game.getPlayers().get(i);
+						player.setPlayerNumber(num[i]);
+						/*if(num[i] == 1){
+							game.getPlayerActionQueue()[i] = temp;
+						}
+						else{
+							game.getPlayerActionQueue()[i] = game.getPlayerActionQueue()[num[i]-1];
+						}*/
+						
+						game.announce(player.getName() + " is now Player#: " + player.getPlayerNumber(), null);
+					}
+				} else game.announce("Swap Player Error: /swap <order> eg. 123..n {n = total # of players; Each slot = new player#}", admin);
 			}
 
 		}
@@ -538,17 +569,25 @@ public class GameOwnerCommandAction implements V086Action
 		{	
 			String str = scanner.next();
 			if(str.equals("/kickall")){
-				for(int w = 1; w <= game.getPlayers().size(); w++)
-					game.kick(game.getPlayer(w),game.getPlayer(w).getID());
+				// start kick players from last to first and don't kick owner or admin
+				for(int w = game.getPlayers().size(); w >= 1; w--){
+					if(game.getPlayer(w).getAccess() < AccessManager.ACCESS_ADMIN && !game.getPlayer(w).equals(game.getOwner()))
+						game.kick(admin, game.getPlayer(w).getID());
+				}	
 				admin.getGame().announce("All players have been kicked!", null); //$NON-NLS-1$ //$NON-NLS-2$
 				return;
 			}
 			int playerNumber = scanner.nextInt();
 			
-			if(game.getPlayer(playerNumber) != null)
-				game.kick(admin, game.getPlayer(playerNumber).getID());
+			if(playerNumber > 0 && playerNumber < 101){
+				if(game.getPlayer(playerNumber) != null)
+					game.kick(admin, game.getPlayer(playerNumber).getID());
+				else{
+					game.announce("Player doesn't exisit!", admin);
+				}
+			}
 			else{
-				game.announce("Player doesn't exisit!", admin);
+				game.announce("Kick Player Error: Enter value between 1 and 100", admin);
 			}
 		}
 		catch (NoSuchElementException e)
