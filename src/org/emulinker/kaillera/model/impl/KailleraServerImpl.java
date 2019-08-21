@@ -29,6 +29,7 @@ public class KailleraServerImpl implements KailleraServer, Executable
 	protected int								createGameFloodTime;
 	protected int								maxUserNameLength;
 	protected int								maxChatLength;
+	protected int								maxGameChatLength;
 	protected int								maxGameNameLength;
 	protected int								maxQuitMessageLength;
 	protected int								maxClientNameLength;
@@ -83,11 +84,14 @@ public class KailleraServerImpl implements KailleraServer, Executable
 		if(maxUserNameLength > 31)
 			maxUserNameLength = 31;
 		maxChatLength = config.getInt("server.maxChatLength");
+		maxGameChatLength = config.getInt("server.maxGameChatLength");
 		maxGameNameLength = config.getInt("server.maxGameNameLength");
-		if(maxGameNameLength > 128)
-			maxGameNameLength  = 128;
+		if(maxGameNameLength > 127)
+			maxGameNameLength = 127;
 		maxQuitMessageLength = config.getInt("server.maxQuitMessageLength");
 		maxClientNameLength = config.getInt("server.maxClientNameLength");
+		if(maxClientNameLength > 127)
+			maxClientNameLength = 127;
 		
 		for(int i=1; i<=999; i++)
 		{
@@ -130,14 +134,14 @@ public class KailleraServerImpl implements KailleraServer, Executable
 		if (maxPing <= 0)
 			throw new ConfigurationException("server.maxPing can not be <= 0");
 
-		if (maxPing >= 1000)
-			throw new ConfigurationException("server.maxPing can not be > 999");
+		if (maxPing > 1000)
+			throw new ConfigurationException("server.maxPing can not be > 1000");
 
 		if (keepAliveTimeout <= 0)
 			throw new ConfigurationException("server.keepAliveTimeout must be > 0 (190 is recommended)");
 
 		users = new ConcurrentHashMap<Integer, KailleraUserImpl>(maxUsers);
-		games = new ConcurrentHashMap<Integer, KailleraGameImpl>(maxUsers);
+		games = new ConcurrentHashMap<Integer, KailleraGameImpl>(maxGames);
 
 		boolean touchKaillera = config.getBoolean("masterList.touchKaillera", false);
 
@@ -255,6 +259,11 @@ public class KailleraServerImpl implements KailleraServer, Executable
 	{
 		return maxChatLength;
 	}
+	
+	protected int getMaxGameChatLength()
+	{
+		return maxGameChatLength;
+	}
 
 	protected int getMaxGameNameLength()
 	{
@@ -339,8 +348,6 @@ public class KailleraServerImpl implements KailleraServer, Executable
 	
 	protected AutoFireDetector getAutoFireDetector(KailleraGame game)
 	{
-		if(gameAutoFireSensitivity == 0)
-			return null;
 		return autoFireDetectorFactory.getInstance(game, gameAutoFireSensitivity);
 	}
 	
@@ -434,6 +441,14 @@ public class KailleraServerImpl implements KailleraServer, Executable
 			log.info(user + " login denied: Empty UserName");
 			users.remove(userListKey);
 			throw new UserNameException(EmuLang.getString("KailleraServerImpl.LoginDeniedUserNameEmpty"));
+		}
+		
+		//new SF MOD - Username filter
+		if(access == AccessManager.ACCESS_NORMAL && (user.getName().toLowerCase().contains("server") || user.getName().toLowerCase().contains("www.") || user.getName().toLowerCase().contains("http") || user.getName().toLowerCase().contains("\\") || user.getName().toLowerCase().contains(" ") || user.getName().toLowerCase().contains("­")))
+		{
+			log.info(user + " login denied: not allowed username: " + user.getName());
+			users.remove(userListKey);
+			throw new UserNameException("You cannot have that username: " + user.getName());
 		}
 
 		//access == AccessManager.ACCESS_NORMAL && 
@@ -593,7 +608,7 @@ public class KailleraServerImpl implements KailleraServer, Executable
 			userImpl.addEvent(new InfoMessageEvent(user, EmuLang.getString("KailleraServerImpl.AdminWelcomeMessage")));
 		
 		try { Thread.sleep(20); } catch(Exception e) {}
-		userImpl.addEvent(new InfoMessageEvent(user, getReleaseInfo().getProductName() + " v" + getReleaseInfo().getVersionString() + ": " + getReleaseInfo().getReleaseDate() + " - Visit: www.God-Weapon.com"));		
+		userImpl.addEvent(new InfoMessageEvent(user, getReleaseInfo().getProductName() + " v" + getReleaseInfo().getVersionString() + ": " + getReleaseInfo().getReleaseDate() + " - Visit: https://github.com/God-Weapon"));		
 		
 		try { Thread.sleep(20); } catch(Exception e) {}
 		addEvent(new UserJoinedEvent(this, user));
@@ -627,7 +642,7 @@ public class KailleraServerImpl implements KailleraServer, Executable
 		
 		int access = user.getServer().getAccessManager().getAccess(user.getSocketAddress().getAddress());
 		if (access < AccessManager.ACCESS_SUPERADMIN && user.getServer().getAccessManager().isSilenced(user.getSocketAddress().getAddress())){
-			quitMsg = "http://www.God-Weapon.com";
+			quitMsg = "https://github.com/God-Weapon";
 		}
 
 		log.info(user + " quit: " + quitMsg);
@@ -664,7 +679,7 @@ public class KailleraServerImpl implements KailleraServer, Executable
 		}
 
 		message = message.trim();
-		if (message.length() == 0)
+		if (message.length() == 0 || message.startsWith(" ") || message.startsWith("­"))
 			return;
 
 		if (access == AccessManager.ACCESS_NORMAL)
