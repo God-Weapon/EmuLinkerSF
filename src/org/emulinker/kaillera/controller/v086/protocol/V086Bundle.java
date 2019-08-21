@@ -115,8 +115,8 @@ public class V086Bundle extends ByteBufferMessage
 		int parsedCount = 0;
 		V086Message[] messages;
 		
-		int msgNum = buffer.getShort(1);
-		if((msgNum - 1) == (lastMessageID)){
+		int msgNum = buffer.getChar(1);//buffer.getShort(1); - mistake. max value of short is 0x7FFF but we need 0xFFFF
+		if((msgNum - 1) == lastMessageID || msgNum == 0 && lastMessageID == 0xFFFF){// exception for 0 and 0xFFFF
 			messageCount = 1;
 			messages = new V086Message[messageCount];
 			int messageNumber = UnsignedUtil.getUnsignedShort(buffer);
@@ -134,6 +134,16 @@ public class V086Bundle extends ByteBufferMessage
 				int messageNumber = UnsignedUtil.getUnsignedShort(buffer);
 				
 				if (messageNumber <= lastMessageID){
+					if (messageNumber < 0x20 && lastMessageID > 0xFFDF) {
+						// exception when messageNumber with lower value is greater
+						// do nothing
+					}
+					else {
+						break;
+					}
+				}
+				else if (messageNumber > 0xFFBF && lastMessageID < 0x40) {
+					// exception when disorder messageNumber greater that lastMessageID
 					break;
 				}
 	
