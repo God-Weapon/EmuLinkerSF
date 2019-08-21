@@ -93,6 +93,8 @@ public interface AccessManager
 	 */
 	public void addTempAdmin(String pattern, int minutes);
 	
+	public void addTempModerator(String pattern, int minutes);
+	
 	public void addTempElevated(String pattern, int minutes);
 
 	/**
@@ -104,5 +106,5 @@ public interface AccessManager
 	 */
 	public void addSilenced(String pattern, int minutes);
 	
-	public boolean clearTemp(InetAddress address);
+	public boolean clearTemp(InetAddress address, boolean clearAll);
 }
