@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- 	This file defines the core components used in EmuLinker.  You do not need to edit this file 
+	unless you want to replace a component with a different implementation.	-->
+
+<container>
+ <component class='org.emulinker.util.EmuLinkerPropertiesConfig'/>
+ <component class='org.emulinker.util.EmuLinkerExecutor'/>
+ <component class='org.emulinker.kaillera.release.KailleraServerReleaseInfo'/>
+ <component class='org.emulinker.kaillera.access.AccessManager2'/>
+ <component class='org.emulinker.kaillera.controller.connectcontroller.ConnectController'/>
+ <component class='org.emulinker.kaillera.controller.v086.V086Controller'/>
+ <component class='org.emulinker.kaillera.model.impl.KailleraServerImpl'/>
+ <component class='org.emulinker.kaillera.model.impl.AutoFireDetectorFactoryImpl'/>
+ <component class='org.emulinker.kaillera.master.MasterListStatsCollector'/>
+ <component class='org.emulinker.kaillera.master.client.MasterListUpdaterImpl'/>
+</container>
