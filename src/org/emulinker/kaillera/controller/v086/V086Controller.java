@@ -105,7 +105,6 @@ public class V086Controller implements KailleraServerController
 		gameEventHandlers.put(PlayerDesynchEvent.class, PlayerDesynchAction.getInstance());
 		gameEventHandlers.put(GameInfoEvent.class, GameInfoAction.getInstance());
 		gameEventHandlers.put(GameTimeoutEvent.class, GameTimeoutAction.getInstance());
-		gameEventHandlers.put(GameTimeoutEvent.class, GameTimeoutAction.getInstance());
 
 		// setup the user event handlers
 		userEventHandlers.put(ConnectedEvent.class, ACKAction.getInstance());
@@ -512,15 +511,24 @@ public class V086Controller implements KailleraServerController
 					else{	
 						// read the bundle from back to front to process the oldest messages first
 						for(int i = (inBundle.getNumMessages() - 1); i >= 0; i--){
+							/** 
+							 * already extracts messages with higher numbers when parsing, it does not need to be checked
+							 * and this causes an error if messageNumber is 0 and lastMessageNumber is 0xFFFF
 							if (messages[i].getNumber() > lastMessageNumber)
+							 */
 							{
 								prevMessageNumber = lastMessageNumber;
 								lastMessageNumber = messages[i].getNumber();
 	
 								if ((prevMessageNumber + 1) != lastMessageNumber)
 								{
-									log.warn(user + " dropped a packet! (" + prevMessageNumber + " to " + lastMessageNumber + ")");
-									user.droppedPacket();
+									if(prevMessageNumber == 0xFFFF && lastMessageNumber == 0) {
+										//exception; do nothing
+									}
+									else {
+										log.warn(user + " dropped a packet! (" + prevMessageNumber + " to " + lastMessageNumber + ")");
+										user.droppedPacket();
+									}
 								}
 	
 								V086Action action = actions[messages[i].getID()];
