@@ -12,12 +12,12 @@ public final class KailleraServerReleaseInfo implements ReleaseInfo
 	private final String	productName		= "EmuLinkerSF";
 
 	private final int		majorVersion	= 0;
-	private final int		minorVersion	= 72;
-	private final int		buildNumber		= 3;
+	private final int		minorVersion	= 90;
+	private final int		buildNumber		= 0;
 
-	private final String	releaseDate		= "09-20-2009";
+	private final String	releaseDate		= "08-20-2019";
 	private final String	licenseInfo		= "Usage of this sofware is subject to the terms found in the included license";
-	private final String	website			= "http://www.God-Weapon.com";
+	private final String	website			= "https://github.com/God-Weapon";
 
 	public KailleraServerReleaseInfo()
 	{
