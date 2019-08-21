@@ -202,7 +202,31 @@ public class ChatAction implements V086Action, V086ServerEventHandler
 
 						String m = sb.toString();
 				
-		
+						m = m.trim();
+						if (m.length() == 0 || m.startsWith(" ") || m.startsWith("­"))
+							return;
+
+						if (access == AccessManager.ACCESS_NORMAL)
+						{
+							char[] chars = m.toCharArray();
+							for (int i = 0; i < chars.length; i++)
+							{
+								if (chars[i] < 32)
+								{
+									log.warn(user + " /msg denied: Illegal characters in message");
+									try {clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(), "server","Private Message Denied: Illegal characters in message")); } catch(Exception e) {}
+									return;
+								}
+							}
+
+							if (m.length() > 320)
+							{
+								log.warn(user + " /msg denied: Message Length > " + 320);
+								try {clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(), "server","Private Message Denied: Message Too Long")); } catch(Exception e) {}
+								return;
+							}
+						}
+						
 						user1.setLastMsgID(user.getID());
 						user.setLastMsgID(user1.getID());
 						
@@ -247,6 +271,31 @@ public class ChatAction implements V086Action, V086ServerEventHandler
 								}
 								
 								String m = sb.toString();
+
+								m = m.trim();
+								if (m.length() == 0 || m.startsWith(" ") || m.startsWith("­"))
+									return;
+
+								if (access == AccessManager.ACCESS_NORMAL)
+								{
+									char[] chars = m.toCharArray();
+									for (int i = 0; i < chars.length; i++)
+									{
+										if (chars[i] < 32)
+										{
+											log.warn(user + " /msg denied: Illegal characters in message");
+											try {clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(), "server","Private Message Denied: Illegal characters in message")); } catch(Exception e1) {}
+											return;
+										}
+									}
+
+									if (m.length() > 320)
+									{
+										log.warn(user + " /msg denied: Message Length > " + 320);
+										try {clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(), "server","Private Message Denied: Message Too Long")); } catch(Exception e1) {}
+										return;
+									}
+								}
 														
 								user1.getServer().announce("TO: <" + user.getName() + ">(" + user.getID() + ") <" + clientHandler.getUser().getName() + "> (" + clientHandler.getUser().getID() + "): " + m, false, user1);
 								user.getServer().announce("<" + clientHandler.getUser().getName() + "> (" + clientHandler.getUser().getID() + "): " + m, false, user);						
@@ -258,24 +307,32 @@ public class ChatAction implements V086Action, V086ServerEventHandler
 									user.getGame().announce("<" + clientHandler.getUser().getName() + "> (" + clientHandler.getUser().getID() + "): " + m, user);
 								}
 							}
-							catch(Exception e1){
+							catch(NoSuchElementException e1){
 								try {clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(), "server","Private Message Error: /msg <UserID> <message>")); } catch(Exception e2) {}
 								return;
 							}
 						}
-						
-						
-						try {clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(), "server","Private Message Error: /msg <UserID> <message>")); } catch(Exception e1) {}
-						return;
+						else{
+							try {clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(), "server","Private Message Error: /msg <UserID> <message>")); } catch(Exception e1) {}
+							return;
+						}
 					}		
 				}
 				else if(((Chat) message).getMessage().equals("/ignoreall")){
-					clientHandler.getUser().setIgnoreAll(true);
-					try {clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(), "server",clientHandler.getUser().getName() + " is now ignoring everyone!")); } catch(Exception e) {}
+					KailleraUserImpl user = (KailleraUserImpl) clientHandler.getUser();
+					try {
+						clientHandler.getUser().setIgnoreAll(true);
+						user.getServer().announce(clientHandler.getUser().getName() + " is now ignoring everyone!", false, null); //$NON-NLS-1$ //$NON-NLS-2$
+					}
+					catch(Exception e) {}
 				}
 				else if(((Chat) message).getMessage().equals("/unignoreall")){
-					clientHandler.getUser().setIgnoreAll(false);
-					try {clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(), "server",clientHandler.getUser().getName() + " is now unignoring everyone!")); } catch(Exception e) {}
+					KailleraUserImpl user = (KailleraUserImpl) clientHandler.getUser();
+					try {
+						clientHandler.getUser().setIgnoreAll(false);
+						user.getServer().announce(clientHandler.getUser().getName() + " is now unignoring everyone!", false, null); //$NON-NLS-1$ //$NON-NLS-2$
+					}
+					catch(Exception e) {}
 				}
 				else if(((Chat) message).getMessage().startsWith("/ignore")){
 					Scanner scanner = new Scanner(((Chat) message).getMessage()).useDelimiter(" "); //$NON-NLS-1$
@@ -290,16 +347,16 @@ public class ChatAction implements V086Action, V086ServerEventHandler
 							try {clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(), "server","User Not Found!")); } catch(Exception e) {}
 							return;
 						}
-						if (user.getAccess() >= AccessManager.ACCESS_MODERATOR){
-							try {clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(), "server","You cannot ignore an admin!")); } catch(Exception e) {}
-							return;
-						}
 						if(user == clientHandler.getUser()){
 							try {clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(), "server","You can't ignore yourself!")); } catch(Exception e) {}
 							return;					
 						}
 						if(clientHandler.getUser().findIgnoredUser(user.getConnectSocketAddress().getAddress().getHostAddress())){
 							try {clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(), "server","You can't ignore a user that is already ignored!")); } catch(Exception e) {}
+							return;
+						}
+						if (user.getAccess() >= AccessManager.ACCESS_MODERATOR){
+							try {clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(), "server","You cannot ignore a moderator or admin!")); } catch(Exception e) {}
 							return;
 						}
 						
@@ -351,20 +408,19 @@ public class ChatAction implements V086Action, V086ServerEventHandler
 					try { Thread.sleep(20); } catch(Exception e) {}
 					try {clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(), "server", "/ignore <UserID> or /unignore <UserID> or /ignoreall or /unignoreall to ignore users.")); } catch(Exception e) {}
 					try { Thread.sleep(20); } catch(Exception e) {}
-					try {clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(), "server", "/msg <UserID> <msg> to PM somebody. /msgon or /msgoff to turn on | off.")); } catch(Exception e) {}
+					try {clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(), "server", "/msg <UserID> <msg> to PM somebody. /msgoff or /msgon to turn pm off | on.")); } catch(Exception e) {}
 					try { Thread.sleep(20); } catch(Exception e) {}
 					try {clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(), "server", "/myip to get your IP Address.")); } catch(Exception e) {}
-					try { Thread.sleep(20); } catch(Exception e) {}
-					try {clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(), "server", "/version to get server version.")); } catch(Exception e) {}
-					try { Thread.sleep(20); } catch(Exception e) {}			
+					try { Thread.sleep(20); } catch(Exception e) {}		
 					if(clientHandler.getUser().getAccess() == AccessManager.ACCESS_MODERATOR){
-						try {clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(), "server", "/silence <UserID> <Min> to silence a user. 15min max.")); } catch(Exception e) {}
-						try { Thread.sleep(20); } catch(Exception e) {}		
+						try {clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(), "server", "/silence <UserID> <min> to silence a user. 15min max.")); } catch(Exception e) {}
+						try { Thread.sleep(20); } catch(Exception e) {}
 						try {clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(), "server", "/kick <UserID> to kick a user.")); } catch(Exception e) {}
 						try { Thread.sleep(20); } catch(Exception e) {}	
 					}
-					
 					if(clientHandler.getUser().getAccess() < AccessManager.ACCESS_ADMIN){
+						try {clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(), "server", "/version to get server version.")); } catch(Exception e) {}
+						try { Thread.sleep(20); } catch(Exception e) {}	
 						try {clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(), "server", "/finduser <Nick> to get a user's info. eg. /finduser sup ...will return SupraFast info.")); } catch(Exception e) {}
 						try { Thread.sleep(20); } catch(Exception e) {}
 						return;
@@ -389,7 +445,7 @@ public class ChatAction implements V086Action, V086ServerEventHandler
 							StringBuilder sb = new StringBuilder();
 							sb.append("UserID: "); //$NON-NLS-1$
 							sb.append(user.getID());
-							sb.append(", Nick: < "); //$NON-NLS-1$
+							sb.append(", Nick: <"); //$NON-NLS-1$
 							sb.append(user.getName());
 							sb.append(">"); //$NON-NLS-1$
 							sb.append(", Access: ");
