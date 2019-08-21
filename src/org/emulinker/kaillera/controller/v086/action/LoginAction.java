@@ -49,37 +49,7 @@ public class LoginAction implements V086Action, V086ServerEventHandler
 
 		UserInformation userInfo = (UserInformation) message;
 		KailleraUser user = clientHandler.getUser();
-		
-		//Username Hacking
-		if(user.isLoggedIn()){
-			for (KailleraUser i : user.getServer().getUsers()){
-				if(i.getConnectSocketAddress().getAddress().getHostAddress().equals(user.getConnectSocketAddress().getAddress().getHostAddress())){
-					try{i.quit("Forceful Exit: Dupe");} catch(Exception e){}
-				}
-			}
-			throw new IllegalArgumentException("Forceful Exit: Duplicate = " + user.getName() + ", " + user.getSocketAddress().getAddress().getHostAddress());
-		}
-	
-		String m = userInfo.getUserName();
-		String temp = m;
-		
-		temp = temp.replace(" ", "");
-		if(temp.toLowerCase().contains("ggpo.net")){
-			m = "http://www.God-Weapon.com";
-		}
-		else if(temp.toLowerCase().contains("2dfighter.com")){
-			m = "http://www.God-Weapon.com";
-		}
-		//69.90.34.245
-		else if(temp.toLowerCase().contains("69") && temp.toLowerCase().contains("90") && temp.toLowerCase().contains("34") && temp.toLowerCase().contains("245")){
-			m = "k.god-weapon.com:27888";
-		}		
-		else if(temp.toLowerCase().contains("209") && temp.toLowerCase().contains("144") && temp.toLowerCase().contains("21") && temp.toLowerCase().contains("174")){
-			m = "k.god-weapon.com:27888";
-		}		
-		
-		user.setName(m);
-
+		user.setName(userInfo.getUserName());
 		user.setClientType(userInfo.getClientType());
 		user.setSocketAddress(clientHandler.getRemoteSocketAddress());
 		user.setConnectionType(userInfo.getConnectionType());
