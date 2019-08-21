@@ -17,5 +17,6 @@ public class EmuLinkerExecutor extends ThreadPoolExecutor
 		// super((config.getInt("server.maxUsers")*2)+10, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>());
 		// super.prestartAllCoreThreads();
 		super(5, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>());
+		System.setProperty("emulinker.charset", config.getString("emulinker.charset"));
 	}
 }
