@@ -32,6 +32,7 @@ public class AccessManager2 implements AccessManager, Startable, Runnable
 	private List<AddressAccess>		addressList				= new CopyOnWriteArrayList<AddressAccess>();
 	private List<TempBan>			tempBanList				= new CopyOnWriteArrayList<TempBan>();
 	private List<TempAdmin>			tempAdminList			= new CopyOnWriteArrayList<TempAdmin>();
+	private List<TempModerator>		tempModeratorList		= new CopyOnWriteArrayList<TempModerator>();
 	private List<TempElevated>	    tempElevatedList		= new CopyOnWriteArrayList<TempElevated>();
 	private List<Silence>			silenceList				= new CopyOnWriteArrayList<Silence>();
 
@@ -133,6 +134,12 @@ public class AccessManager2 implements AccessManager, Startable, Runnable
 							tempAdminList.remove(tempAdmin);
 					}
 					
+					for (TempModerator tempModerator  : tempModeratorList)
+					{
+						if (tempModerator .isExpired())
+							tempModeratorList.remove(tempModerator);
+					}
+					
 					for (TempElevated tempElevated  : tempElevatedList)
 					{
 						if (tempElevated .isExpired())
@@ -191,7 +198,9 @@ public class AccessManager2 implements AccessManager, Startable, Runnable
 
 		try
 		{
-			BufferedReader reader = new BufferedReader(new FileReader(accessFile));
+		    FileInputStream file = new FileInputStream(this.accessFile);
+		    Reader temp = new InputStreamReader(file, System.getProperty("emulinker.charset"));
+		    BufferedReader reader = new BufferedReader(temp);
 			String line = null;
 			while ((line = reader.readLine()) != null)
 			{
@@ -244,6 +253,11 @@ public class AccessManager2 implements AccessManager, Startable, Runnable
 		tempAdminList.add(new TempAdmin(addressPattern, minutes));
 	}
 	
+	public void addTempModerator(String addressPattern, int minutes)
+	{
+		tempModeratorList.add(new TempModerator(addressPattern, minutes));
+	}
+	
 	public void addTempElevated(String addressPattern, int minutes)
 	{
 		tempElevatedList.add(new TempElevated(addressPattern, minutes));
@@ -279,6 +293,12 @@ public class AccessManager2 implements AccessManager, Startable, Runnable
 				return ACCESS_ADMIN;
 		}
 		
+		for (TempModerator tempModerator : tempModeratorList)
+		{
+			if (tempModerator.matches(userAddress) && !tempModerator.isExpired())
+				return ACCESS_MODERATOR;
+		}
+		
 		for (TempElevated tempElevated : tempElevatedList)
 		{
 			if (tempElevated.matches(userAddress) && !tempElevated.isExpired())
@@ -294,7 +314,7 @@ public class AccessManager2 implements AccessManager, Startable, Runnable
 		return ACCESS_NORMAL;
 	}
 	
-	public synchronized boolean clearTemp(InetAddress address)
+	public synchronized boolean clearTemp(InetAddress address, boolean clearAll)
 	{
 		String userAddress = address.getHostAddress();
 		boolean found = false;
@@ -316,22 +336,34 @@ public class AccessManager2 implements AccessManager, Startable, Runnable
 				found = true;
 			}
 		}
-
-		for (TempElevated tempElevated : tempElevatedList)
-		{
-			if (tempElevated.matches(userAddress))
-			{
-				tempElevatedList.remove(tempElevated);
-				found = true;
-			}
-		}
 		
-		for (TempAdmin tempAdmin : tempAdminList)
+		if (clearAll)
 		{
-			if (tempAdmin.matches(userAddress))
+			for (TempElevated tempElevated : tempElevatedList)
 			{
-				tempAdminList.remove(tempAdmin);
-				found = true;
+				if (tempElevated.matches(userAddress))
+				{
+					tempElevatedList.remove(tempElevated);
+					found = true;
+				}
+			}
+			
+			for (TempModerator tempModerator : tempModeratorList)
+			{
+				if (tempModerator.matches(userAddress))
+				{
+					tempModeratorList.remove(tempModerator);
+					found = true;
+				}
+			}
+			
+			for (TempAdmin tempAdmin : tempAdminList)
+			{
+				if (tempAdmin.matches(userAddress))
+				{
+					tempAdminList.remove(tempAdmin);
+					found = true;
+				}
 			}
 		}
 
@@ -769,6 +801,59 @@ public class AccessManager2 implements AccessManager, Startable, Runnable
 		protected int							minutes;
 
 		protected TempAdmin(String accessStr, int minutes)
+		{
+			patterns = new ArrayList<WildcardStringPattern>();
+			String s = accessStr.toLowerCase();
+			StringTokenizer pt = new StringTokenizer(s, "|");
+			while (pt.hasMoreTokens())
+			{
+				patterns.add(new WildcardStringPattern(pt.nextToken().toLowerCase()));
+			}
+
+			this.minutes = minutes;
+			startTime = System.currentTimeMillis();
+		}
+
+		protected List<WildcardStringPattern> getPatterns()
+		{
+			return patterns;
+		}
+
+		protected long getStartTime()
+		{
+			return startTime;
+		}
+
+		protected int getMinutes()
+		{
+			return minutes;
+		}
+
+		protected boolean isExpired()
+		{
+			if (System.currentTimeMillis() > (startTime + (minutes * 60000)))
+				return true;
+			return false;
+		}
+
+		protected boolean matches(String address)
+		{
+			for (WildcardStringPattern pattern : patterns)
+			{
+				if (pattern.match(address))
+					return true;
+			}
+			return false;
+		}
+	}
+	
+	protected class TempModerator
+	{
+		protected List<WildcardStringPattern>	patterns;
+		protected long							startTime;
+		protected int							minutes;
+
+		protected TempModerator(String accessStr, int minutes)
 		{
 			patterns = new ArrayList<WildcardStringPattern>();
 			String s = accessStr.toLowerCase();
