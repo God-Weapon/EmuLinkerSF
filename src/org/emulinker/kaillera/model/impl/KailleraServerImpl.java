@@ -608,7 +608,7 @@ public class KailleraServerImpl implements KailleraServer, Executable
 			userImpl.addEvent(new InfoMessageEvent(user, EmuLang.getString("KailleraServerImpl.AdminWelcomeMessage")));
 		
 		try { Thread.sleep(20); } catch(Exception e) {}
-		userImpl.addEvent(new InfoMessageEvent(user, getReleaseInfo().getProductName() + " v" + getReleaseInfo().getVersionString() + ": " + getReleaseInfo().getReleaseDate() + " - Visit: https://github.com/God-Weapon"));		
+		userImpl.addEvent(new InfoMessageEvent(user, getReleaseInfo().getProductName() + " v" + getReleaseInfo().getVersionString() + ": " + getReleaseInfo().getReleaseDate() + " - Visit: https://god-weapon.github.io"));		
 		
 		try { Thread.sleep(20); } catch(Exception e) {}
 		addEvent(new UserJoinedEvent(this, user));

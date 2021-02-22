@@ -233,13 +233,13 @@ public class ChatAction implements V086Action, V086ServerEventHandler
 						user1.getServer().announce("TO: <" + user.getName() + ">(" + user.getID() + ") <" + clientHandler.getUser().getName() + "> (" + clientHandler.getUser().getID() + "): " + m, false, user1);
 						user.getServer().announce("<" + clientHandler.getUser().getName() + "> (" + clientHandler.getUser().getID() + "): " + m, false, user);
 						
-						if(user1.getGame() != null){
+						/*if(user1.getGame() != null){
 							user1.getGame().announce("TO: <" + user.getName() + ">(" + user.getID() + ") <" + clientHandler.getUser().getName() + "> (" + clientHandler.getUser().getID() + "): " + m, user1);
 						}	
 		
 						if(user.getGame() != null){
 							user.getGame().announce("<" + clientHandler.getUser().getName() + "> (" + clientHandler.getUser().getID() + "): " + m, user);
-						}
+						}*/
 					}
 					catch (NoSuchElementException e)
 					{
@@ -299,13 +299,13 @@ public class ChatAction implements V086Action, V086ServerEventHandler
 														
 								user1.getServer().announce("TO: <" + user.getName() + ">(" + user.getID() + ") <" + clientHandler.getUser().getName() + "> (" + clientHandler.getUser().getID() + "): " + m, false, user1);
 								user.getServer().announce("<" + clientHandler.getUser().getName() + "> (" + clientHandler.getUser().getID() + "): " + m, false, user);						
-								if(user1.getGame() != null){
+								/*if(user1.getGame() != null){
 									user1.getGame().announce("TO: <" + user.getName() + ">(" + user.getID() + ") <" + clientHandler.getUser().getName() + "> (" + clientHandler.getUser().getID() + "): " + m, user1);
 								}	
 		
 								if(user.getGame() != null){
 									user.getGame().announce("<" + clientHandler.getUser().getName() + "> (" + clientHandler.getUser().getID() + "): " + m, user);
-								}
+								}*/
 							}
 							catch(NoSuchElementException e1){
 								try {clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(), "server","Private Message Error: /msg <UserID> <message>")); } catch(Exception e2) {}

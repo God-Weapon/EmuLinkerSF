@@ -13,11 +13,11 @@ public final class KailleraServerReleaseInfo implements ReleaseInfo
 
 	private final int		majorVersion	= 0;
 	private final int		minorVersion	= 90;
-	private final int		buildNumber		= 0;
+	private final int		buildNumber		= 1;
 
-	private final String	releaseDate		= "08-20-2019";
+	private final String	releaseDate		= "02-22-2021";
 	private final String	licenseInfo		= "Usage of this sofware is subject to the terms found in the included license";
-	private final String	website			= "https://github.com/God-Weapon";
+	private final String	website			= "https://god-weapon.github.io";
 
 	public KailleraServerReleaseInfo()
 	{
