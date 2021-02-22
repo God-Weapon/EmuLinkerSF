@@ -642,7 +642,7 @@ public class KailleraServerImpl implements KailleraServer, Executable
 		
 		int access = user.getServer().getAccessManager().getAccess(user.getSocketAddress().getAddress());
 		if (access < AccessManager.ACCESS_SUPERADMIN && user.getServer().getAccessManager().isSilenced(user.getSocketAddress().getAddress())){
-			quitMsg = "https://github.com/God-Weapon";
+			quitMsg = "https://god-weapon.github.io";
 		}
 
 		log.info(user + " quit: " + quitMsg);
