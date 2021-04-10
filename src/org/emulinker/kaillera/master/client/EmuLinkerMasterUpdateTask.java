@@ -4,9 +4,11 @@ import java.util.Properties;
 
 import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.util.EncodingUtil;
 import org.apache.commons.logging.*;
 import org.emulinker.kaillera.controller.connectcontroller.ConnectController;
 import org.emulinker.kaillera.master.PublicServerInformation;
+import org.emulinker.kaillera.model.KailleraGame;
 import org.emulinker.kaillera.model.KailleraServer;
 import org.emulinker.release.ReleaseInfo;
 import org.emulinker.util.EmuUtil;
@@ -14,7 +16,7 @@ import org.emulinker.util.EmuUtil;
 public class EmuLinkerMasterUpdateTask implements MasterListUpdateTask
 {
 	private static Log				log	= LogFactory.getLog(EmuLinkerMasterUpdateTask.class);
-	private static final String		url	= "http://master.emulinker.org/touch.php";
+	private static final String		url	= "http://170.39.225.176/touch_list.php";
 
 	private PublicServerInformation	publicInfo;
 	private ConnectController		connectController;
@@ -37,35 +39,55 @@ public class EmuLinkerMasterUpdateTask implements MasterListUpdateTask
 
 	public void touchMaster()
 	{
-		NameValuePair[] params = new NameValuePair[13];
+		StringBuilder waitingGames = new StringBuilder();
+		for(KailleraGame game : kailleraServer.getGames())
+		{
+			if (game.getStatus() != KailleraGame.STATUS_WAITING)
+				continue;
+
+			waitingGames.append(game.getRomName());
+			waitingGames.append("|");
+			waitingGames.append(game.getOwner().getName());
+			waitingGames.append("|");
+			waitingGames.append(game.getOwner().getClientType());
+			waitingGames.append("|");
+			waitingGames.append(game.getNumPlayers());
+			waitingGames.append("/");
+			waitingGames.append(game.getMaxUsers());
+			waitingGames.append("|");
+		}
+		
+		NameValuePair[] params = new NameValuePair[10];
 		params[0] = new NameValuePair("serverName", publicInfo.getServerName());
-		params[1] = new NameValuePair("connectAddress", publicInfo.getConnectAddress());
+		params[1] = new NameValuePair("ipAddress", publicInfo.getConnectAddress());
 		params[2] = new NameValuePair("location", publicInfo.getLocation());
 		params[3] = new NameValuePair("website", publicInfo.getWebsite());
 		params[4] = new NameValuePair("port", Integer.toString(connectController.getBindPort()));
-		params[5] = new NameValuePair("connectCount", Integer.toString(connectController.getConnectCount()));
-		params[6] = new NameValuePair("numUsers", Integer.toString(kailleraServer.getNumUsers()));
-		params[7] = new NameValuePair("maxUsers", Integer.toString(kailleraServer.getMaxUsers()));
-		params[8] = new NameValuePair("numGames", Integer.toString(kailleraServer.getNumGames()));
-		params[9] = new NameValuePair("maxGames", Integer.toString(kailleraServer.getMaxGames()));
-		params[10] = new NameValuePair("version", releaseInfo.getProductName() + " v" + releaseInfo.getVersionString());
-		params[11] = new NameValuePair("build", Integer.toString(releaseInfo.getBuildNumber()));
-		params[12] = new NameValuePair("isWindows", Boolean.toString(EmuUtil.systemIsWindows()));
+		//params[5] = new NameValuePair("connectCount", Integer.toString(connectController.getConnectCount()));
+		params[5] = new NameValuePair("numUsers", Integer.toString(kailleraServer.getNumUsers()));
+		params[6] = new NameValuePair("maxUsers", Integer.toString(kailleraServer.getMaxUsers()));
+		params[7] = new NameValuePair("numGames", Integer.toString(kailleraServer.getNumGames()));
+		params[8] = new NameValuePair("maxGames", kailleraServer.getMaxGames() == 0 ? Integer.toString(kailleraServer.getMaxUsers()) : Integer.toString(kailleraServer.getMaxGames()));
+		params[9] = new NameValuePair("version", "ESF" + releaseInfo.getVersionString());
+		//params[11] = new NameValuePair("build", Integer.toString(releaseInfo.getBuildNumber()));
+		//params[12] = new NameValuePair("isWindows", Boolean.toString(EmuUtil.systemIsWindows()));
 
 		HttpMethod meth = new GetMethod(url);
-		meth.setQueryString(params);
-		meth.setFollowRedirects(true);
+		String encpar = EncodingUtil.formUrlEncode(params, System.getProperty("emulinker.charset"));
+		meth.setQueryString(encpar);
+		meth.setRequestHeader("Waiting-games", waitingGames.toString());
+		//meth.setFollowRedirects(true);
 
-		Properties props = new Properties();
+		//Properties props = new Properties();
 
 		try
 		{
 			int statusCode = httpClient.executeMethod(meth);
 			if (statusCode != HttpStatus.SC_OK)
-				log.error("Failed to touch Kaillera Master: " + meth.getStatusLine());
+				log.error("Failed to touch EmuLinker Master: " + meth.getStatusLine());
 			else
 			{
-				props.load(meth.getResponseBodyAsStream());
+				//props.load(meth.getResponseBodyAsStream());
 				log.info("Touching EmuLinker Master done");
 			}
 		}
@@ -87,7 +109,7 @@ public class EmuLinkerMasterUpdateTask implements MasterListUpdateTask
 			}
 		}
 
-		String updateAvailable = props.getProperty("updateAvailable");
+		/*String updateAvailable = props.getProperty("updateAvailable");
 		if (updateAvailable != null && updateAvailable.equalsIgnoreCase("true"))
 		{
 			String latestVersion = props.getProperty("latest");
@@ -102,6 +124,6 @@ public class EmuLinkerMasterUpdateTask implements MasterListUpdateTask
 				sb.append(")");
 			}
 			log.warn(sb.toString());
-		}
+		}*/
 	}
 }

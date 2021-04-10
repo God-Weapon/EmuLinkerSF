@@ -444,11 +444,11 @@ public class KailleraServerImpl implements KailleraServer, Executable
 		}
 		
 		//new SF MOD - Username filter
-		if(access == AccessManager.ACCESS_NORMAL && (user.getName().toLowerCase().contains("server") || user.getName().toLowerCase().contains("www.") || user.getName().toLowerCase().contains("http") || user.getName().toLowerCase().contains("\\") || user.getName().toLowerCase().contains(" ") || user.getName().toLowerCase().contains("­")))
+		if((user.getName().equals("Server") || user.getName().toLowerCase().contains("|")) || (access == AccessManager.ACCESS_NORMAL && (user.getName().toLowerCase().contains("www.") || user.getName().toLowerCase().contains("http://") || user.getName().toLowerCase().contains("https://") || user.getName().toLowerCase().contains("\\") || user.getName().toLowerCase().contains(" ") || user.getName().toLowerCase().contains("­"))))
 		{
-			log.info(user + " login denied: not allowed username: " + user.getName());
+			log.info(user + " login denied: Illegal characters in UserName");
 			users.remove(userListKey);
-			throw new UserNameException("You cannot have that username: " + user.getName());
+			throw new UserNameException(EmuLang.getString("KailleraServerImpl.LoginDeniedIllegalCharactersInUserName"));
 		}
 
 		//access == AccessManager.ACCESS_NORMAL && 
@@ -464,6 +464,13 @@ public class KailleraServerImpl implements KailleraServer, Executable
 			log.info(user + " login denied: Client Name Length > " + getMaxClientNameLength());
 			users.remove(userListKey);
 			throw new UserNameException(EmuLang.getString("KailleraServerImpl.LoginDeniedEmulatorNameTooLong"));
+		}
+		
+		if (user.getClientType().toLowerCase().contains("|"))
+		{
+			log.warn(user + " login denied: Illegal characters in EmulatorName");
+			users.remove(userListKey);
+			throw new UserNameException("Illegal characters in Emulator Name");
 		}
 
 		if (access == AccessManager.ACCESS_NORMAL)
@@ -733,6 +740,12 @@ public class KailleraServerImpl implements KailleraServer, Executable
 			log.warn(user + " create game denied: Rom Name Length > " + maxGameNameLength);
 			throw new CreateGameException(EmuLang.getString("KailleraServerImpl.CreateGameDeniedNameTooLong"));
 		}		
+		
+		if (romName.toLowerCase().contains("|"))
+		{
+			log.warn(user + " create game denied: Illegal characters in ROM name");
+			throw new CreateGameException(EmuLang.getString("KailleraServerImpl.CreateGameDeniedIllegalCharacters"));
+		}
 		
 		int access = accessManager.getAccess(user.getSocketAddress().getAddress());
 		if (access == AccessManager.ACCESS_NORMAL)
