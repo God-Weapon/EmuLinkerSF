@@ -615,7 +615,7 @@ public class KailleraServerImpl implements KailleraServer, Executable
 			userImpl.addEvent(new InfoMessageEvent(user, EmuLang.getString("KailleraServerImpl.AdminWelcomeMessage")));
 		
 		try { Thread.sleep(20); } catch(Exception e) {}
-		userImpl.addEvent(new InfoMessageEvent(user, getReleaseInfo().getProductName() + " v" + getReleaseInfo().getVersionString() + ": " + getReleaseInfo().getReleaseDate() + " - Visit: https://god-weapon.github.io"));		
+		userImpl.addEvent(new InfoMessageEvent(user, getReleaseInfo().getProductName() + " v" + getReleaseInfo().getVersionString() + ": " + getReleaseInfo().getReleaseDate() + " - Visit: www.EmuLinker.org"));		
 		
 		try { Thread.sleep(20); } catch(Exception e) {}
 		addEvent(new UserJoinedEvent(this, user));
@@ -649,7 +649,7 @@ public class KailleraServerImpl implements KailleraServer, Executable
 		
 		int access = user.getServer().getAccessManager().getAccess(user.getSocketAddress().getAddress());
 		if (access < AccessManager.ACCESS_SUPERADMIN && user.getServer().getAccessManager().isSilenced(user.getSocketAddress().getAddress())){
-			quitMsg = "https://god-weapon.github.io";
+			quitMsg = "www.EmuLinker.org";
 		}
 
 		log.info(user + " quit: " + quitMsg);
