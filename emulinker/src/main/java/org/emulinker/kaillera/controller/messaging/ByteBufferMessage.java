@@ -2,16 +2,16 @@ package org.emulinker.kaillera.controller.messaging;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.logging.*;
 
 public abstract class ByteBufferMessage
 {
 	protected static Log		log		= LogFactory.getLog(ByteBufferMessage.class);
-//	public static Charset	charset	= Charset.forName("US-ASCII");
-//	public static Charset	charset	= Charset.forName("ISO-8859-1");
-//	public static Charset	charset	= Charset.forName("UTF-8");
-	public static Charset	charset = Charset.forName("US-ASCII");
+	// NOTE: This is *not* marked final and is overwritten by the code below.
+	// TODO(nue): Come up with a better way to provide config flags.
+	public static Charset	charset = StandardCharsets.UTF_8;
 
 	static
 	{

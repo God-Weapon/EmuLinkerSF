@@ -53,11 +53,13 @@ public final class V086Utils
 
     public static ByteBuffer clone(ByteBuffer original)
     {
+        int position = original.position();
         ByteBuffer clone = ByteBuffer.allocate(original.capacity());
         original.rewind();
         clone.put(original);
         original.rewind();
         clone.flip();
+        original.position(position);
         return clone;
     }
 }

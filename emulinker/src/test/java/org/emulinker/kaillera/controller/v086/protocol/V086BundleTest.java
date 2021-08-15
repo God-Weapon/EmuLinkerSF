@@ -2,14 +2,19 @@ package org.emulinker.kaillera.controller.v086.protocol;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import java.nio.charset.Charset;
+
+import org.emulinker.kaillera.controller.messaging.ByteBufferMessage;
 import org.emulinker.kaillera.controller.v086.V086Utils;
 import org.junit.Test;
 
 public class V086BundleTest
 {
   @Test
-  public void parseUserInformation() throws Exception
+  public void parseUserInformationJapanese() throws Exception
   {
+    ByteBufferMessage.charset = Charset.forName("Shift_JIS");
+
     String hexInput = "01 00 00 24 00 03 EA 4B 00 50 72 6F 6A 65 63 74 20 36 34 6B 20 30 2E 31 33 20 28 30 31 20 41 75 67 20 32 30 30 33 29 00 01";
     int lastMessageNumber = -1;
 
@@ -20,7 +25,7 @@ public class V086BundleTest
     UserInformation userInformation = (UserInformation) parsedBundle.getMessages()[0];
     // TODO: Consider using AutoValue so we can just directly compare objects.
     assertThat(userInformation.getClientType()).isEqualTo("Project 64k 0.13 (01 Aug 2003)");
-    assertThat(userInformation.getUserName()).isEqualTo("�K");
+    assertThat(userInformation.getUserName()).isEqualTo("鵺");
   }
 
   @Test

@@ -71,8 +71,7 @@ public abstract class CreateGame extends V086Message
 
 	public int getBodyLength()
 	{
-		//return (charset.encode(userName).remaining() + charset.encode(romName).remaining() + charset.encode(clientType).remaining() + 7);
-		return (userName.length() + romName.length() + clientType.length() + 7);
+		return getNumBytes(userName) + getNumBytes(romName) + getNumBytes(clientType) + 7;
 	}
 
 	public void writeBodyTo(ByteBuffer buffer)

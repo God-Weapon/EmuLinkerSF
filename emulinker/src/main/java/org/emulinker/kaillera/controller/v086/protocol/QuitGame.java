@@ -42,8 +42,7 @@ public abstract class QuitGame extends V086Message
 
 	public int getBodyLength()
 	{
-		//return (charset.encode(userName).remaining() + 3);
-		return (userName.length() + 3);
+		return getNumBytes(userName) + 3;
 	}
 
 	public void writeBodyTo(ByteBuffer buffer)

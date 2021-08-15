@@ -39,8 +39,7 @@ public class UserInformation extends V086Message
 
 	public int getBodyLength()
 	{
-		//return (charset.encode(userName).remaining() + charset.encode(clientType).remaining() + 3);
-		return (userName.length() + clientType.length() + 3);
+		return getNumBytes(userName) + getNumBytes(clientType) + 3;
 	}
 
 	public String getUserName()

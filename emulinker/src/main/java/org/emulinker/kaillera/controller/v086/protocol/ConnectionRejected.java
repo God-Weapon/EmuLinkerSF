@@ -64,8 +64,7 @@ public class ConnectionRejected extends V086Message
 
 	public int getBodyLength()
 	{
-		//return (charset.encode(userName).remaining() + charset.encode(message).remaining() + 4);
-		return (userName.length() + message.length() + 4);
+		return getNumBytes(userName) + getNumBytes(message) + 4;
 	}
 
 	public void writeBodyTo(ByteBuffer buffer)

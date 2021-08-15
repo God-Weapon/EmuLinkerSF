@@ -1,8 +1,10 @@
 package org.emulinker.kaillera.controller.v086.protocol;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 
 import org.emulinker.kaillera.controller.messaging.*;
+import org.emulinker.kaillera.controller.v086.V086Utils;
 import org.emulinker.util.*;
 
 public class UserJoined extends V086Message
@@ -72,10 +74,10 @@ public class UserJoined extends V086Message
 		return getInfoString() + "[userName=" + userName + " userID=" + userID + " ping=" + ping + " connectionType=" + org.emulinker.kaillera.model.KailleraUser.CONNECTION_TYPE_NAMES[connectionType] + "]";
 	}
 
+	@Override
 	public int getBodyLength()
 	{
-		//return (charset.encode(userName).remaining() + 8);
-		return (userName.length() + 8);
+		return getNumBytes(userName) + 8;
 	}
 
 	public void writeBodyTo(ByteBuffer buffer)
