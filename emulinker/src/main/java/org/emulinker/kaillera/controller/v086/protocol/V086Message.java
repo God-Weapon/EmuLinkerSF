@@ -7,8 +7,6 @@ import org.apache.commons.logging.LogFactory;
 import org.emulinker.kaillera.controller.messaging.*;
 import org.emulinker.util.*;
 
-import com.sun.corba.se.impl.encoding.BufferManagerFactory;
-
 public abstract class V086Message extends ByteBufferMessage
 {
 	protected int	number;

@@ -11,7 +11,7 @@ public abstract class ByteBufferMessage
 //	public static Charset	charset	= Charset.forName("US-ASCII");
 //	public static Charset	charset	= Charset.forName("ISO-8859-1");
 //	public static Charset	charset	= Charset.forName("UTF-8");
-	public static Charset	charset = Charset.defaultCharset();
+	public static Charset	charset = Charset.forName("US-ASCII");
 
 	static
 	{
