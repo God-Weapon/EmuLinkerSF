@@ -14,10 +14,12 @@ public class PlayerDrop_Notification extends PlayerDrop {
           "Invalid " + getDescription() + " format: userName.length == 0");
   }
 
+  @Override
   public String getDescription() {
     return DESC;
   }
 
+  @Override
   public String toString() {
     return getInfoString()
         + "[userName="

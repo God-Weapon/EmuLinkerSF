@@ -14,10 +14,12 @@ public class ConnectMessage_HELLOD00D extends ConnectMessage {
     this.port = port;
   }
 
+  @Override
   public String getID() {
     return ID;
   }
 
+  @Override
   public String getDescription() {
     return DESC;
   }
@@ -26,14 +28,17 @@ public class ConnectMessage_HELLOD00D extends ConnectMessage {
     return port;
   }
 
+  @Override
   public String toString() {
     return DESC + ": port: " + getPort();
   }
 
+  @Override
   public int getLength() {
     return (ID.length() + Integer.toString(port).length() + 1);
   }
 
+  @Override
   public void writeTo(ByteBuffer buffer) {
     buffer.put(charset.encode(ID));
     EmuUtil.writeString(buffer, Integer.toString(port), 0x00, charset);

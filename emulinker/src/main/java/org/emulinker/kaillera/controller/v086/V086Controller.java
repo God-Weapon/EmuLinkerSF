@@ -122,22 +122,27 @@ public class V086Controller implements KailleraServerController {
     userEventHandlers.put(InfoMessageEvent.class, InfoMessageAction.getInstance());
   }
 
+  @Override
   public String getVersion() {
     return "v086";
   }
 
+  @Override
   public String[] getClientTypes() {
     return clientTypes;
   }
 
+  @Override
   public KailleraServer getServer() {
     return server;
   }
 
+  @Override
   public int getNumClients() {
     return clientHandlers.size();
   }
 
+  @Override
   public int getBufferSize() {
     return bufferSize;
   }
@@ -166,10 +171,12 @@ public class V086Controller implements KailleraServerController {
     return isRunning;
   }
 
+  @Override
   public String toString() {
     return "V086Controller[clients=" + clientHandlers.size() + " isRunning=" + isRunning + "]";
   }
 
+  @Override
   public int newConnection(InetSocketAddress clientSocketAddress, String protocol)
       throws ServerFullException, NewConnectionException {
     if (!isRunning) throw new NewConnectionException("Controller is not running");
@@ -220,10 +227,12 @@ public class V086Controller implements KailleraServerController {
     return boundPort;
   }
 
+  @Override
   public synchronized void start() {
     isRunning = true;
   }
 
+  @Override
   public synchronized void stop() {
     isRunning = false;
 
@@ -268,6 +277,7 @@ public class V086Controller implements KailleraServerController {
       resetGameDataCache();
     }
 
+    @Override
     public String toString() {
       if (getBindPort() > 0) return "V086Controller(" + getBindPort() + ")";
       else return "V086Controller(unbound)";
@@ -342,6 +352,7 @@ public class V086Controller implements KailleraServerController {
       return (int) ((lastMeasurement - testStart) / measurementCount);
     }
 
+    @Override
     public void bind(int port) throws BindException {
       super.bind(port);
     }
@@ -389,6 +400,7 @@ public class V086Controller implements KailleraServerController {
       clientHandlers.put(user.getID(), this);
     }
 
+    @Override
     public void stop() {
       synchronized (this) {
         if (getStopFlag()) return;
@@ -417,17 +429,20 @@ public class V086Controller implements KailleraServerController {
       }
     }
 
+    @Override
     protected ByteBuffer getBuffer() {
       // return ByteBufferMessage.getBuffer(bufferSize);
       inBuffer.clear();
       return inBuffer;
     }
 
+    @Override
     protected void releaseBuffer(ByteBuffer buffer) {
       // ByteBufferMessage.releaseBuffer(buffer);
       // buffer.clear();
     }
 
+    @Override
     protected void handleReceived(ByteBuffer buffer) {
       V086Bundle inBundle = null;
 
@@ -522,6 +537,7 @@ public class V086Controller implements KailleraServerController {
       }
     }
 
+    @Override
     public void actionPerformed(KailleraEvent event) {
       if (event instanceof GameEvent) {
         V086GameEventHandler eventHandler = gameEventHandlers.get(event.getClass());

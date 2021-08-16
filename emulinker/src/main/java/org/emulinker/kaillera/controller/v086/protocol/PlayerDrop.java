@@ -25,10 +25,12 @@ public abstract class PlayerDrop extends V086Message {
     this.playerNumber = playerNumber;
   }
 
+  @Override
   public byte getID() {
     return ID;
   }
 
+  @Override
   public abstract String getDescription();
 
   public String getUserName() {
@@ -39,14 +41,17 @@ public abstract class PlayerDrop extends V086Message {
     return playerNumber;
   }
 
+  @Override
   public String toString() {
     return getInfoString() + "[userName=" + userName + " playerNumber=" + playerNumber + "]";
   }
 
+  @Override
   public int getBodyLength() {
     return getNumBytes(userName) + 2;
   }
 
+  @Override
   public void writeBodyTo(ByteBuffer buffer) {
     EmuUtil.writeString(buffer, userName, 0x00, charset);
     buffer.put(playerNumber);

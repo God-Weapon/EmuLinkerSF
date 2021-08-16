@@ -138,6 +138,7 @@ public class KailleraServerImpl implements KailleraServer, Executable {
     if (touchKaillera) this.statsCollector = statsCollector;
   }
 
+  @Override
   public void setTrivia(Trivia trivia) {
     this.trivia = trivia;
   }
@@ -146,10 +147,12 @@ public class KailleraServerImpl implements KailleraServer, Executable {
     this.triviaThread = triviaThread;
   }
 
+  @Override
   public void setSwitchTrivia(boolean switchTrivia) {
     this.switchTrivia = switchTrivia;
   }
 
+  @Override
   public Trivia getTrivia() {
     return trivia;
   }
@@ -158,34 +161,42 @@ public class KailleraServerImpl implements KailleraServer, Executable {
     return triviaThread;
   }
 
+  @Override
   public boolean getSwitchTrivia() {
     return switchTrivia;
   }
 
+  @Override
   public AccessManager getAccessManager() {
     return accessManager;
   }
 
+  @Override
   public KailleraUser getUser(int userID) {
     return users.get(userID);
   }
 
+  @Override
   public KailleraGame getGame(int gameID) {
     return games.get(gameID);
   }
 
+  @Override
   public Collection<KailleraUserImpl> getUsers() {
     return users.values();
   }
 
+  @Override
   public Collection<KailleraGameImpl> getGames() {
     return games.values();
   }
 
+  @Override
   public int getNumUsers() {
     return users.size();
   }
 
+  @Override
   public int getNumGames() {
     return games.size();
   }
@@ -198,18 +209,22 @@ public class KailleraServerImpl implements KailleraServer, Executable {
     return count;
   }
 
+  @Override
   public int getMaxPing() {
     return maxPing;
   }
 
+  @Override
   public int getMaxUsers() {
     return maxUsers;
   }
 
+  @Override
   public int getMaxGames() {
     return maxGames;
   }
 
+  @Override
   public boolean isRunning() {
     return isRunning;
   }
@@ -258,6 +273,7 @@ public class KailleraServerImpl implements KailleraServer, Executable {
     return threadPool;
   }
 
+  @Override
   public String toString() {
     return "KailleraServerImpl[numUsers="
         + getNumUsers()
@@ -268,6 +284,7 @@ public class KailleraServerImpl implements KailleraServer, Executable {
         + "]"; //$NON-NLS-4$
   }
 
+  @Override
   public synchronized void start() {
     log.debug("KailleraServer thread received start request!");
     log.debug(
@@ -281,6 +298,7 @@ public class KailleraServerImpl implements KailleraServer, Executable {
     Thread.yield();
   }
 
+  @Override
   public synchronized void stop() {
     log.debug("KailleraServer thread received stop request!");
 
@@ -319,10 +337,12 @@ public class KailleraServerImpl implements KailleraServer, Executable {
     return autoFireDetectorFactory.getInstance(game, gameAutoFireSensitivity);
   }
 
+  @Override
   public ReleaseInfo getReleaseInfo() {
     return releaseInfo;
   }
 
+  @Override
   public synchronized KailleraUser newConnection(
       InetSocketAddress clientSocketAddress, String protocol, KailleraEventListener listener)
       throws ServerFullException, NewConnectionException {
@@ -378,6 +398,7 @@ public class KailleraServerImpl implements KailleraServer, Executable {
     return user;
   }
 
+  @Override
   public synchronized void login(KailleraUser user)
       throws PingTimeException, ClientAddressException, ConnectionTypeException, UserNameException,
           LoginException {
@@ -683,6 +704,7 @@ public class KailleraServerImpl implements KailleraServer, Executable {
     if (announcement != null) announce(announcement, false, null);
   }
 
+  @Override
   public synchronized void quit(KailleraUser user, String message)
       throws QuitException, DropGameException, QuitGameException, CloseGameException {
     if (!user.isLoggedIn()) {
@@ -716,6 +738,7 @@ public class KailleraServerImpl implements KailleraServer, Executable {
     ((KailleraUserImpl) user).addEvent(quitEvent);
   }
 
+  @Override
   public synchronized void chat(KailleraUser user, String message)
       throws ChatException, FloodException {
     if (!user.isLoggedIn()) {
@@ -773,6 +796,7 @@ public class KailleraServerImpl implements KailleraServer, Executable {
     }
   }
 
+  @Override
   public synchronized KailleraGame createGame(KailleraUser user, String romName)
       throws CreateGameException, FloodException {
     if (!user.isLoggedIn()) {
@@ -889,6 +913,7 @@ public class KailleraServerImpl implements KailleraServer, Executable {
     addEvent(new GameClosedEvent(this, game));
   }
 
+  @Override
   public boolean checkMe(KailleraUser user, String message) {
     // >>>>>>>>>>>>>>>>>>>>
     if (!user.isLoggedIn()) {
@@ -935,6 +960,7 @@ public class KailleraServerImpl implements KailleraServer, Executable {
     return true;
   }
 
+  @Override
   public void announce(String announcement, boolean gamesAlso, KailleraUserImpl user) {
     if (user != null) {
       if (gamesAlso) { //   /msg and /me commands
@@ -1005,6 +1031,7 @@ public class KailleraServerImpl implements KailleraServer, Executable {
     }
   }
 
+  @Override
   public void run() {
     isRunning = true;
     log.debug("KailleraServer thread running...");

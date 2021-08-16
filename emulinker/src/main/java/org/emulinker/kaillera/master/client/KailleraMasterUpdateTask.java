@@ -37,6 +37,7 @@ public class KailleraMasterUpdateTask implements MasterListUpdateTask {
     httpClient.setTimeout(5000);
   }
 
+  @Override
   public void touchMaster() {
     List createdGamesList = statsCollector.getStartedGamesList();
 

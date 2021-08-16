@@ -16,10 +16,12 @@ public class PlayerInformation extends V086Message {
     this.players = players;
   }
 
+  @Override
   public byte getID() {
     return ID;
   }
 
+  @Override
   public String getDescription() {
     return DESC;
   }
@@ -32,6 +34,7 @@ public class PlayerInformation extends V086Message {
     return players;
   }
 
+  @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append(getInfoString() + "[players=" + players.size() + "]");
@@ -46,12 +49,14 @@ public class PlayerInformation extends V086Message {
     return sb.toString();
   }
 
+  @Override
   public int getBodyLength() {
     int len = 5;
     for (Player p : players) len += p.getLength();
     return len;
   }
 
+  @Override
   public void writeBodyTo(ByteBuffer buffer) {
     buffer.put((byte) 0x00);
     buffer.putInt(players.size());
@@ -141,6 +146,7 @@ public class PlayerInformation extends V086Message {
       return connectionType;
     }
 
+    @Override
     public String toString() {
       return "[userName="
           + userName

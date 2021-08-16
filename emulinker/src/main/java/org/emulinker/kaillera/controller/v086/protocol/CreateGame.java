@@ -37,10 +37,12 @@ public abstract class CreateGame extends V086Message {
     this.val1 = val1;
   }
 
+  @Override
   public byte getID() {
     return ID;
   }
 
+  @Override
   public abstract String getDescription();
 
   public String getUserName() {
@@ -63,12 +65,15 @@ public abstract class CreateGame extends V086Message {
     return val1;
   }
 
+  @Override
   public abstract String toString();
 
+  @Override
   public int getBodyLength() {
     return getNumBytes(userName) + getNumBytes(romName) + getNumBytes(clientType) + 7;
   }
 
+  @Override
   public void writeBodyTo(ByteBuffer buffer) {
     EmuUtil.writeString(buffer, userName, 0x00, charset);
     EmuUtil.writeString(buffer, romName, 0x00, charset);

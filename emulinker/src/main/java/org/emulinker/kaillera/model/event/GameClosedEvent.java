@@ -11,10 +11,12 @@ public class GameClosedEvent implements ServerEvent {
     this.game = game;
   }
 
+  @Override
   public String toString() {
     return "GameClosedEvent";
   }
 
+  @Override
   public KailleraServer getServer() {
     return server;
   }

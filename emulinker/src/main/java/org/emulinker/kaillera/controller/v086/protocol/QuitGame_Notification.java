@@ -10,10 +10,12 @@ public class QuitGame_Notification extends QuitGame {
     super(messageNumber, userName, userID);
   }
 
+  @Override
   public String getDescription() {
     return DESC;
   }
 
+  @Override
   public String toString() {
     return getInfoString() + "[userName=" + getUserName() + " userID=" + getUserID() + "]";
   }

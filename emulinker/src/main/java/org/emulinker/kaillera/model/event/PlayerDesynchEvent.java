@@ -13,10 +13,12 @@ public class PlayerDesynchEvent implements GameEvent {
     this.message = message;
   }
 
+  @Override
   public String toString() {
     return "GameDesynchEvent";
   }
 
+  @Override
   public KailleraGame getGame() {
     return game;
   }

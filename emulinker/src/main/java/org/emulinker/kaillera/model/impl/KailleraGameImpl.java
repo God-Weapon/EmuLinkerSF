@@ -83,6 +83,7 @@ public final class KailleraGameImpl implements KailleraGame {
     autoFireDetector = server.getAutoFireDetector(this);
   }
 
+  @Override
   public int getID() {
     return id;
   }
@@ -91,6 +92,7 @@ public final class KailleraGameImpl implements KailleraGame {
     return mutedUsers;
   }
 
+  @Override
   public int getDelay() {
     return delay;
   }
@@ -111,50 +113,62 @@ public final class KailleraGameImpl implements KailleraGame {
     this.aConnection = aConnection;
   }
 
+  @Override
   public PlayerActionQueue[] getPlayerActionQueue() {
     return playerActionQueues;
   }
 
+  @Override
   public void setDelay(int delay) {
     this.delay = delay;
   }
 
+  @Override
   public void setStartTimeout(boolean startTimeout) {
     this.startTimeout = startTimeout;
   }
 
+  @Override
   public boolean getStartTimeout() {
     return startTimeout;
   }
 
+  @Override
   public void setSameDelay(boolean sameDelay) {
     this.sameDelay = sameDelay;
   }
 
+  @Override
   public boolean getSameDelay() {
     return sameDelay;
   }
 
+  @Override
   public long getStartTimeoutTime() {
     return startTimeoutTime;
   }
 
+  @Override
   public int getStartN() {
     return startN;
   }
 
+  @Override
   public boolean getP2P() {
     return p2P;
   }
 
+  @Override
   public void setP2P(boolean p2P) {
     this.p2P = p2P;
   }
 
+  @Override
   public void setStartN(int startN) {
     this.startN = startN;
   }
 
+  @Override
   public String getRomName() {
     return romName;
   }
@@ -163,35 +177,43 @@ public final class KailleraGameImpl implements KailleraGame {
     return startDate;
   }
 
+  @Override
   public void setMaxUsers(int maxUsers) {
     this.maxUsers = maxUsers;
     server.addEvent(new GameStatusChangedEvent(server, this));
   }
 
+  @Override
   public int getMaxUsers() {
     return maxUsers;
   }
 
+  @Override
   public int getHighestPing() {
     return highestPing;
   }
 
+  @Override
   public void setMaxPing(int maxPing) {
     this.maxPing = maxPing;
   }
 
+  @Override
   public int getMaxPing() {
     return maxPing;
   }
 
+  @Override
   public KailleraUser getOwner() {
     return owner;
   }
 
+  @Override
   public int getPlayerNumber(KailleraUser user) {
     return (players.indexOf(user) + 1);
   }
 
+  @Override
   public KailleraUser getPlayer(int playerNumber) {
     if (playerNumber > players.size()) {
       log.error(
@@ -207,14 +229,17 @@ public final class KailleraGameImpl implements KailleraGame {
     return players.get((playerNumber - 1));
   }
 
+  @Override
   public int getNumPlayers() {
     return players.size();
   }
 
+  @Override
   public List<KailleraUserImpl> getPlayers() {
     return players;
   }
 
+  @Override
   public int getStatus() {
     return status;
   }
@@ -223,6 +248,7 @@ public final class KailleraGameImpl implements KailleraGame {
     return synched;
   }
 
+  @Override
   public KailleraServerImpl getServer() {
     return server;
   }
@@ -232,10 +258,12 @@ public final class KailleraGameImpl implements KailleraGame {
     server.addEvent(new GameStatusChangedEvent(server, this));
   }
 
+  @Override
   public String getClientType() {
     return getOwner().getClientType();
   }
 
+  @Override
   public String toString() {
     return toString;
   }
@@ -287,6 +315,7 @@ public final class KailleraGameImpl implements KailleraGame {
     return autoFireDetector;
   }
 
+  @Override
   public synchronized void chat(KailleraUser user, String message) throws GameChatException {
     if (!players.contains(user)) {
       log.warn(user + " game chat denied: not in " + this); // $NON-NLS-1$
@@ -313,6 +342,7 @@ public final class KailleraGameImpl implements KailleraGame {
     addEvent(new GameInfoEvent(this, announcement, user));
   }
 
+  @Override
   public synchronized void kick(KailleraUser user, int userID) throws GameKickException {
     if (user.getAccess() < AccessManager.ACCESS_ADMIN) {
       if (!user.equals(getOwner())) {
@@ -361,6 +391,7 @@ public final class KailleraGameImpl implements KailleraGame {
         EmuLang.getString("KailleraGameImpl.GameKickErrorUserNotFound")); // $NON-NLS-1$
   }
 
+  @Override
   public synchronized int join(KailleraUser user) throws JoinGameException {
 
     int access = server.getAccessManager().getAccess(user.getSocketAddress().getAddress());
@@ -517,6 +548,7 @@ public final class KailleraGameImpl implements KailleraGame {
     return (players.indexOf(user) + 1);
   }
 
+  @Override
   public synchronized void start(KailleraUser user) throws StartGameException {
 
     int access = server.getAccessManager().getAccess(user.getSocketAddress().getAddress());
@@ -667,6 +699,7 @@ public final class KailleraGameImpl implements KailleraGame {
     addEvent(new GameStartedEvent(this));
   }
 
+  @Override
   public synchronized void ready(KailleraUser user, int playerNumber) throws UserReadyException {
     if (!players.contains(user)) {
       log.warn(user + " ready game failed: not in " + this); // $NON-NLS-1$
@@ -735,6 +768,7 @@ public final class KailleraGameImpl implements KailleraGame {
     }
   }
 
+  @Override
   public synchronized void drop(KailleraUser user, int playerNumber) throws DropGameException {
     if (!players.contains(user)) {
       log.warn(user + " drop game failed: not in " + this); // $NON-NLS-1$
@@ -784,6 +818,7 @@ public final class KailleraGameImpl implements KailleraGame {
     }
   }
 
+  @Override
   public void quit(KailleraUser user, int playerNumber)
       throws DropGameException, QuitGameException, CloseGameException {
     synchronized (this) {
@@ -838,6 +873,7 @@ public final class KailleraGameImpl implements KailleraGame {
     players.clear();
   }
 
+  @Override
   public synchronized void droppedPacket(KailleraUser user) {
     if (!synched) return;
 
@@ -872,6 +908,7 @@ public final class KailleraGameImpl implements KailleraGame {
     }
   }
 
+  @Override
   public void addData(KailleraUser user, int playerNumber, byte[] data) throws GameDataException {
     if (playerActionQueues == null) return;
 

@@ -11,10 +11,12 @@ public class ConnectedEvent implements UserEvent {
     this.user = user;
   }
 
+  @Override
   public String toString() {
     return "ConnectedEvent";
   }
 
+  @Override
   public KailleraUser getUser() {
     return user;
   }

@@ -62,10 +62,12 @@ public class MasterListUpdaterImpl implements MasterListUpdater, Executable, Sta
           new EmuLinkerMasterUpdateTask(publicInfo, connectController, kailleraServer, releaseInfo);
   }
 
+  @Override
   public synchronized boolean isRunning() {
     return isRunning;
   }
 
+  @Override
   public synchronized String toString() {
     return "MasterListUpdaterImpl[touchKaillera="
         + touchKaillera
@@ -74,6 +76,7 @@ public class MasterListUpdaterImpl implements MasterListUpdater, Executable, Sta
         + "]";
   }
 
+  @Override
   public synchronized void start() {
     if (publicInfo != null) {
       log.debug("MasterListUpdater thread received start request!");
@@ -94,6 +97,7 @@ public class MasterListUpdaterImpl implements MasterListUpdater, Executable, Sta
     }
   }
 
+  @Override
   public synchronized void stop() {
     if (publicInfo != null) {
       log.debug("MasterListUpdater thread received stop request!");
@@ -107,6 +111,7 @@ public class MasterListUpdaterImpl implements MasterListUpdater, Executable, Sta
     }
   }
 
+  @Override
   public void run() {
     isRunning = true;
     log.debug("MasterListUpdater thread running...");

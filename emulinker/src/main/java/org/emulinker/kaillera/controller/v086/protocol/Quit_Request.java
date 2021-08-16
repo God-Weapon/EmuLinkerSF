@@ -9,10 +9,12 @@ public class Quit_Request extends Quit {
     super(messageNumber, "", 0xFFFF, message);
   }
 
+  @Override
   public String getDescription() {
     return DESC;
   }
 
+  @Override
   public String toString() {
     return getInfoString() + "[message=" + getMessage() + "]";
   }

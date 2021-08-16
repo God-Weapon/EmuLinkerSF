@@ -23,30 +23,37 @@ public final class KailleraServerReleaseInfo implements ReleaseInfo {
     // generic constructor
   }
 
+  @Override
   public final String getProductName() {
     return productName;
   }
 
+  @Override
   public final int getMajorVersion() {
     return majorVersion;
   }
 
+  @Override
   public final int getMinorVersion() {
     return minorVersion;
   }
 
+  @Override
   public final String getReleaseDate() {
     return releaseDate;
   }
 
+  @Override
   public final String getLicenseInfo() {
     return licenseInfo;
   }
 
+  @Override
   public final String getWebsiteString() {
     return website;
   }
 
+  @Override
   public final int getBuildNumber() {
     // TODO: modify this to pull from an Ant build version file
     return buildNumber;
@@ -57,6 +64,7 @@ public final class KailleraServerReleaseInfo implements ReleaseInfo {
    *
    * <p><i>major</i>.<i>minor</i>
    */
+  @Override
   public final String getVersionString() {
     StringBuilder sb = new StringBuilder();
     // sb.append(getMajorVersion());
@@ -71,6 +79,7 @@ public final class KailleraServerReleaseInfo implements ReleaseInfo {
    * Formats release information into a welcome message. This message is printed by the server at
    * server startup.
    */
+  @Override
   public String getWelcome() {
     StringBuilder sb = new StringBuilder();
     sb.append(

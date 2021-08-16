@@ -34,10 +34,12 @@ public class AutoFireScanner2 implements AutoFireDetector {
     setSensitivity(sensitivity);
   }
 
+  @Override
   public int getSensitivity() {
     return sensitivity;
   }
 
+  @Override
   public void setSensitivity(int sensitivity) {
     if (sensitivity < 0 || sensitivity > 5) this.sensitivity = 0;
     else {
@@ -47,30 +49,35 @@ public class AutoFireScanner2 implements AutoFireDetector {
     }
   }
 
+  @Override
   public void start(int numPlayers) {
     if (sensitivity <= 0) return;
 
     scanningJobs = new ScanningJob[numPlayers];
   }
 
+  @Override
   public void addPlayer(KailleraUser player, int playerNumber) {
     if (sensitivity <= 0 || scanningJobs == null) return;
 
     scanningJobs[(playerNumber - 1)] = new ScanningJob(player, playerNumber);
   }
 
+  @Override
   public void stop(int playerNumber) {
     if (sensitivity <= 0 || scanningJobs == null) return;
 
     scanningJobs[(playerNumber - 1)].stop();
   }
 
+  @Override
   public void stop() {
     if (sensitivity <= 0 || scanningJobs == null) return;
 
     for (int i = 0; i < scanningJobs.length; i++) scanningJobs[i].stop();
   }
 
+  @Override
   public void addData(int playerNumber, byte[] data, int bytesPerAction) {
     if (sensitivity <= 0 || scanningJobs == null) return;
 
@@ -130,6 +137,7 @@ public class AutoFireScanner2 implements AutoFireDetector {
       this.stopFlag = true;
     }
 
+    @Override
     public void run() {
       //			long st = System.currentTimeMillis();
       synchronized (this) {

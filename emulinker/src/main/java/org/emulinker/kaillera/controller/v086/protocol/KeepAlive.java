@@ -24,10 +24,12 @@ public class KeepAlive extends V086Message {
     this.val = val;
   }
 
+  @Override
   public byte getID() {
     return ID;
   }
 
+  @Override
   public String getDescription() {
     return DESC;
   }
@@ -36,14 +38,17 @@ public class KeepAlive extends V086Message {
     return val;
   }
 
+  @Override
   public String toString() {
     return getInfoString() + "[val=" + val + "]";
   }
 
+  @Override
   public int getBodyLength() {
     return 1;
   }
 
+  @Override
   public void writeBodyTo(ByteBuffer buffer) {
     UnsignedUtil.putUnsignedByte(buffer, val);
   }

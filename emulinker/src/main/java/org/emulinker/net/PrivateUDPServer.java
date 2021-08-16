@@ -24,6 +24,7 @@ public abstract class PrivateUDPServer extends UDPServer {
     return remoteSocketAddress;
   }
 
+  @Override
   protected void handleReceived(ByteBuffer buffer, InetSocketAddress inboundSocketAddress) {
     if (remoteSocketAddress == null) remoteSocketAddress = inboundSocketAddress;
     else if (!inboundSocketAddress.equals(remoteSocketAddress)) {

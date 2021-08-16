@@ -15,10 +15,12 @@ public class CachedGameData extends V086Message {
     this.key = key;
   }
 
+  @Override
   public byte getID() {
     return ID;
   }
 
+  @Override
   public String getDescription() {
     return DESC;
   }
@@ -27,14 +29,17 @@ public class CachedGameData extends V086Message {
     return key;
   }
 
+  @Override
   public String toString() {
     return getInfoString() + "[key=" + key + "]";
   }
 
+  @Override
   public int getBodyLength() {
     return 2;
   }
 
+  @Override
   public void writeBodyTo(ByteBuffer buffer) {
     buffer.put((byte) 0x00);
     UnsignedUtil.putUnsignedByte(buffer, key);

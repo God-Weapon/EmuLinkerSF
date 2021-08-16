@@ -11,10 +11,12 @@ public class InfoMessageEvent implements UserEvent {
     this.message = message;
   }
 
+  @Override
   public String toString() {
     return "InfoMessageEvent";
   }
 
+  @Override
   public KailleraUser getUser() {
     return user;
   }

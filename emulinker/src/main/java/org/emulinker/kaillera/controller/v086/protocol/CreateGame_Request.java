@@ -9,14 +9,17 @@ public class CreateGame_Request extends CreateGame {
     super(messageNumber, "", romName, "", 0xFFFF, 0xFFFF);
   }
 
+  @Override
   public byte getID() {
     return ID;
   }
 
+  @Override
   public String getDescription() {
     return DESC;
   }
 
+  @Override
   public String toString() {
     return getInfoString() + "[romName=" + getRomName() + "]";
   }

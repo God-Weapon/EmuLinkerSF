@@ -33,10 +33,12 @@ public class ConnectionRejected extends V086Message {
     this.message = message;
   }
 
+  @Override
   public byte getID() {
     return ID;
   }
 
+  @Override
   public String getDescription() {
     return DESC;
   }
@@ -53,6 +55,7 @@ public class ConnectionRejected extends V086Message {
     return message;
   }
 
+  @Override
   public String toString() {
     return getInfoString()
         + "[userName="
@@ -64,10 +67,12 @@ public class ConnectionRejected extends V086Message {
         + "]";
   }
 
+  @Override
   public int getBodyLength() {
     return getNumBytes(userName) + getNumBytes(message) + 4;
   }
 
+  @Override
   public void writeBodyTo(ByteBuffer buffer) {
     EmuUtil.writeString(buffer, userName, 0x00, charset);
     UnsignedUtil.putUnsignedShort(buffer, userID);

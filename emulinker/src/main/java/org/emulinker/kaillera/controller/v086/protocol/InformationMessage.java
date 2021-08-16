@@ -27,10 +27,12 @@ public class InformationMessage extends V086Message {
     this.message = message;
   }
 
+  @Override
   public byte getID() {
     return ID;
   }
 
+  @Override
   public String getDescription() {
     return DESC;
   }
@@ -43,14 +45,17 @@ public class InformationMessage extends V086Message {
     return message;
   }
 
+  @Override
   public String toString() {
     return getInfoString() + "[source: " + source + " message: " + message + "]";
   }
 
+  @Override
   public int getBodyLength() {
     return getNumBytes(source) + getNumBytes(message) + 2;
   }
 
+  @Override
   public void writeBodyTo(ByteBuffer buffer) {
     EmuUtil.writeString(buffer, source, 0x00, charset);
     EmuUtil.writeString(buffer, message, 0x00, charset);

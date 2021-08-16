@@ -18,10 +18,12 @@ public class V086Relay extends UDPRelay {
     super(listenPort, serverSocketAddress);
   }
 
+  @Override
   public String toString() {
     return "Kaillera client datagram relay version 0.86 on port " + super.getListenPort();
   }
 
+  @Override
   protected ByteBuffer processClientToServer(
       ByteBuffer receiveBuffer, InetSocketAddress fromAddress, InetSocketAddress toAddress) {
     V086Bundle inBundle = null;
@@ -61,6 +63,7 @@ public class V086Relay extends UDPRelay {
     return sendBuffer;
   }
 
+  @Override
   protected ByteBuffer processServerToClient(
       ByteBuffer receiveBuffer, InetSocketAddress fromAddress, InetSocketAddress toAddress) {
     V086Bundle inBundle = null;

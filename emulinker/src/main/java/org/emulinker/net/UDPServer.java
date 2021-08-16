@@ -49,6 +49,7 @@ public abstract class UDPServer implements Executable, Startable {
     return bindPort;
   }
 
+  @Override
   public boolean isRunning() {
     return isRunning;
   }
@@ -63,6 +64,7 @@ public abstract class UDPServer implements Executable, Startable {
     return channel.isConnected();
   }
 
+  @Override
   public synchronized void start() {
     log.debug(toString() + " received start request!");
     if (isRunning) {
@@ -77,6 +79,7 @@ public abstract class UDPServer implements Executable, Startable {
     return stopFlag;
   }
 
+  @Override
   public synchronized void stop() {
     stopFlag = true;
 
@@ -143,6 +146,7 @@ public abstract class UDPServer implements Executable, Startable {
     }
   }
 
+  @Override
   public void run() {
     isRunning = true;
     log.debug(toString() + ": thread running...");
@@ -200,6 +204,7 @@ public abstract class UDPServer implements Executable, Startable {
   private class ShutdownThread extends Thread {
     private ShutdownThread() {}
 
+    @Override
     public void run() {
       UDPServer.this.stop();
     }

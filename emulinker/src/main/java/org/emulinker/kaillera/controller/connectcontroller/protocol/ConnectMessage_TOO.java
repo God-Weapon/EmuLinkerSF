@@ -7,22 +7,27 @@ public class ConnectMessage_TOO extends ConnectMessage {
   public static final String ID = "TOO";
   public static final String DESC = "Server Full Response";
 
+  @Override
   public String getID() {
     return ID;
   }
 
+  @Override
   public String getDescription() {
     return DESC;
   }
 
+  @Override
   public String toString() {
     return DESC;
   }
 
+  @Override
   public int getLength() {
     return (ID.length() + 1);
   }
 
+  @Override
   public void writeTo(ByteBuffer buffer) {
     buffer.put(charset.encode(ID));
     buffer.put((byte) 0x00);

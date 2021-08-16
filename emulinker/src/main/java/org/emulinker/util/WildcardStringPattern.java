@@ -88,6 +88,7 @@ public class WildcardStringPattern {
     return true;
   }
 
+  @Override
   public String toString() {
     if (equals) return startString;
 

@@ -52,10 +52,12 @@ public abstract class JoinGame extends V086Message {
     this.connectionType = connectionType;
   }
 
+  @Override
   public byte getID() {
     return ID;
   }
 
+  @Override
   public abstract String getDescription();
 
   public int getGameID() {
@@ -82,12 +84,15 @@ public abstract class JoinGame extends V086Message {
     return connectionType;
   }
 
+  @Override
   public abstract String toString();
 
+  @Override
   public int getBodyLength() {
     return getNumBytes(userName) + 13;
   }
 
+  @Override
   public void writeBodyTo(ByteBuffer buffer) {
     buffer.put((byte) 0x00);
     UnsignedUtil.putUnsignedShort(buffer, gameID);

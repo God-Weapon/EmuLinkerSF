@@ -20,10 +20,12 @@ public class GameKick extends V086Message {
     this.userID = userID;
   }
 
+  @Override
   public byte getID() {
     return ID;
   }
 
+  @Override
   public String getDescription() {
     return DESC;
   }
@@ -32,14 +34,17 @@ public class GameKick extends V086Message {
     return userID;
   }
 
+  @Override
   public String toString() {
     return getInfoString() + "[userID=" + userID + "]";
   }
 
+  @Override
   public int getBodyLength() {
     return 3;
   }
 
+  @Override
   public void writeBodyTo(ByteBuffer buffer) {
     buffer.put((byte) 0x00);
     UnsignedUtil.putUnsignedShort(buffer, userID);

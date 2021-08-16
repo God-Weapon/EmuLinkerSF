@@ -21,10 +21,12 @@ public abstract class QuitGame extends V086Message {
     this.userID = userID;
   }
 
+  @Override
   public byte getID() {
     return ID;
   }
 
+  @Override
   public abstract String getDescription();
 
   public String getUserName() {
@@ -35,10 +37,12 @@ public abstract class QuitGame extends V086Message {
     return userID;
   }
 
+  @Override
   public int getBodyLength() {
     return getNumBytes(userName) + 3;
   }
 
+  @Override
   public void writeBodyTo(ByteBuffer buffer) {
     EmuUtil.writeString(buffer, userName, 0x00, charset);
     UnsignedUtil.putUnsignedShort(buffer, userID);

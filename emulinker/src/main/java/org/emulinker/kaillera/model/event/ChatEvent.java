@@ -13,10 +13,12 @@ public class ChatEvent implements ServerEvent {
     this.message = message;
   }
 
+  @Override
   public String toString() {
     return "ChatEvent";
   }
 
+  @Override
   public KailleraServer getServer() {
     return server;
   }

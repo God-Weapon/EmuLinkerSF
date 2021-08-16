@@ -18,10 +18,12 @@ public class Quit_Notification extends Quit {
               + ")");
   }
 
+  @Override
   public String getDescription() {
     return DESC;
   }
 
+  @Override
   public String toString() {
     return getInfoString()
         + "[userName="

@@ -52,6 +52,7 @@ public abstract class UDPRelay implements Runnable {
   protected abstract ByteBuffer processServerToClient(
       ByteBuffer receiveBuffer, InetSocketAddress fromAddress, InetSocketAddress toAddress);
 
+  @Override
   public void run() {
     log.info("Main port " + listenPort + " thread running...");
 
@@ -116,6 +117,7 @@ public abstract class UDPRelay implements Runnable {
       clientChannel.send(newBuffer, serverSocketAddress);
     }
 
+    @Override
     public void run() {
       log.info(
           "ClientHandler thread for "

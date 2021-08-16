@@ -1,11 +1,14 @@
 package org.emulinker.kaillera.model.impl;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileInputStream;
-import java.io.FileWriter;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -114,7 +117,7 @@ public class Trivia implements Runnable {
     try {
       server.announce("<Trivia> " + "Loading SupraTrivia Questions...", false, null);
       InputStream ist = new FileInputStream("questions.txt");
-      BufferedReader istream = new BufferedReader(new InputStreamReader(ist));
+      BufferedReader istream = new BufferedReader(new InputStreamReader(ist, UTF_8));
       int count = 0;
 
       String str = istream.readLine(); // First Question
@@ -142,7 +145,7 @@ public class Trivia implements Runnable {
       // ##################
       server.announce("<Trivia> " + "Loading Previous Scores...", false, null);
       ist = new FileInputStream("scores.txt");
-      istream = new BufferedReader(new InputStreamReader(ist));
+      istream = new BufferedReader(new InputStreamReader(ist, UTF_8));
 
       str = istream.readLine(); // First Score
       while (str != null) {
@@ -181,6 +184,7 @@ public class Trivia implements Runnable {
     }
   }
 
+  @Override
   public void run() {
     int count = 0;
     int temp;
@@ -532,7 +536,7 @@ public class Trivia implements Runnable {
 
   public void saveScores(boolean display) {
     try {
-      BufferedWriter out = new BufferedWriter(new FileWriter("scores.txt", false));
+      BufferedWriter out = Files.newBufferedWriter(Paths.get("scores.txt"), UTF_8);
 
       for (int i = 0; i < scores.size(); i++) {
         out.write("ip:" + scores.get(i).getIP());

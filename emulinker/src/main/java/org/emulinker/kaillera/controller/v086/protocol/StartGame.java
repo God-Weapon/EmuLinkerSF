@@ -43,10 +43,12 @@ public abstract class StartGame extends V086Message {
     this.numPlayers = numPlayers;
   }
 
+  @Override
   public byte getID() {
     return ID;
   }
 
+  @Override
   public abstract String getDescription();
 
   public int getVal1() {
@@ -61,12 +63,15 @@ public abstract class StartGame extends V086Message {
     return numPlayers;
   }
 
+  @Override
   public abstract String toString();
 
+  @Override
   public int getBodyLength() {
     return 5;
   }
 
+  @Override
   public void writeBodyTo(ByteBuffer buffer) {
     buffer.put((byte) 0x00);
     UnsignedUtil.putUnsignedShort(buffer, val1);

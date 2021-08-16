@@ -29,18 +29,22 @@ public class GameChatAction implements V086Action, V086GameEventHandler {
 
   private GameChatAction() {}
 
+  @Override
   public int getActionPerformedCount() {
     return actionCount;
   }
 
+  @Override
   public int getHandledEventCount() {
     return handledCount;
   }
 
+  @Override
   public String toString() {
     return desc;
   }
 
+  @Override
   public void performAction(V086Message message, V086Controller.V086ClientHandler clientHandler)
       throws FatalActionException {
     if (!(message instanceof GameChat_Request))
@@ -599,6 +603,7 @@ public class GameChatAction implements V086Action, V086GameEventHandler {
     }
   }
 
+  @Override
   public void handleEvent(GameEvent event, V086Controller.V086ClientHandler clientHandler) {
     handledCount++;
 

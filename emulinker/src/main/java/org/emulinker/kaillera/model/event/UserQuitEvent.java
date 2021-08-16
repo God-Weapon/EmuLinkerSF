@@ -13,10 +13,12 @@ public class UserQuitEvent implements ServerEvent {
     this.message = message;
   }
 
+  @Override
   public String toString() {
     return "UserQuitEvent";
   }
 
+  @Override
   public KailleraServer getServer() {
     return server;
   }

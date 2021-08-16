@@ -55,6 +55,7 @@ public class AccessManager2 implements AccessManager, Startable, Runnable {
     threadPool.execute(this);
   }
 
+  @Override
   public synchronized void start() {
     log.debug("AccessManager2 thread received start request!");
     log.debug(
@@ -71,6 +72,7 @@ public class AccessManager2 implements AccessManager, Startable, Runnable {
     return isRunning;
   }
 
+  @Override
   public synchronized void stop() {
     log.debug("AccessManager2 thread received stop request!");
 
@@ -91,6 +93,7 @@ public class AccessManager2 implements AccessManager, Startable, Runnable {
     silenceList.clear();
   }
 
+  @Override
   public void run() {
     isRunning = true;
     log.debug("AccessManager2 thread running...");
@@ -192,26 +195,32 @@ public class AccessManager2 implements AccessManager, Startable, Runnable {
     }
   }
 
+  @Override
   public void addTempBan(String addressPattern, int minutes) {
     tempBanList.add(new TempBan(addressPattern, minutes));
   }
 
+  @Override
   public void addTempAdmin(String addressPattern, int minutes) {
     tempAdminList.add(new TempAdmin(addressPattern, minutes));
   }
 
+  @Override
   public void addTempModerator(String addressPattern, int minutes) {
     tempModeratorList.add(new TempModerator(addressPattern, minutes));
   }
 
+  @Override
   public void addTempElevated(String addressPattern, int minutes) {
     tempElevatedList.add(new TempElevated(addressPattern, minutes));
   }
 
+  @Override
   public void addSilenced(String addressPattern, int minutes) {
     silenceList.add(new Silence(addressPattern, minutes));
   }
 
+  @Override
   public synchronized String getAnnouncement(InetAddress address) {
     checkReload();
     String userAddress = address.getHostAddress();
@@ -222,6 +231,7 @@ public class AccessManager2 implements AccessManager, Startable, Runnable {
     return null;
   }
 
+  @Override
   public synchronized int getAccess(InetAddress address) {
     checkReload();
 
@@ -246,6 +256,7 @@ public class AccessManager2 implements AccessManager, Startable, Runnable {
     return ACCESS_NORMAL;
   }
 
+  @Override
   public synchronized boolean clearTemp(InetAddress address, boolean clearAll) {
     String userAddress = address.getHostAddress();
     boolean found = false;
@@ -290,6 +301,7 @@ public class AccessManager2 implements AccessManager, Startable, Runnable {
     return found;
   }
 
+  @Override
   public synchronized boolean isSilenced(InetAddress address) {
     checkReload();
 
@@ -302,6 +314,7 @@ public class AccessManager2 implements AccessManager, Startable, Runnable {
     return false;
   }
 
+  @Override
   public synchronized boolean isAddressAllowed(InetAddress address) {
     checkReload();
 
@@ -318,6 +331,7 @@ public class AccessManager2 implements AccessManager, Startable, Runnable {
     return true;
   }
 
+  @Override
   public synchronized boolean isEmulatorAllowed(String emulator) {
     checkReload();
 
@@ -328,6 +342,7 @@ public class AccessManager2 implements AccessManager, Startable, Runnable {
     return true;
   }
 
+  @Override
   public synchronized boolean isGameAllowed(String game) {
     checkReload();
 

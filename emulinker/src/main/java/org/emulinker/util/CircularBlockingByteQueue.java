@@ -31,6 +31,7 @@ public final class CircularBlockingByteQueue {
     array = new byte[maxSize];
   }
 
+  @Override
   public String toString() {
     synchronized (lock) {
       return "CircularBlockingIntArray[size=" + size + " head=" + head + " tail=" + tail + "]";

@@ -9,10 +9,12 @@ public class GameStartedEvent implements GameEvent {
     this.game = game;
   }
 
+  @Override
   public String toString() {
     return "GameStartedEvent";
   }
 
+  @Override
   public KailleraGame getGame() {
     return game;
   }

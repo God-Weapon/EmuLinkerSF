@@ -9,10 +9,12 @@ public class StartGame_Request extends StartGame {
     super(messageNumber, 0xFFFF, (short) 0xFF, (short) 0xFF);
   }
 
+  @Override
   public String getDescription() {
     return DESC;
   }
 
+  @Override
   public String toString() {
     return getInfoString();
   }
