@@ -1,253 +1,207 @@
 package org.emulinker.net;
 
-import java.util.*;
 import java.io.IOException;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
-
+import java.util.*;
 import org.apache.commons.logging.*;
 import org.emulinker.util.*;
 import org.picocontainer.Startable;
 
-public abstract class UDPServer implements Executable, Startable
-{
-	private static Log		log			= LogFactory.getLog(UDPServer.class);
-/*
-	private static int		artificalPacketLossPercentage = 0;
-	private static int		artificalDelay = 0;
-	private static Random	random = new Random();
+public abstract class UDPServer implements Executable, Startable {
+  private static Log log = LogFactory.getLog(UDPServer.class);
+  /*
+  	private static int		artificalPacketLossPercentage = 0;
+  	private static int		artificalDelay = 0;
+  	private static Random	random = new Random();
 
-	static
-	{
-		try
-		{
-			artificalPacketLossPercentage = Integer.parseInt(System.getProperty("artificalPacketLossPercentage"));
-			artificalDelay = Integer.parseInt(System.getProperty("artificalDelay"));
-		}
-		catch(Exception e) {}
-		
-		if(artificalPacketLossPercentage > 0)
-			log.warn("Introducing " + artificalPacketLossPercentage + "% artifical packet loss!");
-		
-		if(artificalDelay > 0)
-			log.warn("Introducing " + artificalDelay + "ms artifical delay!");
-	}
-*/
-	private int				bindPort;
-	private DatagramChannel	channel;
-	private boolean			isRunning	= false;
-	private boolean			stopFlag	= false;
-	
-	public UDPServer()
-	{
-		this(true);
-	}
+  	static
+  	{
+  		try
+  		{
+  			artificalPacketLossPercentage = Integer.parseInt(System.getProperty("artificalPacketLossPercentage"));
+  			artificalDelay = Integer.parseInt(System.getProperty("artificalDelay"));
+  		}
+  		catch(Exception e) {}
 
-	public UDPServer(boolean shutdownOnExit)
-	{
-		if (shutdownOnExit)
-			Runtime.getRuntime().addShutdownHook(new ShutdownThread());
-	}
+  		if(artificalPacketLossPercentage > 0)
+  			log.warn("Introducing " + artificalPacketLossPercentage + "% artifical packet loss!");
 
-	public int getBindPort()
-	{
-		return bindPort;
-	}
+  		if(artificalDelay > 0)
+  			log.warn("Introducing " + artificalDelay + "ms artifical delay!");
+  	}
+  */
+  private int bindPort;
+  private DatagramChannel channel;
+  private boolean isRunning = false;
+  private boolean stopFlag = false;
 
-	public boolean isRunning()
-	{
-		return isRunning;
-	}
+  public UDPServer() {
+    this(true);
+  }
 
-	public synchronized boolean isBound()
-	{
-		if (channel == null)
-			return false;
-		if (channel.socket() == null)
-			return false;
-		return !channel.socket().isClosed();
-	}
+  public UDPServer(boolean shutdownOnExit) {
+    if (shutdownOnExit) Runtime.getRuntime().addShutdownHook(new ShutdownThread());
+  }
 
-	public boolean isConnected()
-	{
-		return channel.isConnected();
-	}
+  public int getBindPort() {
+    return bindPort;
+  }
 
-	public synchronized void start()
-	{
-		log.debug(toString() + " received start request!");
-		if (isRunning)
-		{
-			log.debug(toString() + " start request ignored: already running!");
-			return;
-		}
+  public boolean isRunning() {
+    return isRunning;
+  }
 
-		stopFlag = false;
-	}
+  public synchronized boolean isBound() {
+    if (channel == null) return false;
+    if (channel.socket() == null) return false;
+    return !channel.socket().isClosed();
+  }
 
-	protected boolean getStopFlag()
-	{
-		return stopFlag;
-	}
+  public boolean isConnected() {
+    return channel.isConnected();
+  }
 
-	public synchronized void stop()
-	{
-		stopFlag = true;
+  public synchronized void start() {
+    log.debug(toString() + " received start request!");
+    if (isRunning) {
+      log.debug(toString() + " start request ignored: already running!");
+      return;
+    }
 
-		if (channel != null)
-		{
-			try
-			{
-				channel.close();
-			}
-			catch (IOException e)
-			{
-				log.error("Failed to close DatagramChannel: " + e.getMessage());
-			}
-		}
-	}
+    stopFlag = false;
+  }
 
-	protected synchronized void bind() throws BindException
-	{
-		bind(-1);
-	}
+  protected boolean getStopFlag() {
+    return stopFlag;
+  }
 
-	protected synchronized void bind(int port) throws BindException
-	{
-		try
-		{
-			channel = DatagramChannel.open();
+  public synchronized void stop() {
+    stopFlag = true;
 
-			if (port > 0)
-				channel.socket().bind(new InetSocketAddress(port));
-			else
-				channel.socket().bind(null);
+    if (channel != null) {
+      try {
+        channel.close();
+      } catch (IOException e) {
+        log.error("Failed to close DatagramChannel: " + e.getMessage());
+      }
+    }
+  }
 
-			bindPort = channel.socket().getLocalPort();
+  protected synchronized void bind() throws BindException {
+    bind(-1);
+  }
 
-			ByteBuffer tempBuffer = getBuffer();
-			int bufferSize = (tempBuffer.capacity() * 2);
-			releaseBuffer(tempBuffer);
+  protected synchronized void bind(int port) throws BindException {
+    try {
+      channel = DatagramChannel.open();
 
-			channel.socket().setReceiveBufferSize(bufferSize);
-			channel.socket().setSendBufferSize(bufferSize);
-		}
-		catch (IOException e)
-		{
-			throw new BindException("Failed to bind to port " + port, port, e);
-		}
+      if (port > 0) channel.socket().bind(new InetSocketAddress(port));
+      else channel.socket().bind(null);
 
-		this.start();
-	}
+      bindPort = channel.socket().getLocalPort();
 
-	protected abstract ByteBuffer getBuffer();
+      ByteBuffer tempBuffer = getBuffer();
+      int bufferSize = (tempBuffer.capacity() * 2);
+      releaseBuffer(tempBuffer);
 
-	protected abstract void releaseBuffer(ByteBuffer buffer);
+      channel.socket().setReceiveBufferSize(bufferSize);
+      channel.socket().setSendBufferSize(bufferSize);
+    } catch (IOException e) {
+      throw new BindException("Failed to bind to port " + port, port, e);
+    }
 
-	protected abstract void handleReceived(ByteBuffer buffer, InetSocketAddress remoteSocketAddress);
+    this.start();
+  }
 
-	protected void send(ByteBuffer buffer, InetSocketAddress toSocketAddress)
-	{
-		if (!isBound())
-		{
-			log.warn("Failed to send to " + EmuUtil.formatSocketAddress(toSocketAddress) + ": UDPServer is not bound!");
-			return;
-		}
-		/*
-		if(artificalPacketLossPercentage > 0 && Math.abs(random.nextInt()%100) < artificalPacketLossPercentage)
-		{
-			return;
-		}
-		*/
-		try
-		{
-//			log.debug("send("+EmuUtil.dumpBuffer(buffer, false)+")");
-			channel.send(buffer, toSocketAddress);
-		}
-		catch (Exception e)
-		{
-			log.error("Failed to send on port " + getBindPort() + ": " + e.getMessage(), e);
-		}
-	}
+  protected abstract ByteBuffer getBuffer();
 
-	public void run()
-	{
-		isRunning = true;
-		log.debug(toString() + ": thread running...");
+  protected abstract void releaseBuffer(ByteBuffer buffer);
 
-		try
-		{
-			while (!stopFlag)
-			{
-				try
-				{
-					ByteBuffer buffer = getBuffer();
-					InetSocketAddress fromSocketAddress = (InetSocketAddress) channel.receive(buffer);
+  protected abstract void handleReceived(ByteBuffer buffer, InetSocketAddress remoteSocketAddress);
 
-					if (stopFlag)
-						break;
+  protected void send(ByteBuffer buffer, InetSocketAddress toSocketAddress) {
+    if (!isBound()) {
+      log.warn(
+          "Failed to send to "
+              + EmuUtil.formatSocketAddress(toSocketAddress)
+              + ": UDPServer is not bound!");
+      return;
+    }
+    /*
+    if(artificalPacketLossPercentage > 0 && Math.abs(random.nextInt()%100) < artificalPacketLossPercentage)
+    {
+    	return;
+    }
+    */
+    try {
+      //			log.debug("send("+EmuUtil.dumpBuffer(buffer, false)+")");
+      channel.send(buffer, toSocketAddress);
+    } catch (Exception e) {
+      log.error("Failed to send on port " + getBindPort() + ": " + e.getMessage(), e);
+    }
+  }
 
-					if (fromSocketAddress == null)
-						throw new IOException("Failed to receive from DatagramChannel: fromSocketAddress == null");
-					/*
-					if(artificalPacketLossPercentage > 0 && Math.abs(random.nextInt()%100) < artificalPacketLossPercentage)
-					{
-						releaseBuffer(buffer);
-						continue;
-					}
-					
-					if(artificalDelay > 0)
-					{
-						try
-						{
-							Thread.sleep(artificalDelay);
-						}
-						catch(Exception e) {}
-					}
-					*/
-					buffer.flip();
-//					log.debug("receive("+EmuUtil.dumpBuffer(buffer, false)+")");					
-					handleReceived(buffer, fromSocketAddress);
-					releaseBuffer(buffer);
-				}
-				catch (SocketException e)
-				{
-					if (stopFlag)
-						break;
+  public void run() {
+    isRunning = true;
+    log.debug(toString() + ": thread running...");
 
-					log.error("Failed to receive on port " + getBindPort() + ": " + e.getMessage());
-				}
-				catch (IOException e)
-				{
-					if (stopFlag)
-						break;
+    try {
+      while (!stopFlag) {
+        try {
+          ByteBuffer buffer = getBuffer();
+          InetSocketAddress fromSocketAddress = (InetSocketAddress) channel.receive(buffer);
 
-					log.error("Failed to receive on port " + getBindPort() + ": " + e.getMessage());
-				}
-			}
-		}
-		catch (Throwable e)
-		{
-			log.fatal("UDPServer on port " + getBindPort() + " caught unexpected exception!", e);
-			stop();
-		}
-		finally
-		{
-			isRunning = false;
-			log.debug(toString() + ": thread exiting...");
-		}
-	}
+          if (stopFlag) break;
 
-	private class ShutdownThread extends Thread
-	{
-		private ShutdownThread()
-		{
-		}
+          if (fromSocketAddress == null)
+            throw new IOException(
+                "Failed to receive from DatagramChannel: fromSocketAddress == null");
+          /*
+          if(artificalPacketLossPercentage > 0 && Math.abs(random.nextInt()%100) < artificalPacketLossPercentage)
+          {
+          	releaseBuffer(buffer);
+          	continue;
+          }
 
-		public void run()
-		{
-			UDPServer.this.stop();
-		}
-	}
+          if(artificalDelay > 0)
+          {
+          	try
+          	{
+          		Thread.sleep(artificalDelay);
+          	}
+          	catch(Exception e) {}
+          }
+          */
+          buffer.flip();
+          //					log.debug("receive("+EmuUtil.dumpBuffer(buffer, false)+")");
+          handleReceived(buffer, fromSocketAddress);
+          releaseBuffer(buffer);
+        } catch (SocketException e) {
+          if (stopFlag) break;
+
+          log.error("Failed to receive on port " + getBindPort() + ": " + e.getMessage());
+        } catch (IOException e) {
+          if (stopFlag) break;
+
+          log.error("Failed to receive on port " + getBindPort() + ": " + e.getMessage());
+        }
+      }
+    } catch (Throwable e) {
+      log.fatal("UDPServer on port " + getBindPort() + " caught unexpected exception!", e);
+      stop();
+    } finally {
+      isRunning = false;
+      log.debug(toString() + ": thread exiting...");
+    }
+  }
+
+  private class ShutdownThread extends Thread {
+    private ShutdownThread() {}
+
+    public void run() {
+      UDPServer.this.stop();
+    }
+  }
 }
