@@ -3,77 +3,60 @@ package org.emulinker.kaillera.controller.messaging;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-
 import org.apache.commons.logging.*;
 
-public abstract class ByteBufferMessage
-{
-	protected static Log		log		= LogFactory.getLog(ByteBufferMessage.class);
-	// NOTE: This is *not* marked final and is overwritten by the code below.
-	// TODO(nue): Come up with a better way to provide config flags.
-	public static Charset	charset = StandardCharsets.UTF_8;
+public abstract class ByteBufferMessage {
+  protected static Log log = LogFactory.getLog(ByteBufferMessage.class);
+  // NOTE: This is *not* marked final and is overwritten by the code below.
+  // TODO(nue): Come up with a better way to provide config flags.
+  public static Charset charset = StandardCharsets.UTF_8;
 
-	static
-	{
-		String charsetName = System.getProperty("emulinker.charset");
-		if (charsetName != null)
-		{
-			try
-			{
-				if (Charset.isSupported(charsetName))
-					charset = Charset.forName(charsetName);
-				else
-					log.fatal("Charset " + charsetName + " is not supported!");
-			}
-			catch (Exception e)
-			{
-				log.fatal("Failed to load charset " + charsetName + ": " + e.getMessage(), e);
-			}
-		}
-		
-		log.info("Using character set: " + charset.displayName());
-	}
+  static {
+    String charsetName = System.getProperty("emulinker.charset");
+    if (charsetName != null) {
+      try {
+        if (Charset.isSupported(charsetName)) charset = Charset.forName(charsetName);
+        else log.fatal("Charset " + charsetName + " is not supported!");
+      } catch (Exception e) {
+        log.fatal("Failed to load charset " + charsetName + ": " + e.getMessage(), e);
+      }
+    }
 
-	private ByteBuffer		buffer;
+    log.info("Using character set: " + charset.displayName());
+  }
 
-	public abstract int getLength();
+  private ByteBuffer buffer;
 
-	public abstract String getDescription();
+  public abstract int getLength();
 
-	public abstract String toString();
+  public abstract String getDescription();
 
-	protected void initBuffer()
-	{
-		initBuffer(getLength());
-	}
+  public abstract String toString();
 
-	private void initBuffer(int size)
-	{
-		buffer = getBuffer(size);
-	}
+  protected void initBuffer() {
+    initBuffer(getLength());
+  }
 
-	public void releaseBuffer()
-	{
+  private void initBuffer(int size) {
+    buffer = getBuffer(size);
+  }
 
-	}
+  public void releaseBuffer() {}
 
-	public ByteBuffer toBuffer()
-	{
-		initBuffer();
-		writeTo(buffer);
-		buffer.flip();
-		return buffer;
-	}
+  public ByteBuffer toBuffer() {
+    initBuffer();
+    writeTo(buffer);
+    buffer.flip();
+    return buffer;
+  }
 
-	public abstract void writeTo(ByteBuffer buffer);
+  public abstract void writeTo(ByteBuffer buffer);
 
-	public static ByteBuffer getBuffer(int size)
-	{
-		return ByteBuffer.allocateDirect(size);
-	}
+  public static ByteBuffer getBuffer(int size) {
+    return ByteBuffer.allocateDirect(size);
+  }
 
-	public static void releaseBuffer(ByteBuffer buffer)
-	{
-		// nothing to do since we aren't caching buffers anymore
-	}
+  public static void releaseBuffer(ByteBuffer buffer) {
+    // nothing to do since we aren't caching buffers anymore
+  }
 }

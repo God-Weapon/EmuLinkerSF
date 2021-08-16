@@ -1,181 +1,154 @@
 package org.emulinker.kaillera.model.impl;
 
-import java.util.Arrays;
 import java.io.*;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import org.emulinker.util.*;
 
-public class PlayerActionQueue
-{
-	private int						gameBufferSize;
-	private int						gameTimeoutMillis;
-	private boolean					capture;
+public class PlayerActionQueue {
+  private int gameBufferSize;
+  private int gameTimeoutMillis;
+  private boolean capture;
 
-	private int						thisPlayerNumber;
-	private KailleraUserImpl		thisPlayer;
-	private boolean					synched	= false;
-	private PlayerTimeoutException	lastTimeout;
+  private int thisPlayerNumber;
+  private KailleraUserImpl thisPlayer;
+  private boolean synched = false;
+  private PlayerTimeoutException lastTimeout;
 
-	private byte[]					array;
-	private int[]					heads;
-	private int						tail	= 0;
-	
-//	private OutputStream			os;
-//	private InputStream				is;
+  private byte[] array;
+  private int[] heads;
+  private int tail = 0;
 
-	public PlayerActionQueue(int playerNumber, KailleraUserImpl player, int numPlayers, int gameBufferSize, int gameTimeoutMillis, boolean capture)
-	{
-		this.thisPlayerNumber = playerNumber;
-		this.thisPlayer = player;
-		this.gameBufferSize = gameBufferSize;
-		this.gameTimeoutMillis = gameTimeoutMillis;
-		this.capture = capture;
+  //	private OutputStream			os;
+  //	private InputStream				is;
 
-		array = new byte[gameBufferSize];
-		heads = new int[numPlayers];
-/*		
-		if(capture)
-		{
-			try
-			{
-				os = new BufferedOutputStream(new FileOutputStream("test.cap"));
-			}
-			catch(Exception e)
-			{
-				e.printStackTrace();
-			}
-		}
-*/
-	}
+  public PlayerActionQueue(
+      int playerNumber,
+      KailleraUserImpl player,
+      int numPlayers,
+      int gameBufferSize,
+      int gameTimeoutMillis,
+      boolean capture) {
+    this.thisPlayerNumber = playerNumber;
+    this.thisPlayer = player;
+    this.gameBufferSize = gameBufferSize;
+    this.gameTimeoutMillis = gameTimeoutMillis;
+    this.capture = capture;
 
-	public int getPlayerNumber()
-	{
-		return thisPlayerNumber;
-	}
+    array = new byte[gameBufferSize];
+    heads = new int[numPlayers];
+    /*
+    		if(capture)
+    		{
+    			try
+    			{
+    				os = new BufferedOutputStream(new FileOutputStream("test.cap"));
+    			}
+    			catch(Exception e)
+    			{
+    				e.printStackTrace();
+    			}
+    		}
+    */
+  }
 
-	public KailleraUserImpl getPlayer()
-	{
-		return thisPlayer;
-	}
+  public int getPlayerNumber() {
+    return thisPlayerNumber;
+  }
 
-	public void setSynched(boolean synched)
-	{
-		this.synched = synched;
+  public KailleraUserImpl getPlayer() {
+    return thisPlayer;
+  }
 
-		if (!synched)
-		{
-			synchronized (this)
-			{
-				notifyAll();
-			}
-/*
-			try
-			{
-				os.flush();
-				os.close();
-			}
-			catch(Exception e)
-			{
-				e.printStackTrace();
-			}
-*/
-		}
-	}
+  public void setSynched(boolean synched) {
+    this.synched = synched;
 
-	public boolean isSynched()
-	{
-		return synched;
-	}
+    if (!synched) {
+      synchronized (this) {
+        notifyAll();
+      }
+      /*
+      			try
+      			{
+      				os.flush();
+      				os.close();
+      			}
+      			catch(Exception e)
+      			{
+      				e.printStackTrace();
+      			}
+      */
+    }
+  }
 
-	public void setLastTimeout(PlayerTimeoutException e)
-	{
-		this.lastTimeout = e;
-	}
+  public boolean isSynched() {
+    return synched;
+  }
 
-	public PlayerTimeoutException getLastTimeout()
-	{
-		return lastTimeout;
-	}
+  public void setLastTimeout(PlayerTimeoutException e) {
+    this.lastTimeout = e;
+  }
 
-	public void addActions(byte[] actions)
-	{
-		if (!synched)
-			return;
+  public PlayerTimeoutException getLastTimeout() {
+    return lastTimeout;
+  }
 
-		for (int i = 0; i < actions.length; i++)
-		{
-			array[tail] = actions[i];
-			//tail = ((tail + 1) % gameBufferSize);
-			tail++;
-			if(tail == gameBufferSize)
-				tail = 0;
-		}
+  public void addActions(byte[] actions) {
+    if (!synched) return;
 
-		synchronized (this)
-		{
-			notifyAll();
-		}
+    for (int i = 0; i < actions.length; i++) {
+      array[tail] = actions[i];
+      // tail = ((tail + 1) % gameBufferSize);
+      tail++;
+      if (tail == gameBufferSize) tail = 0;
+    }
 
-		lastTimeout = null;
-	}
+    synchronized (this) {
+      notifyAll();
+    }
 
-	public void getAction(int playerNumber, byte[] actions, int location, int actionLength) throws PlayerTimeoutException
-	{
+    lastTimeout = null;
+  }
 
-		
-		synchronized (this)
-		{
-			if (getSize(playerNumber) < actionLength && synched)
-			{
-				try
-				{
-					wait(gameTimeoutMillis);
-				}
-				catch (InterruptedException e)
-				{
-				}
-			}
-		}
+  public void getAction(int playerNumber, byte[] actions, int location, int actionLength)
+      throws PlayerTimeoutException {
 
-		
-			if (getSize(playerNumber) >= actionLength)
-			{
-				for (int i = 0; i < actionLength; i++)
-				{
-					actions[(location + i)] = array[heads[(playerNumber - 1)]];
-					//heads[(playerNumber - 1)] = ((heads[(playerNumber - 1)] + 1) % gameBufferSize);
-					heads[(playerNumber - 1)]++;
-					if(heads[(playerNumber - 1)] == gameBufferSize)
-						heads[(playerNumber - 1)] = 0;
-				}
-				return;
-			}
-		
+    synchronized (this) {
+      if (getSize(playerNumber) < actionLength && synched) {
+        try {
+          wait(gameTimeoutMillis);
+        } catch (InterruptedException e) {
+        }
+      }
+    }
 
-		if (!synched)
-			return;
-/*		
-		if(capture)
-		{
-			try
-			{
-				os.write(actions,0,actions.length);
-				System.out.println("write " + actions.length + " bytes");
-			}
-			catch(Exception e) 
-			{
-				e.printStackTrace();
-			}
-		}
-*/
-		throw new PlayerTimeoutException(thisPlayerNumber, thisPlayer);
-	}
+    if (getSize(playerNumber) >= actionLength) {
+      for (int i = 0; i < actionLength; i++) {
+        actions[(location + i)] = array[heads[(playerNumber - 1)]];
+        // heads[(playerNumber - 1)] = ((heads[(playerNumber - 1)] + 1) % gameBufferSize);
+        heads[(playerNumber - 1)]++;
+        if (heads[(playerNumber - 1)] == gameBufferSize) heads[(playerNumber - 1)] = 0;
+      }
+      return;
+    }
 
-	private int getSize(int playerNumber)
-	{
-		return (tail + gameBufferSize - heads[playerNumber - 1]) % gameBufferSize;
-	}
+    if (!synched) return;
+    /*
+    		if(capture)
+    		{
+    			try
+    			{
+    				os.write(actions,0,actions.length);
+    				System.out.println("write " + actions.length + " bytes");
+    			}
+    			catch(Exception e)
+    			{
+    				e.printStackTrace();
+    			}
+    		}
+    */
+    throw new PlayerTimeoutException(thisPlayerNumber, thisPlayer);
+  }
+
+  private int getSize(int playerNumber) {
+    return (tail + gameBufferSize - heads[playerNumber - 1]) % gameBufferSize;
+  }
 }

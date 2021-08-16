@@ -4,91 +4,87 @@ import org.emulinker.release.ReleaseInfo;
 import org.emulinker.util.EmuUtil;
 
 /**
- * Provides release and build information for the EmuLinker project.
- * This class also formats a welcome message for printing at server startup.
+ * Provides release and build information for the EmuLinker project. This class also formats a
+ * welcome message for printing at server startup.
  */
-public final class KailleraServerReleaseInfo implements ReleaseInfo
-{
-	private final String	productName		= "EmuLinkerSF";
+public final class KailleraServerReleaseInfo implements ReleaseInfo {
+  private final String productName = "EmuLinkerSF";
 
-	private final int		majorVersion	= 0;
-	private final int		minorVersion	= 92;
-	private final int		buildNumber		= 4;
+  private final int majorVersion = 0;
+  private final int minorVersion = 92;
+  private final int buildNumber = 4;
 
-	private final String	releaseDate		= "05-06-2021";
-	private final String	licenseInfo		= "Usage of this sofware is subject to the terms found in the included license";
-	private final String	website			= "https://www.EmuLinker.org";
+  private final String releaseDate = "05-06-2021";
+  private final String licenseInfo =
+      "Usage of this sofware is subject to the terms found in the included license";
+  private final String website = "https://www.EmuLinker.org";
 
-	public KailleraServerReleaseInfo()
-	{
-		//generic constructor
-	}
+  public KailleraServerReleaseInfo() {
+    // generic constructor
+  }
 
-	public final String getProductName()
-	{
-		return productName;
-	}
+  public final String getProductName() {
+    return productName;
+  }
 
-	public final int getMajorVersion()
-	{
-		return majorVersion;
-	}
+  public final int getMajorVersion() {
+    return majorVersion;
+  }
 
-	public final int getMinorVersion()
-	{
-		return minorVersion;
-	}
+  public final int getMinorVersion() {
+    return minorVersion;
+  }
 
-	public final String getReleaseDate()
-	{
-		return releaseDate;
-	}
+  public final String getReleaseDate() {
+    return releaseDate;
+  }
 
-	public final String getLicenseInfo()
-	{
-		return licenseInfo;
-	}
+  public final String getLicenseInfo() {
+    return licenseInfo;
+  }
 
-	public final String getWebsiteString()
-	{
-		return website;
-	}
+  public final String getWebsiteString() {
+    return website;
+  }
 
-	public final int getBuildNumber()
-	{
-		// TODO: modify this to pull from an Ant build version file
-		return buildNumber;
-	}
+  public final int getBuildNumber() {
+    // TODO: modify this to pull from an Ant build version file
+    return buildNumber;
+  }
 
-	/**
-	 * Returns the version number for the EmuLinker server in the form
-	 * <p>
-	 * <i>major</i>.<i>minor</i>
-	 * </p>
-	 */
-	public final String getVersionString()
-	{
-		StringBuilder sb = new StringBuilder();
-		//sb.append(getMajorVersion());
-		//sb.append(".");
-		sb.append(getMinorVersion());
-		sb.append(".");
-		sb.append(getBuildNumber());
-		return sb.toString();
-	}
+  /**
+   * Returns the version number for the EmuLinker server in the form
+   *
+   * <p><i>major</i>.<i>minor</i>
+   */
+  public final String getVersionString() {
+    StringBuilder sb = new StringBuilder();
+    // sb.append(getMajorVersion());
+    // sb.append(".");
+    sb.append(getMinorVersion());
+    sb.append(".");
+    sb.append(getBuildNumber());
+    return sb.toString();
+  }
 
-	/**
-	 * Formats release information into a welcome message.  This message
-	 * is printed by the server at server startup.
-	 */
-	public String getWelcome()
-	{
-		StringBuilder sb = new StringBuilder();
-		sb.append("// " + getProductName() + " version " + getVersionString() + " (" + getReleaseDate() + ") ");
-		sb.append(EmuUtil.LB);
-		sb.append("// " + getLicenseInfo());
-		sb.append(EmuUtil.LB);
-		sb.append("// For the most up-to-date information please visit: " + getWebsiteString());
-		return sb.toString();
-	}
+  /**
+   * Formats release information into a welcome message. This message is printed by the server at
+   * server startup.
+   */
+  public String getWelcome() {
+    StringBuilder sb = new StringBuilder();
+    sb.append(
+        "// "
+            + getProductName()
+            + " version "
+            + getVersionString()
+            + " ("
+            + getReleaseDate()
+            + ") ");
+    sb.append(EmuUtil.LB);
+    sb.append("// " + getLicenseInfo());
+    sb.append(EmuUtil.LB);
+    sb.append("// For the most up-to-date information please visit: " + getWebsiteString());
+    return sb.toString();
+  }
 }

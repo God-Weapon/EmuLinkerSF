@@ -1,22 +1,21 @@
 package org.emulinker.util;
 
-public interface GameDataCache
-{
-	public byte[] get(int index);
+public interface GameDataCache {
+  public byte[] get(int index);
 
-	public int add(byte[] data);
+  public int add(byte[] data);
 
-	public int indexOf(byte[] data);
+  public int indexOf(byte[] data);
 
-	public int size();
+  public int size();
 
-	public boolean isEmpty();
+  public boolean isEmpty();
 
-	public void clear();
+  public void clear();
 
-	public boolean contains(byte[] data);
+  public boolean contains(byte[] data);
 
-	public byte[] set(int index, byte[] data);
+  public byte[] set(int index, byte[] data);
 
-	public byte[] remove(int index);
+  public byte[] remove(int index);
 }
