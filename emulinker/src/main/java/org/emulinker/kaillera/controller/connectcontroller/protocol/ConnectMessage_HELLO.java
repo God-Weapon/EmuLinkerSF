@@ -16,10 +16,12 @@ public class ConnectMessage_HELLO extends ConnectMessage {
     this.protocol = protocol;
   }
 
+  @Override
   public String getID() {
     return ID;
   }
 
+  @Override
   public String getDescription() {
     return DESC;
   }
@@ -36,14 +38,17 @@ public class ConnectMessage_HELLO extends ConnectMessage {
     return clientSocketAddress;
   }
 
+  @Override
   public String toString() {
     return DESC + ": protocol: " + protocol;
   }
 
+  @Override
   public int getLength() {
     return (ID.length() + protocol.length() + 1);
   }
 
+  @Override
   public void writeTo(ByteBuffer buffer) {
     buffer.put(charset.encode(ID));
     EmuUtil.writeString(buffer, protocol, 0x00, charset);

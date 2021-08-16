@@ -13,10 +13,12 @@ public class GameChatEvent implements GameEvent {
     this.message = message;
   }
 
+  @Override
   public String toString() {
     return "GameChatEvent";
   }
 
+  @Override
   public KailleraGame getGame() {
     return game;
   }

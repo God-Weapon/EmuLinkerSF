@@ -94,6 +94,7 @@ public class KailleraAdminHttpServer implements Startable {
     }
   }
 
+  @Override
   public void start() {
     log.info("Starting Web-based Admin Interface.");
 
@@ -106,6 +107,7 @@ public class KailleraAdminHttpServer implements Startable {
     }
   }
 
+  @Override
   public void stop() {
     log.info("Stoping!");
 

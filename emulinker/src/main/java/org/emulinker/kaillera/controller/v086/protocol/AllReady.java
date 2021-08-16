@@ -12,22 +12,27 @@ public class AllReady extends V086Message {
     super(messageNumber);
   }
 
+  @Override
   public byte getID() {
     return ID;
   }
 
+  @Override
   public String getDescription() {
     return DESC;
   }
 
+  @Override
   public String toString() {
     return getInfoString();
   }
 
+  @Override
   public int getBodyLength() {
     return 1;
   }
 
+  @Override
   public void writeBodyTo(ByteBuffer buffer) {
     buffer.put((byte) 0x00);
   }

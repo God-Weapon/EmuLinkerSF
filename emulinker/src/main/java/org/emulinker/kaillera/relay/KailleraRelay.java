@@ -23,10 +23,12 @@ public class KailleraRelay extends UDPRelay {
     super(listenPort, serverSocketAddress);
   }
 
+  @Override
   public String toString() {
     return "Kaillera main datagram relay on port " + super.getListenPort();
   }
 
+  @Override
   protected ByteBuffer processClientToServer(
       ByteBuffer receiveBuffer, InetSocketAddress fromAddress, InetSocketAddress toAddress) {
     ConnectMessage inMessage = null;
@@ -60,6 +62,7 @@ public class KailleraRelay extends UDPRelay {
     return sendBuffer;
   }
 
+  @Override
   protected ByteBuffer processServerToClient(
       ByteBuffer receiveBuffer, InetSocketAddress fromAddress, InetSocketAddress toAddress) {
     ConnectMessage inMessage = null;

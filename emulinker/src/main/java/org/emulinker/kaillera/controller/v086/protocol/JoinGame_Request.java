@@ -10,14 +10,17 @@ public class JoinGame_Request extends JoinGame {
     super(messageNumber, gameID, 0, "", 0, 0xFFFF, connectionType);
   }
 
+  @Override
   public byte getID() {
     return ID;
   }
 
+  @Override
   public String getDescription() {
     return DESC;
   }
 
+  @Override
   public String toString() {
     return getInfoString()
         + "[gameID="

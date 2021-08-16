@@ -18,10 +18,12 @@ public abstract class Chat extends V086Message {
     this.message = message;
   }
 
+  @Override
   public byte getID() {
     return ID;
   }
 
+  @Override
   public abstract String getDescription();
 
   public String getUserName() {
@@ -32,6 +34,7 @@ public abstract class Chat extends V086Message {
     return message;
   }
 
+  @Override
   public abstract String toString();
 
   @Override
@@ -39,6 +42,7 @@ public abstract class Chat extends V086Message {
     return getNumBytes(userName) + getNumBytes(message) + 2;
   }
 
+  @Override
   public void writeBodyTo(ByteBuffer buffer) {
     EmuUtil.writeString(buffer, userName, 0x00, charset);
     EmuUtil.writeString(buffer, message, 0x00, charset);

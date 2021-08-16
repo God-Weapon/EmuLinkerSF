@@ -46,10 +46,12 @@ public class UserJoined extends V086Message {
     this.connectionType = connectionType;
   }
 
+  @Override
   public byte getID() {
     return ID;
   }
 
+  @Override
   public String getDescription() {
     return DESC;
   }
@@ -70,6 +72,7 @@ public class UserJoined extends V086Message {
     return connectionType;
   }
 
+  @Override
   public String toString() {
     return getInfoString()
         + "[userName="
@@ -88,6 +91,7 @@ public class UserJoined extends V086Message {
     return getNumBytes(userName) + 8;
   }
 
+  @Override
   public void writeBodyTo(ByteBuffer buffer) {
     EmuUtil.writeString(buffer, userName, 0x00, charset);
     UnsignedUtil.putUnsignedShort(buffer, userID);

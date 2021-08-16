@@ -12,10 +12,12 @@ public class ServerACK extends ACK {
     super(messageNumber, 0, 1, 2, 3);
   }
 
+  @Override
   public byte getID() {
     return ID;
   }
 
+  @Override
   public String getDescription() {
     return DESC;
   }

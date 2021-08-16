@@ -31,6 +31,7 @@ public class PlayerTimeoutException extends Exception {
     this.timeoutNumber = timeoutNumber;
   }
 
+  @Override
   public boolean equals(Object o) {
     if (o != null && o instanceof PlayerTimeoutException) {
       PlayerTimeoutException e = (PlayerTimeoutException) o;

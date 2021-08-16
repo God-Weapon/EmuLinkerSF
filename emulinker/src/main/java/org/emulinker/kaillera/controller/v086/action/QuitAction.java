@@ -23,18 +23,22 @@ public class QuitAction implements V086Action, V086ServerEventHandler {
 
   private QuitAction() {}
 
+  @Override
   public int getActionPerformedCount() {
     return actionCount;
   }
 
+  @Override
   public int getHandledEventCount() {
     return handledCount;
   }
 
+  @Override
   public String toString() {
     return desc;
   }
 
+  @Override
   public void performAction(V086Message message, V086Controller.V086ClientHandler clientHandler)
       throws FatalActionException {
     if (!(message instanceof Quit_Request))
@@ -51,6 +55,7 @@ public class QuitAction implements V086Action, V086ServerEventHandler {
     }
   }
 
+  @Override
   public void handleEvent(ServerEvent event, V086Controller.V086ClientHandler clientHandler) {
     handledCount++;
 

@@ -95,38 +95,47 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
     lastActivity = lastKeepAlive = connectTime = System.currentTimeMillis();
   }
 
+  @Override
   public int getID() {
     return id;
   }
 
+  @Override
   public InetSocketAddress getConnectSocketAddress() {
     return connectSocketAddress;
   }
 
+  @Override
   public String getProtocol() {
     return protocol;
   }
 
+  @Override
   public int getArraySize() {
     return arraySize;
   }
 
+  @Override
   public int getBytesPerAction() {
     return bytesPerAction;
   }
 
+  @Override
   public long getConnectTime() {
     return connectTime;
   }
 
+  @Override
   public boolean getMute() {
     return mute;
   }
 
+  @Override
   public void setTempDelay(int tempDelay) {
     this.tempDelay = tempDelay;
   }
 
+  @Override
   public int getDelay() {
     return delay;
   }
@@ -135,70 +144,87 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
     this.delay = delay;
   }
 
+  @Override
   public void setLastMsgID(int lastMsgID) {
     this.lastMsgID = lastMsgID;
   }
 
+  @Override
   public int getLastMsgID() {
     return lastMsgID;
   }
 
+  @Override
   public void setMute(boolean mute) {
     this.mute = mute;
   }
 
+  @Override
   public void setIgnoreAll(boolean ignoreAll) {
     this.ignoreAll = ignoreAll;
   }
 
+  @Override
   public int getFrameCount() {
     return frameCount;
   }
 
+  @Override
   public void setFrameCount(int frameCount) {
     this.frameCount = frameCount;
   }
 
+  @Override
   public boolean getIgnoreAll() {
     return ignoreAll;
   }
 
+  @Override
   public int getTimeouts() {
     return timeouts;
   }
 
+  @Override
   public void setTimeouts(int timeouts) {
     this.timeouts = timeouts;
   }
 
+  @Override
   public boolean getMsg() {
     return msg;
   }
 
+  @Override
   public boolean getP2P() {
     return p2P;
   }
 
+  @Override
   public byte[] getLostInput() {
     return lostInput.get(0);
   }
 
+  @Override
   public void setP2P(boolean p2P) {
     this.p2P = p2P;
   }
 
+  @Override
   public void setMsg(boolean msg) {
     this.msg = msg;
   }
 
+  @Override
   public Collection<KailleraUserImpl> getUsers() {
     return getServer().getUsers();
   }
 
+  @Override
   public void addIgnoredUser(String address) {
     ignoredUsers.add(address);
   }
 
+  @Override
   public boolean findIgnoredUser(String address) {
     for (int i = 0; i < ignoredUsers.size(); i++) {
       if (ignoredUsers.get(i).equals(address)) {
@@ -208,6 +234,7 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
     return false;
   }
 
+  @Override
   public boolean removeIgnoredUser(String address, boolean removeAll) {
     int i = 1;
     boolean here = false;
@@ -226,6 +253,7 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
     return here;
   }
 
+  @Override
   public boolean searchIgnoredUsers(String address) {
     int i = 1;
 
@@ -238,10 +266,12 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
     return false;
   }
 
+  @Override
   public int getStatus() {
     return status;
   }
 
+  @Override
   public boolean isLoggedIn() {
     return loggedIn;
   }
@@ -254,10 +284,12 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
     loggedIn = false;
   }
 
+  @Override
   public String getName() {
     return name;
   }
 
+  @Override
   public void setName(String name) {
     this.name = name;
     toString =
@@ -270,71 +302,88 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
             + ")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
   }
 
+  @Override
   public String getClientType() {
     return clientType;
   }
 
+  @Override
   public void setClientType(String clientType) {
     this.clientType = clientType;
     if (clientType != null && clientType.startsWith(EMULINKER_CLIENT_NAME)) emulinkerClient = true;
   }
 
+  @Override
   public boolean isEmuLinkerClient() {
     return emulinkerClient;
   }
 
+  @Override
   public byte getConnectionType() {
     return connectionType;
   }
 
+  @Override
   public void setConnectionType(byte connectionType) {
     this.connectionType = connectionType;
   }
 
+  @Override
   public boolean getStealth() {
     return stealth;
   }
 
+  @Override
   public void setStealth(boolean stealth) {
     this.stealth = stealth;
   }
 
+  @Override
   public InetSocketAddress getSocketAddress() {
     return clientSocketAddress;
   }
 
+  @Override
   public void setSocketAddress(InetSocketAddress clientSocketAddress) {
     this.clientSocketAddress = clientSocketAddress;
   }
 
+  @Override
   public int getPing() {
     return ping;
   }
 
+  @Override
   public void setPing(int ping) {
     this.ping = ping;
   }
 
+  @Override
   public long getLastActivity() {
     return lastActivity;
   }
 
+  @Override
   public long getLastKeepAlive() {
     return lastKeepAlive;
   }
 
+  @Override
   public void updateLastKeepAlive() {
     this.lastKeepAlive = System.currentTimeMillis();
   }
 
+  @Override
   public KailleraEventListener getListener() {
     return listener;
   }
 
+  @Override
   public KailleraServerImpl getServer() {
     return server;
   }
 
+  @Override
   public KailleraGameImpl getGame() {
     return game;
   }
@@ -364,6 +413,7 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
     lastTimeout = System.currentTimeMillis();
   }
 
+  @Override
   public int getAccess() {
     return access;
   }
@@ -376,24 +426,29 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
     this.access = access;
   }
 
+  @Override
   public int getPlayerNumber() {
     return playerNumber;
   }
 
   // protected
+  @Override
   public void setPlayerNumber(int playerNumber) {
     this.playerNumber = playerNumber;
   }
 
+  @Override
   public void updateLastActivity() {
     lastActivity = lastKeepAlive = System.currentTimeMillis();
   }
 
+  @Override
   public boolean equals(Object obj) {
     if (obj instanceof KailleraUserImpl && ((KailleraUserImpl) obj).getID() == getID()) return true;
     return false;
   }
 
+  @Override
   public String toString() {
     return toString;
   }
@@ -423,6 +478,7 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
     return sb.toString();
   }
 
+  @Override
   public void stop() {
     synchronized (this) {
       if (!isRunning) {
@@ -448,6 +504,7 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
     listener.stop();
   }
 
+  @Override
   public synchronized void droppedPacket() {
     if (game != null) {
       // if(game.getStatus() == KailleraGame.STATUS_PLAYING){
@@ -456,12 +513,14 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
     }
   }
 
+  @Override
   public boolean isRunning() {
     return isRunning;
   }
 
   // server actions
 
+  @Override
   public synchronized void login()
       throws PingTimeException, ClientAddressException, ConnectionTypeException, UserNameException,
           LoginException {
@@ -469,6 +528,7 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
     server.login(this);
   }
 
+  @Override
   public synchronized void chat(String message) throws ChatException, FloodException {
 
     updateLastActivity();
@@ -476,6 +536,7 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
     lastChatTime = System.currentTimeMillis();
   }
 
+  @Override
   public synchronized void gameKick(int userID) throws GameKickException {
     updateLastActivity();
 
@@ -489,6 +550,7 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
     game.kick(this, userID);
   }
 
+  @Override
   public synchronized KailleraGame createGame(String romName)
       throws CreateGameException, FloodException {
     updateLastActivity();
@@ -508,6 +570,7 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
     return game;
   }
 
+  @Override
   public synchronized void quit(String message)
       throws QuitException, DropGameException, QuitGameException, CloseGameException {
     updateLastActivity();
@@ -515,6 +578,7 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
     loggedIn = false;
   }
 
+  @Override
   public synchronized KailleraGame joinGame(int gameID) throws JoinGameException {
     updateLastActivity();
 
@@ -562,6 +626,7 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
   }
 
   // game actions
+  @Override
   public synchronized void gameChat(String message, int messageID) throws GameChatException {
     updateLastActivity();
 
@@ -590,6 +655,7 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
     game.chat(this, message);
   }
 
+  @Override
   public synchronized void dropGame() throws DropGameException {
     updateLastActivity();
 
@@ -608,6 +674,7 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
     } else log.debug(this + " drop game failed: Not in a game"); // $NON-NLS-1$
   }
 
+  @Override
   public synchronized void quitGame()
       throws DropGameException, QuitGameException, CloseGameException {
     updateLastActivity();
@@ -632,6 +699,7 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
     addEvent(new UserQuitGameEvent(game, this));
   }
 
+  @Override
   public synchronized void startGame() throws StartGameException {
     updateLastActivity();
 
@@ -644,6 +712,7 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
     game.start(this);
   }
 
+  @Override
   public synchronized void playerReady() throws UserReadyException {
     updateLastActivity();
 
@@ -662,6 +731,7 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
     game.ready(this, playerNumber);
   }
 
+  @Override
   public void addGameData(byte[] data) throws GameDataException {
     updateLastActivity();
 
@@ -743,6 +813,7 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
     eventQueue.offer(event);
   }
 
+  @Override
   public void run() {
     isRunning = true;
     log.debug(this + " thread running..."); // $NON-NLS-1$
@@ -774,6 +845,7 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
   }
 
   private static class StopFlagEvent implements KailleraEvent {
+    @Override
     public String toString() {
       return "StopFlagEvent"; //$NON-NLS-1$
     }

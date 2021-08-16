@@ -13,10 +13,12 @@ public class GameTimeoutEvent implements GameEvent {
     this.timeoutNumber = timeoutNumber;
   }
 
+  @Override
   public String toString() {
     return "GameTimeoutEvent";
   }
 
+  @Override
   public KailleraGame getGame() {
     return game;
   }

@@ -26,10 +26,12 @@ public class CloseGame extends V086Message {
     this.val1 = val1;
   }
 
+  @Override
   public byte getID() {
     return ID;
   }
 
+  @Override
   public String getDescription() {
     return DESC;
   }
@@ -42,14 +44,17 @@ public class CloseGame extends V086Message {
     return val1;
   }
 
+  @Override
   public String toString() {
     return getInfoString() + "[gameID=" + gameID + " val1=" + val1 + "]";
   }
 
+  @Override
   public int getBodyLength() {
     return 5;
   }
 
+  @Override
   public void writeBodyTo(ByteBuffer buffer) {
     buffer.put((byte) 0x00);
     UnsignedUtil.putUnsignedShort(buffer, gameID);

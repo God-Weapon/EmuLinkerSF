@@ -12,10 +12,12 @@ public class ConnectMessage_PING extends ConnectMessage {
 
   public ConnectMessage_PING() {}
 
+  @Override
   public String getID() {
     return ID;
   }
 
+  @Override
   public String getDescription() {
     return DESC;
   }
@@ -28,14 +30,17 @@ public class ConnectMessage_PING extends ConnectMessage {
     return clientSocketAddress;
   }
 
+  @Override
   public String toString() {
     return DESC;
   }
 
+  @Override
   public int getLength() {
     return (ID.length() + 1);
   }
 
+  @Override
   public void writeTo(ByteBuffer buffer) {
     buffer.put(charset.encode(ID));
     buffer.put((byte) 0x00);

@@ -9,10 +9,12 @@ public class QuitGame_Request extends QuitGame {
     super(messageNumber, "", 0xFFFF);
   }
 
+  @Override
   public String getDescription() {
     return DESC;
   }
 
+  @Override
   public String toString() {
     return getInfoString();
   }

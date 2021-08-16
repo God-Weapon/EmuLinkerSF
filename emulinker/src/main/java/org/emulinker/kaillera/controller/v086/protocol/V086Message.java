@@ -26,8 +26,10 @@ public abstract class V086Message extends ByteBufferMessage {
 
   public abstract byte getID();
 
+  @Override
   public abstract String getDescription();
 
+  @Override
   public int getLength() {
     return (getBodyLength() + 1);
     // return (getBodyLength() + 5);
@@ -44,6 +46,7 @@ public abstract class V086Message extends ByteBufferMessage {
     return (getNumber() + ":" + EmuUtil.byteToHex(getID()) + "/" + getDescription());
   }
 
+  @Override
   public void writeTo(ByteBuffer buffer) {
     int len = getLength();
     if (len > buffer.remaining()) {

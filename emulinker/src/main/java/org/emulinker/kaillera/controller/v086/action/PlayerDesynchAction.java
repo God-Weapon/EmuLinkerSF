@@ -20,14 +20,17 @@ public class PlayerDesynchAction implements V086GameEventHandler {
 
   private PlayerDesynchAction() {}
 
+  @Override
   public int getHandledEventCount() {
     return handledCount;
   }
 
+  @Override
   public String toString() {
     return desc;
   }
 
+  @Override
   public void handleEvent(GameEvent event, V086Controller.V086ClientHandler clientHandler) {
     handledCount++;
 

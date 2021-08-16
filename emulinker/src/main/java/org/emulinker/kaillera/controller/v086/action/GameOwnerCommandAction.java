@@ -43,10 +43,12 @@ public class GameOwnerCommandAction implements V086Action {
 
   private GameOwnerCommandAction() {}
 
+  @Override
   public int getActionPerformedCount() {
     return actionCount;
   }
 
+  @Override
   public String toString() {
     return desc;
   }
@@ -86,6 +88,7 @@ public class GameOwnerCommandAction implements V086Action {
     return false;
   }
 
+  @Override
   public void performAction(V086Message message, V086Controller.V086ClientHandler clientHandler)
       throws FatalActionException {
     GameChat chatMessage = (GameChat) message;

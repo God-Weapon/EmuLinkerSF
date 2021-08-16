@@ -11,14 +11,17 @@ public class CreateGame_Notification extends CreateGame {
     super(messageNumber, userName, romName, clientType, gameID, val1);
   }
 
+  @Override
   public byte getID() {
     return ID;
   }
 
+  @Override
   public String getDescription() {
     return DESC;
   }
 
+  @Override
   public String toString() {
     return getInfoString()
         + "[userName="

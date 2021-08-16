@@ -10,10 +10,12 @@ public class StartGame_Notification extends StartGame {
     super(messageNumber, val1, playerNumber, numPlayers);
   }
 
+  @Override
   public String getDescription() {
     return DESC;
   }
 
+  @Override
   public String toString() {
     return getInfoString()
         + "[val1="

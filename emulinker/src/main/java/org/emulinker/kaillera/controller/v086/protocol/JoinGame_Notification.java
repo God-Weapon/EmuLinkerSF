@@ -21,14 +21,17 @@ public class JoinGame_Notification extends JoinGame {
           "Invalid " + getDescription() + " format: userName.length() == 0");
   }
 
+  @Override
   public byte getID() {
     return ID;
   }
 
+  @Override
   public String getDescription() {
     return DESC;
   }
 
+  @Override
   public String toString() {
     return getInfoString()
         + "[gameID="

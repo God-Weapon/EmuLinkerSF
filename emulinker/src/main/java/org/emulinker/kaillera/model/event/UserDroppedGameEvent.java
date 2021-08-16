@@ -13,10 +13,12 @@ public class UserDroppedGameEvent implements GameEvent {
     this.playerNumber = playerNumber;
   }
 
+  @Override
   public String toString() {
     return "UserDroppedGameEvent";
   }
 
+  @Override
   public KailleraGame getGame() {
     return game;
   }

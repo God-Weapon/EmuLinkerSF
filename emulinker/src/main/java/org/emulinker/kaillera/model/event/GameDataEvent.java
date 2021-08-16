@@ -11,10 +11,12 @@ public class GameDataEvent implements GameEvent {
     this.data = data;
   }
 
+  @Override
   public String toString() {
     return "GameDataEvent";
   }
 
+  @Override
   public KailleraGame getGame() {
     return game;
   }

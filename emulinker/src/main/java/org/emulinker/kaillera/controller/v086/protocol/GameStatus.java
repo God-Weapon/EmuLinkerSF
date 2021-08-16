@@ -55,10 +55,12 @@ public class GameStatus extends V086Message {
     this.maxPlayers = maxPlayers;
   }
 
+  @Override
   public byte getID() {
     return ID;
   }
 
+  @Override
   public String getDescription() {
     return DESC;
   }
@@ -83,6 +85,7 @@ public class GameStatus extends V086Message {
     return maxPlayers;
   }
 
+  @Override
   public String toString() {
     return getInfoString()
         + "[gameID="
@@ -96,10 +99,12 @@ public class GameStatus extends V086Message {
         + "]";
   }
 
+  @Override
   public int getBodyLength() {
     return 8;
   }
 
+  @Override
   public void writeBodyTo(ByteBuffer buffer) {
     buffer.put((byte) 0x00);
     UnsignedUtil.putUnsignedShort(buffer, gameID);

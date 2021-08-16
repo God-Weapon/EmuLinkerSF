@@ -9,10 +9,12 @@ public class GameChat_Request extends GameChat {
     super(messageNumber, "", message);
   }
 
+  @Override
   public String getDescription() {
     return DESC;
   }
 
+  @Override
   public String toString() {
     return getInfoString() + "[message=" + getMessage() + "]";
   }

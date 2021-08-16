@@ -11,10 +11,12 @@ public class UserQuitGameEvent implements GameEvent {
     this.user = user;
   }
 
+  @Override
   public String toString() {
     return "UserQuitGameEvent";
   }
 
+  @Override
   public KailleraGame getGame() {
     return game;
   }

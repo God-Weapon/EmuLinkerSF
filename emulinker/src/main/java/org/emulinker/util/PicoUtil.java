@@ -1,5 +1,7 @@
 package org.emulinker.util;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.*;
 import org.nanocontainer.script.xml.XMLContainerBuilder;
 import org.picocontainer.PicoContainer;
@@ -11,7 +13,7 @@ public class PicoUtil {
     InputStream stream = PicoUtil.class.getResourceAsStream(resourceName);
     if (stream == null) throw new IOException("Unable to find or open resource " + resourceName);
 
-    Reader reader = new InputStreamReader(stream);
+    Reader reader = new InputStreamReader(stream, UTF_8);
     XMLContainerBuilder builder = new XMLContainerBuilder(reader, PicoUtil.class.getClassLoader());
     ObjectReference containerRef = new SimpleReference();
     ObjectReference parentContainerRef = new SimpleReference();

@@ -24,6 +24,7 @@ public class V086Bundle extends ByteBufferMessage {
     this.messages = messages;
   }
 
+  @Override
   public String getDescription() {
     return DESC;
   }
@@ -36,6 +37,7 @@ public class V086Bundle extends ByteBufferMessage {
     return messages;
   }
 
+  @Override
   public int getLength() {
     if (length == -1) {
       for (int i = 0; i < numToWrite; i++) {
@@ -47,6 +49,7 @@ public class V086Bundle extends ByteBufferMessage {
     return length;
   }
 
+  @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append(DESC + " (" + numToWrite + " messages) (" + getLength() + " bytes)");
@@ -59,6 +62,7 @@ public class V086Bundle extends ByteBufferMessage {
     return sb.toString();
   }
 
+  @Override
   public void writeTo(ByteBuffer buffer) {
     buffer.order(ByteOrder.LITTLE_ENDIAN);
     // no real need for unsigned

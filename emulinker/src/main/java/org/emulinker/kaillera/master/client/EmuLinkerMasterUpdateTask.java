@@ -36,6 +36,7 @@ public class EmuLinkerMasterUpdateTask implements MasterListUpdateTask {
     httpClient.setTimeout(5000);
   }
 
+  @Override
   public void touchMaster() {
     StringBuilder waitingGames = new StringBuilder();
     for (KailleraGame game : kailleraServer.getGames()) {

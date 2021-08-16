@@ -31,6 +31,7 @@ public abstract class ByteBufferMessage {
 
   public abstract String getDescription();
 
+  @Override
   public abstract String toString();
 
   protected void initBuffer() {

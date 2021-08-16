@@ -11,10 +11,12 @@ public class GameStatusChangedEvent implements ServerEvent {
     this.game = game;
   }
 
+  @Override
   public String toString() {
     return "GameStatusChangedEvent";
   }
 
+  @Override
   public KailleraServer getServer() {
     return server;
   }

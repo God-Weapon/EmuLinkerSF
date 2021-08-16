@@ -35,6 +35,7 @@ public abstract class ACK extends V086Message {
     return val4;
   }
 
+  @Override
   public String toString() {
     return getInfoString()
         + "[val1="
@@ -48,10 +49,12 @@ public abstract class ACK extends V086Message {
         + "]";
   }
 
+  @Override
   public int getBodyLength() {
     return 17;
   }
 
+  @Override
   public void writeBodyTo(ByteBuffer buffer) {
     buffer.put((byte) 0x00);
     UnsignedUtil.putUnsignedInt(buffer, val1);

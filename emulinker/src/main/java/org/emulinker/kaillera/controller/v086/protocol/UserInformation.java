@@ -29,14 +29,17 @@ public class UserInformation extends V086Message {
     this.connectionType = connectionType;
   }
 
+  @Override
   public byte getID() {
     return ID;
   }
 
+  @Override
   public String getDescription() {
     return DESC;
   }
 
+  @Override
   public int getBodyLength() {
     return getNumBytes(userName) + getNumBytes(clientType) + 3;
   }
@@ -53,6 +56,7 @@ public class UserInformation extends V086Message {
     return connectionType;
   }
 
+  @Override
   public String toString() {
     return getInfoString()
         + "[userName="
@@ -64,6 +68,7 @@ public class UserInformation extends V086Message {
         + "]";
   }
 
+  @Override
   public void writeBodyTo(ByteBuffer buffer) {
     EmuUtil.writeString(buffer, userName, 0x00, charset);
     EmuUtil.writeString(buffer, clientType, 0x00, charset);

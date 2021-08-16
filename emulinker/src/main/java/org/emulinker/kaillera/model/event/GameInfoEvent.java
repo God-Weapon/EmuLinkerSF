@@ -14,10 +14,12 @@ public class GameInfoEvent implements GameEvent {
     this.user = user;
   }
 
+  @Override
   public String toString() {
     return "GameInfoEvent";
   }
 
+  @Override
   public KailleraGame getGame() {
     return game;
   }

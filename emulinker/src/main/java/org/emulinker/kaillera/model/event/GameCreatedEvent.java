@@ -11,10 +11,12 @@ public class GameCreatedEvent implements ServerEvent {
     this.game = game;
   }
 
+  @Override
   public String toString() {
     return "GameCreatedEvent";
   }
 
+  @Override
   public KailleraServer getServer() {
     return server;
   }

@@ -32,10 +32,12 @@ public class GameData extends V086Message {
     this.gameData = gameData;
   }
 
+  @Override
   public byte getID() {
     return ID;
   }
 
+  @Override
   public String getDescription() {
     return DESC;
   }
@@ -44,6 +46,7 @@ public class GameData extends V086Message {
     return gameData;
   }
 
+  @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append(getInfoString());
@@ -53,10 +56,12 @@ public class GameData extends V086Message {
     return sb.toString();
   }
 
+  @Override
   public int getBodyLength() {
     return (gameData.length + 3);
   }
 
+  @Override
   public void writeBodyTo(ByteBuffer buffer) {
     buffer.put((byte) 0x00);
     UnsignedUtil.putUnsignedShort(buffer, gameData.length);

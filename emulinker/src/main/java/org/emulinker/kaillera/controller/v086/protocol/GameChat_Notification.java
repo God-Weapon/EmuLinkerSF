@@ -10,10 +10,12 @@ public class GameChat_Notification extends GameChat {
     super(messageNumber, userName, message);
   }
 
+  @Override
   public String getDescription() {
     return DESC;
   }
 
+  @Override
   public String toString() {
     return getInfoString() + "[userName=" + getUserName() + " message: " + getMessage() + "]";
   }

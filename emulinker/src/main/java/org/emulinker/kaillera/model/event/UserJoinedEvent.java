@@ -11,10 +11,12 @@ public class UserJoinedEvent implements ServerEvent {
     this.user = user;
   }
 
+  @Override
   public String toString() {
     return "UserJoinedEvent";
   }
 
+  @Override
   public KailleraServer getServer() {
     return server;
   }

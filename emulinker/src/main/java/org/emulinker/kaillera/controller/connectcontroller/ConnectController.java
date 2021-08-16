@@ -114,14 +114,17 @@ public class ConnectController extends UDPServer {
     return pingCount;
   }
 
+  @Override
   protected ByteBuffer getBuffer() {
     return ByteBufferMessage.getBuffer(bufferSize);
   }
 
+  @Override
   protected void releaseBuffer(ByteBuffer buffer) {
     ByteBufferMessage.releaseBuffer(buffer);
   }
 
+  @Override
   public String toString() {
     // return "ConnectController[port=" + getBindPort() + " isRunning=" + isRunning() + "]";
     // return "ConnectController[port=" + getBindPort() + "]";
@@ -129,6 +132,7 @@ public class ConnectController extends UDPServer {
     else return "ConnectController(unbound)";
   }
 
+  @Override
   public synchronized void start() {
     startTime = System.currentTimeMillis();
     log.debug(
@@ -149,11 +153,13 @@ public class ConnectController extends UDPServer {
             + ")");
   }
 
+  @Override
   public synchronized void stop() {
     super.stop();
     for (KailleraServerController controller : controllersMap.values()) controller.stop();
   }
 
+  @Override
   protected synchronized void handleReceived(
       ByteBuffer buffer, InetSocketAddress fromSocketAddress) {
     requestCount++;

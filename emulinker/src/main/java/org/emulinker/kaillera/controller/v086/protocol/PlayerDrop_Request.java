@@ -9,10 +9,12 @@ public class PlayerDrop_Request extends PlayerDrop {
     super(messageNumber, "", (byte) 0);
   }
 
+  @Override
   public String getDescription() {
     return DESC;
   }
 
+  @Override
   public String toString() {
     return getInfoString();
   }

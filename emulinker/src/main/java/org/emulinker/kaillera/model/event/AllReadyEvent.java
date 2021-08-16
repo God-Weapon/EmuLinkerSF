@@ -9,10 +9,12 @@ public class AllReadyEvent implements GameEvent {
     this.game = game;
   }
 
+  @Override
   public String toString() {
     return "AllReadyEvent";
   }
 
+  @Override
   public KailleraGame getGame() {
     return game;
   }

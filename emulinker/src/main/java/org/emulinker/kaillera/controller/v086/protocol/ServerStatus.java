@@ -20,10 +20,12 @@ public class ServerStatus extends V086Message {
     this.games = games;
   }
 
+  @Override
   public byte getID() {
     return ID;
   }
 
+  @Override
   public String getDescription() {
     return DESC;
   }
@@ -36,6 +38,7 @@ public class ServerStatus extends V086Message {
     return games;
   }
 
+  @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append(getInfoString() + "[users=" + users.size() + " games=" + games.size() + "]");
@@ -57,6 +60,7 @@ public class ServerStatus extends V086Message {
     return sb.toString();
   }
 
+  @Override
   public int getBodyLength() {
     int len = 9;
     for (User u : users) len += u.getLength();
@@ -64,6 +68,7 @@ public class ServerStatus extends V086Message {
     return len;
   }
 
+  @Override
   public void writeBodyTo(ByteBuffer buffer) {
     buffer.put((byte) 0x00);
     buffer.putInt(users.size());
@@ -195,6 +200,7 @@ public class ServerStatus extends V086Message {
       return connectionType;
     }
 
+    @Override
     public String toString() {
       return "[userName="
           + userName
@@ -283,6 +289,7 @@ public class ServerStatus extends V086Message {
       return status;
     }
 
+    @Override
     public String toString() {
       return "[romName="
           + romName

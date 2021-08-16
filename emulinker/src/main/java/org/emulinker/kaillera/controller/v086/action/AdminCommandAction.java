@@ -45,10 +45,12 @@ public class AdminCommandAction implements V086Action {
 
   private AdminCommandAction() {}
 
+  @Override
   public int getActionPerformedCount() {
     return actionCount;
   }
 
+  @Override
   public String toString() {
     return desc;
   }
@@ -90,6 +92,7 @@ public class AdminCommandAction implements V086Action {
     return false;
   }
 
+  @Override
   public void performAction(V086Message message, V086Controller.V086ClientHandler clientHandler)
       throws FatalActionException {
     Chat chatMessage = (Chat) message;

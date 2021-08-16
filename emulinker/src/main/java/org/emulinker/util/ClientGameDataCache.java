@@ -25,34 +25,41 @@ public class ClientGameDataCache implements GameDataCache {
     array = new byte[size][];
   }
 
+  @Override
   public String toString() {
     return "ClientGameDataCache[size=" + size + " head=" + head + " tail=" + tail + "]";
   }
 
+  @Override
   public boolean isEmpty() {
     return (head == tail); // or size == 0
   }
 
+  @Override
   public int size() {
     // the size can also be worked out each time as: (tail + array.length -
     // head) % array.length
     return size;
   }
 
+  @Override
   public boolean contains(byte[] data) {
     return indexOf(data) >= 0;
   }
 
+  @Override
   public int indexOf(byte[] data) {
     for (int i = 0; i < size; i++) if (Arrays.equals(data, array[convert(i)])) return i;
     return -1;
   }
 
+  @Override
   public byte[] get(int index) {
     rangeCheck(index);
     return array[convert(index)];
   }
 
+  @Override
   public byte[] set(int index, byte[] data) {
     rangeCheck(index);
     int convertedIndex = convert(index);
@@ -64,6 +71,7 @@ public class ClientGameDataCache implements GameDataCache {
   // This method is the main reason we re-wrote the class.
   // It is optimized for removing first and last elements
   // but also allows you to remove in the middle of the list.
+  @Override
   public byte[] remove(int index) {
     rangeCheck(index);
 
@@ -97,12 +105,14 @@ public class ClientGameDataCache implements GameDataCache {
     }
   }
 
+  @Override
   public void clear() {
     for (int i = 0; i < size; i++) array[convert(i)] = null;
 
     head = tail = size = 0;
   }
 
+  @Override
   public int add(byte[] data) {
     if (size == array.length) remove(0);
 

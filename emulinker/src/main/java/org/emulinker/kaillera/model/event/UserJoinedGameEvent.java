@@ -11,10 +11,12 @@ public class UserJoinedGameEvent implements GameEvent {
     this.user = user;
   }
 
+  @Override
   public String toString() {
     return "UserJoinedGameEvent";
   }
 
+  @Override
   public KailleraGame getGame() {
     return game;
   }
