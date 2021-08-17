@@ -1,7 +1,7 @@
 package org.emulinker.kaillera.model.impl;
 
+import com.google.common.collect.ImmutableList;
 import java.net.InetSocketAddress;
-import java.text.*;
 import java.util.*;
 import java.util.concurrent.*;
 import org.apache.commons.configuration.*;
@@ -38,7 +38,7 @@ public class KailleraServerImpl implements KailleraServer, Executable {
 
   protected boolean[] allowedConnectionTypes = new boolean[7];
 
-  protected List<String> loginMessages = new ArrayList<String>();
+  protected final ImmutableList<String> loginMessages;
   protected boolean allowSinglePlayer = false;
   protected boolean allowMultipleConnections = false;
 
@@ -93,11 +93,11 @@ public class KailleraServerImpl implements KailleraServer, Executable {
     maxClientNameLength = config.getInt("server.maxClientNameLength");
     if (maxClientNameLength > 127) maxClientNameLength = 127;
 
-    for (int i = 1; i <= 999; i++) {
-      if (EmuLang.hasString("KailleraServerImpl.LoginMessage." + i))
-        loginMessages.add(EmuLang.getString("KailleraServerImpl.LoginMessage." + i));
-      else break;
+    ImmutableList.Builder<String> loginMessagesBuilder = ImmutableList.builder();
+    for (int i = 1; EmuLang.hasString("KailleraServerImpl.LoginMessage." + i); i++) {
+      loginMessagesBuilder.add(EmuLang.getString("KailleraServerImpl.LoginMessage." + i));
     }
+    loginMessages = loginMessagesBuilder.build();
 
     gameBufferSize = config.getInt("game.bufferSize");
     if (gameBufferSize <= 0) throw new ConfigurationException("game.bufferSize can not be <= 0");

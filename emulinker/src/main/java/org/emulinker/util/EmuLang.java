@@ -1,7 +1,5 @@
 package org.emulinker.util;
 
-import java.io.UnsupportedEncodingException;
-import java.lang.reflect.*;
 import java.text.MessageFormat;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
@@ -34,24 +32,21 @@ public class EmuLang {
   	}
   */
   public static boolean hasString(String key) {
-    try {
-      RESOURCE_BUNDLE.getString(key);
-      return true;
-    } catch (Exception e) {
-      return false;
+    if (RESOURCE_BUNDLE.containsKey(key)) {
+      try {
+        RESOURCE_BUNDLE.getString(key);
+        return true;
+      } catch (Exception e) {
+        // It exists but is not readable.
+        e.printStackTrace();
+      }
     }
+    return false;
   }
 
   public static String getString(String key) {
     try {
-      String str = RESOURCE_BUNDLE.getString(key);
-      try {
-        byte[] buff = str.getBytes("ISO-8859-1");
-        str = new String(buff, System.getProperty("emulinker.charset"));
-      } catch (UnsupportedEncodingException e) {
-        e.printStackTrace();
-      }
-      return str;
+      return RESOURCE_BUNDLE.getString(key);
     } catch (MissingResourceException e) {
       log.error("Missing language property: " + key);
       return key;
@@ -61,12 +56,6 @@ public class EmuLang {
   public static String getString(String key, Object... messageArgs) {
     try {
       String str = RESOURCE_BUNDLE.getString(key);
-      try {
-        byte[] buff = str.getBytes("ISO-8859-1");
-        str = new String(buff, System.getProperty("emulinker.charset"));
-      } catch (UnsupportedEncodingException e) {
-        e.printStackTrace();
-      }
       return (new MessageFormat(str)).format(messageArgs);
     } catch (MissingResourceException e) {
       log.error("Missing language property: " + key);

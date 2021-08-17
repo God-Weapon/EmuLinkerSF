@@ -1,12 +1,9 @@
 package org.emulinker.kaillera.pico;
 
 import java.lang.reflect.InvocationTargetException;
-import java.nio.charset.Charset;
 import java.util.*;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.logging.*;
-import org.emulinker.config.RuntimeFlags;
-import org.emulinker.kaillera.relay.KailleraRelay;
 import org.emulinker.net.BindException;
 import org.emulinker.release.ReleaseInfo;
 import org.emulinker.util.PicoUtil;
@@ -56,9 +53,6 @@ public class PicoStarter {
       e.printStackTrace(System.err);
       System.exit(1);
     }
-
-    // TODO(nue): This should happen immediately after startup.
-    buildRuntimeConfig();
   }
 
   private PicoContainer container;
@@ -75,21 +69,5 @@ public class PicoStarter {
 
   public PicoContainer getContainer() {
     return container;
-  }
-
-  private static void buildRuntimeConfig() {
-    String charsetName = System.getProperty("emulinker.charset");
-    Charset charset;
-    try {
-      if (Charset.isSupported(charsetName)) {
-        charset = Charset.forName(charsetName);
-      } else {
-        throw new IllegalStateException("Unsupported charset: " + charsetName);
-      }
-    } catch (Exception e) {
-      throw new IllegalStateException("Unable to load charset " + charsetName, e);
-    }
-
-    KailleraRelay.config = RuntimeFlags.builder().setCharset(charset).build();
   }
 }

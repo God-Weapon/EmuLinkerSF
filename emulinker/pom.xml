@@ -6,10 +6,10 @@
 
   <groupId>org.emulinker</groupId>
   <artifactId>emulinker</artifactId>
-  <version>0.1.0</version>
+  <version>0.93.1</version>
  
   <name>emulinker</name>
-  <url>https://github.com/God-Weapon/EmuLinkerSF</url>
+  <url>https://github.com/hopskipnfall/EmuLinkerSF-Netosuma</url>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

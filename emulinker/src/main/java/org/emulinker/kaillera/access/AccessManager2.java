@@ -5,6 +5,7 @@ import java.net.*;
 import java.util.*;
 import java.util.concurrent.*;
 import org.apache.commons.logging.*;
+import org.emulinker.kaillera.relay.KailleraRelay;
 import org.emulinker.util.WildcardStringPattern;
 import org.picocontainer.Startable;
 
@@ -164,7 +165,7 @@ public class AccessManager2 implements AccessManager, Startable, Runnable {
 
     try {
       FileInputStream file = new FileInputStream(this.accessFile);
-      Reader temp = new InputStreamReader(file, System.getProperty("emulinker.charset"));
+      Reader temp = new InputStreamReader(file, KailleraRelay.config.charset());
       BufferedReader reader = new BufferedReader(temp);
       String line = null;
       while ((line = reader.readLine()) != null) {
