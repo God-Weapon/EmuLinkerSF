@@ -3,6 +3,7 @@ package org.emulinker.kaillera.controller.v086.protocol;
 import java.nio.ByteBuffer;
 import java.util.*;
 import org.emulinker.kaillera.controller.messaging.*;
+import org.emulinker.kaillera.relay.KailleraRelay;
 import org.emulinker.util.*;
 
 public class PlayerInformation extends V086Message {
@@ -83,7 +84,7 @@ public class PlayerInformation extends V086Message {
     for (int j = 0; j < numPlayers; j++) {
       if (buffer.remaining() < 9) throw new ParseException("Failed byte count validation!");
 
-      String userName = EmuUtil.readString(buffer, 0x00, charset);
+      String userName = EmuUtil.readString(buffer, 0x00, KailleraRelay.config.charset());
 
       if (buffer.remaining() < 7) throw new ParseException("Failed byte count validation!");
 
@@ -165,7 +166,7 @@ public class PlayerInformation extends V086Message {
     }
 
     public void writeTo(ByteBuffer buffer) {
-      EmuUtil.writeString(buffer, userName, 0x00, charset);
+      EmuUtil.writeString(buffer, userName, 0x00, KailleraRelay.config.charset());
       UnsignedUtil.putUnsignedInt(buffer, ping);
       UnsignedUtil.putUnsignedShort(buffer, userID);
       buffer.put(connectionType);

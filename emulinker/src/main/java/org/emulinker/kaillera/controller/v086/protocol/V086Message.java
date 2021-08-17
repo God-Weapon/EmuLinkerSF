@@ -2,6 +2,7 @@ package org.emulinker.kaillera.controller.v086.protocol;
 
 import java.nio.ByteBuffer;
 import org.emulinker.kaillera.controller.messaging.*;
+import org.emulinker.kaillera.relay.KailleraRelay;
 import org.emulinker.util.*;
 
 public abstract class V086Message extends ByteBufferMessage {
@@ -37,7 +38,7 @@ public abstract class V086Message extends ByteBufferMessage {
 
   /** Gets the number of bytes to represent the string in the charset defined in emulinker.config */
   protected int getNumBytes(String s) {
-    return s.getBytes(charset).length;
+    return s.getBytes(KailleraRelay.config.charset()).length;
   }
 
   public abstract int getBodyLength();

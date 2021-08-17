@@ -2,6 +2,7 @@ package org.emulinker.kaillera.controller.v086.protocol;
 
 import java.nio.ByteBuffer;
 import org.emulinker.kaillera.controller.messaging.*;
+import org.emulinker.kaillera.relay.KailleraRelay;
 import org.emulinker.util.*;
 
 public abstract class Quit extends V086Message {
@@ -57,22 +58,22 @@ public abstract class Quit extends V086Message {
 
   @Override
   public void writeBodyTo(ByteBuffer buffer) {
-    EmuUtil.writeString(buffer, userName, 0x00, charset);
+    EmuUtil.writeString(buffer, userName, 0x00, KailleraRelay.config.charset());
     UnsignedUtil.putUnsignedShort(buffer, userID);
-    EmuUtil.writeString(buffer, message, 0x00, charset);
+    EmuUtil.writeString(buffer, message, 0x00, KailleraRelay.config.charset());
   }
 
   public static Quit parse(int messageNumber, ByteBuffer buffer)
       throws ParseException, MessageFormatException {
     if (buffer.remaining() < 5) throw new ParseException("Failed byte count validation!");
 
-    String userName = EmuUtil.readString(buffer, 0x00, charset);
+    String userName = EmuUtil.readString(buffer, 0x00, KailleraRelay.config.charset());
 
     if (buffer.remaining() < 3) throw new ParseException("Failed byte count validation!");
 
     int userID = UnsignedUtil.getUnsignedShort(buffer);
 
-    String message = EmuUtil.readString(buffer, 0x00, charset);
+    String message = EmuUtil.readString(buffer, 0x00, KailleraRelay.config.charset());
 
     if (userName.length() == 0 && userID == 0xFFFF) return new Quit_Request(messageNumber, message);
     else return new Quit_Notification(messageNumber, userName, userID, message);

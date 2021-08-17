@@ -1,10 +1,9 @@
 package org.emulinker.util;
 
-import org.apache.commons.configuration.*;
-import org.apache.commons.logging.*;
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.PropertiesConfiguration;
 
 public class EmuLinkerPropertiesConfig extends PropertiesConfiguration {
-  // private static Log	log	= LogFactory.getLog(EmuLinkerPropertiesConfig.class);
 
   public EmuLinkerPropertiesConfig() throws ConfigurationException {
     super(EmuLinkerPropertiesConfig.class.getResource("/emulinker.cfg"));

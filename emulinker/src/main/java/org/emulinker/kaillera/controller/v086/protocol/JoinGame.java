@@ -2,6 +2,7 @@ package org.emulinker.kaillera.controller.v086.protocol;
 
 import java.nio.ByteBuffer;
 import org.emulinker.kaillera.controller.messaging.*;
+import org.emulinker.kaillera.relay.KailleraRelay;
 import org.emulinker.util.*;
 
 public abstract class JoinGame extends V086Message {
@@ -97,7 +98,7 @@ public abstract class JoinGame extends V086Message {
     buffer.put((byte) 0x00);
     UnsignedUtil.putUnsignedShort(buffer, gameID);
     UnsignedUtil.putUnsignedShort(buffer, val1);
-    EmuUtil.writeString(buffer, userName, 0x00, charset);
+    EmuUtil.writeString(buffer, userName, 0x00, KailleraRelay.config.charset());
     UnsignedUtil.putUnsignedInt(buffer, ping);
     UnsignedUtil.putUnsignedShort(buffer, userID);
     buffer.put(connectionType);
@@ -114,7 +115,7 @@ public abstract class JoinGame extends V086Message {
 
     int gameID = UnsignedUtil.getUnsignedShort(buffer);
     int val1 = UnsignedUtil.getUnsignedShort(buffer);
-    String userName = EmuUtil.readString(buffer, 0x00, charset);
+    String userName = EmuUtil.readString(buffer, 0x00, KailleraRelay.config.charset());
 
     if (buffer.remaining() < 7) throw new ParseException("Failed byte count validation!");
 

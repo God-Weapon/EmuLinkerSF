@@ -1,5 +1,6 @@
 package org.emulinker.kaillera.controller.v086;
 
+import com.google.common.collect.ImmutableMap;
 import java.net.InetSocketAddress;
 import java.nio.*;
 import java.util.*;
@@ -36,14 +37,9 @@ public class V086Controller implements KailleraServerController {
   private int extraPorts;
   private Queue<Integer> portRangeQueue = new ConcurrentLinkedQueue<Integer>();
 
-  // shouldn't need to use a synchronized or concurrent map since all thread access will be read
-  // only
-  private Map<Class, V086ServerEventHandler> serverEventHandlers =
-      new HashMap<Class, V086ServerEventHandler>();
-  private Map<Class, V086GameEventHandler> gameEventHandlers =
-      new HashMap<Class, V086GameEventHandler>();
-  private Map<Class, V086UserEventHandler> userEventHandlers =
-      new HashMap<Class, V086UserEventHandler>();
+  private final ImmutableMap<Class<?>, V086ServerEventHandler> serverEventHandlers;
+  private final ImmutableMap<Class<?>, V086GameEventHandler> gameEventHandlers;
+  private final ImmutableMap<Class<?>, V086UserEventHandler> userEventHandlers;
 
   private V086Action[] actions = new V086Action[25];
 
@@ -97,29 +93,38 @@ public class V086Controller implements KailleraServerController {
     actions[PlayerDrop.ID] = DropGameAction.getInstance();
 
     // setup the server event handlers
-    serverEventHandlers.put(ChatEvent.class, ChatAction.getInstance());
-    serverEventHandlers.put(GameCreatedEvent.class, CreateGameAction.getInstance());
-    serverEventHandlers.put(UserJoinedEvent.class, LoginAction.getInstance());
-    serverEventHandlers.put(GameClosedEvent.class, CloseGameAction.getInstance());
-    serverEventHandlers.put(UserQuitEvent.class, QuitAction.getInstance());
-    serverEventHandlers.put(GameStatusChangedEvent.class, GameStatusAction.getInstance());
+    serverEventHandlers =
+        ImmutableMap.<Class<?>, V086ServerEventHandler>builder()
+            .put(ChatEvent.class, ChatAction.getInstance())
+            .put(GameCreatedEvent.class, CreateGameAction.getInstance())
+            .put(UserJoinedEvent.class, LoginAction.getInstance())
+            .put(GameClosedEvent.class, CloseGameAction.getInstance())
+            .put(UserQuitEvent.class, QuitAction.getInstance())
+            .put(GameStatusChangedEvent.class, GameStatusAction.getInstance())
+            .build();
 
     // setup the game event handlers
-    gameEventHandlers.put(UserJoinedGameEvent.class, JoinGameAction.getInstance());
-    gameEventHandlers.put(UserQuitGameEvent.class, QuitGameAction.getInstance());
-    gameEventHandlers.put(GameStartedEvent.class, StartGameAction.getInstance());
-    gameEventHandlers.put(GameChatEvent.class, GameChatAction.getInstance());
-    gameEventHandlers.put(AllReadyEvent.class, UserReadyAction.getInstance());
-    gameEventHandlers.put(GameDataEvent.class, GameDataAction.getInstance());
-    gameEventHandlers.put(UserDroppedGameEvent.class, DropGameAction.getInstance());
-    gameEventHandlers.put(GameDesynchEvent.class, GameDesynchAction.getInstance());
-    gameEventHandlers.put(PlayerDesynchEvent.class, PlayerDesynchAction.getInstance());
-    gameEventHandlers.put(GameInfoEvent.class, GameInfoAction.getInstance());
-    gameEventHandlers.put(GameTimeoutEvent.class, GameTimeoutAction.getInstance());
+    gameEventHandlers =
+        ImmutableMap.<Class<?>, V086GameEventHandler>builder()
+            .put(UserJoinedGameEvent.class, JoinGameAction.getInstance())
+            .put(UserQuitGameEvent.class, QuitGameAction.getInstance())
+            .put(GameStartedEvent.class, StartGameAction.getInstance())
+            .put(GameChatEvent.class, GameChatAction.getInstance())
+            .put(AllReadyEvent.class, UserReadyAction.getInstance())
+            .put(GameDataEvent.class, GameDataAction.getInstance())
+            .put(UserDroppedGameEvent.class, DropGameAction.getInstance())
+            .put(GameDesynchEvent.class, GameDesynchAction.getInstance())
+            .put(PlayerDesynchEvent.class, PlayerDesynchAction.getInstance())
+            .put(GameInfoEvent.class, GameInfoAction.getInstance())
+            .put(GameTimeoutEvent.class, GameTimeoutAction.getInstance())
+            .build();
 
     // setup the user event handlers
-    userEventHandlers.put(ConnectedEvent.class, ACKAction.getInstance());
-    userEventHandlers.put(InfoMessageEvent.class, InfoMessageAction.getInstance());
+    userEventHandlers =
+        ImmutableMap.<Class<?>, V086UserEventHandler>builder()
+            .put(ConnectedEvent.class, ACKAction.getInstance())
+            .put(InfoMessageEvent.class, InfoMessageAction.getInstance())
+            .build();
   }
 
   @Override
@@ -147,15 +152,15 @@ public class V086Controller implements KailleraServerController {
     return bufferSize;
   }
 
-  public final Map<Class, V086ServerEventHandler> getServerEventHandlers() {
+  public final ImmutableMap<Class<?>, V086ServerEventHandler> getServerEventHandlers() {
     return serverEventHandlers;
   }
 
-  public final Map<Class, V086GameEventHandler> getGameEventHandlers() {
+  public final ImmutableMap<Class<?>, V086GameEventHandler> getGameEventHandlers() {
     return gameEventHandlers;
   }
 
-  public final Map<Class, V086UserEventHandler> getUserEventHandlers() {
+  public final ImmutableMap<Class<?>, V086UserEventHandler> getUserEventHandlers() {
     return userEventHandlers;
   }
 

@@ -3,6 +3,7 @@ package org.emulinker.kaillera.relay;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import org.apache.commons.logging.*;
+import org.emulinker.config.RuntimeFlags;
 import org.emulinker.kaillera.controller.connectcontroller.protocol.*;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 import org.emulinker.net.UDPRelay;
@@ -10,6 +11,11 @@ import org.emulinker.util.EmuUtil;
 
 public class KailleraRelay extends UDPRelay {
   private static Log log = LogFactory.getLog(KailleraRelay.class);
+
+  // This config is provided as a global static variable for purposes of speed.
+  // We might want to consider something like Dagger for injection in the future.
+  /** Runtime config of the binary. */
+  public static RuntimeFlags config = null;
 
   public static void main(String args[]) throws Exception {
     int localPort = Integer.parseInt(args[0]);

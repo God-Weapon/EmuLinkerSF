@@ -2,6 +2,7 @@ package org.emulinker.kaillera.controller.v086.protocol;
 
 import java.nio.ByteBuffer;
 import org.emulinker.kaillera.controller.messaging.*;
+import org.emulinker.kaillera.relay.KailleraRelay;
 import org.emulinker.util.EmuUtil;
 
 public class InformationMessage extends V086Message {
@@ -57,19 +58,19 @@ public class InformationMessage extends V086Message {
 
   @Override
   public void writeBodyTo(ByteBuffer buffer) {
-    EmuUtil.writeString(buffer, source, 0x00, charset);
-    EmuUtil.writeString(buffer, message, 0x00, charset);
+    EmuUtil.writeString(buffer, source, 0x00, KailleraRelay.config.charset());
+    EmuUtil.writeString(buffer, message, 0x00, KailleraRelay.config.charset());
   }
 
   public static InformationMessage parse(int messageNumber, ByteBuffer buffer)
       throws ParseException, MessageFormatException {
     if (buffer.remaining() < 4) throw new ParseException("Failed byte count validation!");
 
-    String source = EmuUtil.readString(buffer, 0x00, charset);
+    String source = EmuUtil.readString(buffer, 0x00, KailleraRelay.config.charset());
 
     if (buffer.remaining() < 2) throw new ParseException("Failed byte count validation!");
 
-    String message = EmuUtil.readString(buffer, 0x00, charset);
+    String message = EmuUtil.readString(buffer, 0x00, KailleraRelay.config.charset());
 
     return new InformationMessage(messageNumber, source, message);
   }
