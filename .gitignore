@@ -3,6 +3,8 @@ build/
 emulinker/target/
 *.class
 
+emulinker/.factorypath
+
 # Log file
 *.log
 
