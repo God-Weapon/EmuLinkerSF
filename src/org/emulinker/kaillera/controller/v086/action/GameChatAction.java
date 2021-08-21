@@ -202,6 +202,11 @@ public class GameChatAction implements V086Action, V086GameEventHandler
 							user1.getGame().announce("User not found!", user1);
 							return;
 						}
+						
+						if(user.getGame() != user1.getGame()) {
+							user1.getGame().announce("User not in this game!", user1);
+							return;
+						}
 		
 						if(user == clientHandler.getUser()){
 							user1.getGame().announce("You can't private message yourself!", user1);
@@ -245,11 +250,11 @@ public class GameChatAction implements V086Action, V086GameEventHandler
 						
 						//user1.getServer().announce("TO: <" + user.getName() + ">(" + user.getID() + ") <" + clientHandler.getUser().getName() + "> (" + clientHandler.getUser().getID() + "): " + m, false, user1);
 						//user.getServer().announce("<" + clientHandler.getUser().getName() + "> (" + clientHandler.getUser().getID() + "): " + m, false, user);
-						if(user1.getGame() != null && user1.getGame() == user.getGame()){
+						if(user1.getGame() != null){
 							user1.getGame().announce("TO: <" + user.getName() + ">(" + user.getID() + ") <" + clientHandler.getUser().getName() + "> (" + clientHandler.getUser().getID() + "): " + m, user1);
 						}	
 		
-						if(user.getGame() != null && user.getGame() == user1.getGame()){
+						if(user.getGame() != null){
 							user.getGame().announce("<" + clientHandler.getUser().getName() + "> (" + clientHandler.getUser().getID() + "): " + m, user);
 						}
 						return;
@@ -270,6 +275,11 @@ public class GameChatAction implements V086Action, V086GameEventHandler
 								
 								if (user == null){
 									user1.getGame().announce("User not found!", user1);
+									return;
+								}
+								
+								if(user.getGame() != user1.getGame()) {
+									user1.getGame().announce("User not in this game!", user1);
 									return;
 								}
 		
@@ -313,11 +323,11 @@ public class GameChatAction implements V086Action, V086GameEventHandler
 								//user1.getServer().announce("TO: <" + user.getName() + ">(" + user.getID() + ") <" + clientHandler.getUser().getName() + "> (" + clientHandler.getUser().getID() + "): " + m, false, user1);
 								//user.getServer().announce("<" + clientHandler.getUser().getName() + "> (" + clientHandler.getUser().getID() + "): " + m, false, user);						
 								
-								if(user1.getGame() != null && user1.getGame() == user.getGame()){
+								if(user1.getGame() != null){
 									user1.getGame().announce("TO: <" + user.getName() + ">(" + user.getID() + ") <" + clientHandler.getUser().getName() + "> (" + clientHandler.getUser().getID() + "): " + m, user1);
 								}	
 		
-								if(user.getGame() != null && user.getGame() == user1.getGame()){
+								if(user.getGame() != null){
 									user.getGame().announce("<" + clientHandler.getUser().getName() + "> (" + clientHandler.getUser().getID() + "): " + m, user);
 								}
 								return;

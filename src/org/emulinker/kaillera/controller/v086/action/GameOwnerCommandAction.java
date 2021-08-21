@@ -148,6 +148,7 @@ public class GameOwnerCommandAction implements V086Action
 			else 
 			{		
 				log.warn("GameOwner Command Denied: Not game owner: " + game + ": " + user + ": " + chat); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+				game.announce("GameOwner Command Error: You are not an owner!", user);
 				return;
 			}
 		}

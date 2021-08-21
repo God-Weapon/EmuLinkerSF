@@ -535,6 +535,12 @@ public final class KailleraUserImpl implements KailleraUser, Executable
 	public synchronized KailleraGame createGame(String romName) throws CreateGameException, FloodException
 	{
 		updateLastActivity();
+		
+		if (server.getUser(getID()) == null)
+		{
+			log.error(this + " create game failed: User don't exists!");
+			return null;
+		}
 
 		if (getStatus() == KailleraUser.STATUS_PLAYING)
 		{
@@ -664,8 +670,9 @@ public final class KailleraUserImpl implements KailleraUser, Executable
 
 		if (status == KailleraUser.STATUS_PLAYING)
 		{
-			game.drop(this, playerNumber);
+			//first set STATUS_IDLE and then call game.drop, otherwise if someone quit game whitout drop - game status will not change to STATUS_WAITING
 			setStatus(KailleraUser.STATUS_IDLE);
+			game.drop(this, playerNumber);
 		}
 
 		game.quit(this, playerNumber);
