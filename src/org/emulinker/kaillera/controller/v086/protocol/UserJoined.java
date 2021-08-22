@@ -75,7 +75,7 @@ public class UserJoined extends V086Message
 	public int getBodyLength()
 	{
 		//return (charset.encode(userName).remaining() + 8);
-		return (userName.length() + 8);
+		return (getNumBytes(userName) + 8);
 	}
 
 	public void writeBodyTo(ByteBuffer buffer)

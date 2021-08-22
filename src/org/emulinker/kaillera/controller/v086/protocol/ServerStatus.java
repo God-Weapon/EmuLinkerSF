@@ -233,7 +233,7 @@ public class ServerStatus extends V086Message
 		public int getLength()
 		{
 			//return (charset.encode(userName).remaining() + 9);
-			return (userName.length() + 9);
+			return (getNumBytes(userName) + 9);
 		}
 
 		public void writeTo(ByteBuffer buffer)
@@ -318,7 +318,7 @@ public class ServerStatus extends V086Message
 		public int getLength()
 		{
 			//return (charset.encode(romName).remaining() + 1 + 4 + charset.encode(clientType).remaining() + 1 + charset.encode(userName).remaining() + 1 + charset.encode(players).remaining() + 1 + 1);
-			return (romName.length() + 1 + 4 + clientType.length() + 1 + userName.length() + 1 + players.length() + 1 + 1);
+			return (getNumBytes(romName) + 1 + 4 + getNumBytes(clientType) + 1 + getNumBytes(userName) + 1 + getNumBytes(players) + 1 + 1);
 		}
 
 		public void writeTo(ByteBuffer buffer)

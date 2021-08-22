@@ -82,7 +82,7 @@ public abstract class JoinGame extends V086Message
 	public int getBodyLength()
 	{
 		//return (charset.encode(userName).remaining() + 13);
-		return (userName.length() + 13);
+		return (getNumBytes(userName) + 13);
 	}
 
 	public void writeBodyTo(ByteBuffer buffer)

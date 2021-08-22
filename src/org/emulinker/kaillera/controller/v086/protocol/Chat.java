@@ -43,7 +43,7 @@ public abstract class Chat extends V086Message
 	public int getBodyLength()
 	{
 		//return (charset.encode(userName).remaining() + charset.encode(message).remaining() + 2);
-		return (userName.length() + message.length() + 2);
+		return (getNumBytes(userName) + getNumBytes(message) + 2);
 	}
 
 	public void writeBodyTo(ByteBuffer buffer)
