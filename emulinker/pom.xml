@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.emulinker</groupId>
   <artifactId>emulinker</artifactId>
   <version>0.93.1</version>
- 
+
   <name>emulinker</name>
   <url>https://github.com/hopskipnfall/EmuLinkerSF-Netosuma</url>
 
@@ -21,20 +20,20 @@
 
     <!-- https://stackoverflow.com/a/62065404/2875073 -->
     <dependency>
-        <groupId>xerces</groupId>
-        <artifactId>xerces</artifactId>
-        <version>2.4.0</version>
-        <exclusions>
-            <exclusion>
-                <groupId>xerces</groupId>
-                <artifactId>xercesImpl</artifactId>
-            </exclusion>
-        </exclusions>
+      <groupId>xerces</groupId>
+      <artifactId>xerces</artifactId>
+      <version>2.4.0</version>
+      <exclusions>
+        <exclusion>
+          <groupId>xerces</groupId>
+          <artifactId>xercesImpl</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
-        <groupId>xerces</groupId>
-        <artifactId>xercesImpl</artifactId>
-        <version>2.11.0</version>
+      <groupId>xerces</groupId>
+      <artifactId>xercesImpl</artifactId>
+      <version>2.11.0</version>
     </dependency>
 
     <dependency>
@@ -101,7 +100,7 @@
       <artifactId>nanocontainer</artifactId>
       <version>1.0-beta-3</version>
     </dependency>
-  
+
     <!-- https://mvnrepository.com/artifact/commons-configuration/commons-configuration -->
     <dependency>
       <groupId>commons-configuration</groupId>
@@ -146,7 +145,8 @@
   </dependencies>
 
   <build>
-    <pluginManagement><!-- lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) -->
+    <pluginManagement>
+      <!-- lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) -->
       <plugins>
 
         <!-- clean lifecycle, see https://maven.apache.org/ref/current/maven-core/lifecycles.html#clean_Lifecycle -->
@@ -184,7 +184,7 @@
           <artifactId>maven-project-info-reports-plugin</artifactId>
           <version>3.0.0</version>
         </plugin>
-        
+
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
@@ -232,32 +232,31 @@
           <artifactId>spotless-maven-plugin</artifactId>
           <version>2.12.2</version>
           <configuration>
-            
-          <formats>
-            <!-- you can define as many formats as you want, each is independent -->
-            <format>
-              <!-- define the files to apply to -->
-              <includes>
-                <include>*.md</include>
-                <include>.gitignore</include>
-              </includes>
-              <!-- define the steps to apply to those files -->
-              <trimTrailingWhitespace/>
-              <endWithNewline/>
-              <indent>
-                <tabs>true</tabs>
-                <spacesPerTab>4</spacesPerTab>
-              </indent>
-            </format>
-          </formats>
+
+            <formats>
+              <!-- you can define as many formats as you want, each is independent -->
+              <format>
+                <!-- define the files to apply to -->
+                <includes>
+                  <include>*.md</include>
+                  <include>.gitignore</include>
+                </includes>
+                <!-- define the steps to apply to those files -->
+                <trimTrailingWhitespace />
+                <endWithNewline />
+                <indent>
+                  <tabs>true</tabs>
+                  <spacesPerTab>4</spacesPerTab>
+                </indent>
+              </format>
+            </formats>
 
             <java>
-              <googleJavaFormat>
-              </googleJavaFormat>
+              <googleJavaFormat></googleJavaFormat>
             </java>
           </configuration>
         </plugin>
-        
+
         <plugin>
           <artifactId>maven-assembly-plugin</artifactId>
           <configuration>
@@ -282,13 +281,22 @@
             </execution>
           </executions>
         </plugin>
+
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>exec-maven-plugin</artifactId>
+          <version>1.4.0</version>
+          <configuration>
+            <mainClass>org.emulinker.kaillera.pico.PicoStarter</mainClass>
+          </configuration>
+        </plugin>
       </plugins>
     </pluginManagement>
 
     <resources>
-     <resource>
-       <directory>conf/</directory>
-     </resource>
-   </resources>
+      <resource>
+        <directory>conf/</directory>
+      </resource>
+    </resources>
   </build>
 </project>

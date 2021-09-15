@@ -16,3 +16,4 @@ From the emulinker/ directory:
 | `mvn spotless:check` | Run the linter.                                                             |
 | `mvn test`           | Run tests.                                                                  |
 | `mvn package`        | Build the jar.                                                              |
+| `mvn exec:java`      | Run the server locally.                                                     |
