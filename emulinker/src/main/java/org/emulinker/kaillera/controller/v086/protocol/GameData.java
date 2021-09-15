@@ -1,5 +1,6 @@
 package org.emulinker.kaillera.controller.v086.protocol;
 
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import org.emulinker.kaillera.controller.messaging.*;
 import org.emulinker.util.*;
@@ -17,7 +18,8 @@ public class GameData extends V086Message {
     ByteBuffer byteByffer = ByteBuffer.allocateDirect(4096);
     for (int i = 0; i < 0xFFFF; i++) {
       msg.writeTo(byteByffer);
-      byteByffer.clear();
+      // Cast to avoid issue with java version mismatch: https://stackoverflow.com/a/61267496/2875073
+      ((Buffer) byteByffer).clear();
     }
     System.out.println("et=" + (System.currentTimeMillis() - st));
   }

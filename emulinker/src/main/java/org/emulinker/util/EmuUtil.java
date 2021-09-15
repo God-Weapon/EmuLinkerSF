@@ -3,6 +3,7 @@ package org.emulinker.util;
 import java.io.*;
 import java.lang.reflect.Constructor;
 import java.net.*;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.text.*;
@@ -187,7 +188,8 @@ public class EmuUtil {
 
   public static String dumpBuffer(ByteBuffer buffer, boolean allHex) {
     StringBuilder sb = new StringBuilder();
-    buffer.mark();
+    // Cast to avoid issue with java version mismatch: https://stackoverflow.com/a/61267496/2875073
+    ((Buffer) buffer).mark();
     while (buffer.hasRemaining()) {
       byte b = buffer.get();
       if (!allHex && Character.isLetterOrDigit((char) b)) sb.append((char) b);
@@ -211,7 +213,8 @@ public class EmuUtil {
       tempBuffer.put(b);
       //			tempArray[i] = (char)b;
     }
-    return charset.decode((ByteBuffer) tempBuffer.flip()).toString();
+    // Cast to avoid issue with java version mismatch: https://stackoverflow.com/a/61267496/2875073
+    return charset.decode((ByteBuffer) (((Buffer) tempBuffer).flip())).toString();
     //		return new String(tempArray, 0, i);
   }
 

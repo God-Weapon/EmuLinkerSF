@@ -2,6 +2,7 @@ package org.emulinker.net;
 
 import java.io.IOException;
 import java.net.*;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.util.*;
@@ -178,7 +179,8 @@ public abstract class UDPServer implements Executable, Startable {
           	catch(Exception e) {}
           }
           */
-          buffer.flip();
+          // Cast to avoid issue with java version mismatch: https://stackoverflow.com/a/61267496/2875073
+          ((Buffer) buffer).flip();
           //					log.debug("receive("+EmuUtil.dumpBuffer(buffer, false)+")");
           handleReceived(buffer, fromSocketAddress);
           releaseBuffer(buffer);

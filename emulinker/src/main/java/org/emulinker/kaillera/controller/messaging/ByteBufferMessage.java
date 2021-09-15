@@ -1,5 +1,6 @@
 package org.emulinker.kaillera.controller.messaging;
 
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import org.apache.commons.logging.*;
 
@@ -28,7 +29,8 @@ public abstract class ByteBufferMessage {
   public ByteBuffer toBuffer() {
     initBuffer();
     writeTo(buffer);
-    buffer.flip();
+    // Cast to avoid issue with java version mismatch: https://stackoverflow.com/a/61267496/2875073
+    ((Buffer) buffer).flip();
     return buffer;
   }
 

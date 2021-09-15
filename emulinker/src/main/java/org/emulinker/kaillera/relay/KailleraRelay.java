@@ -1,6 +1,7 @@
 package org.emulinker.kaillera.relay;
 
 import java.net.InetSocketAddress;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import org.apache.commons.logging.*;
 import org.emulinker.config.RuntimeFlags;
@@ -64,7 +65,8 @@ public class KailleraRelay extends UDPRelay {
     ByteBuffer sendBuffer = ByteBuffer.allocate(receiveBuffer.limit());
     receiveBuffer.rewind();
     sendBuffer.put(receiveBuffer);
-    sendBuffer.flip();
+    // Cast to avoid issue with java version mismatch: https://stackoverflow.com/a/61267496/2875073
+    ((Buffer) sendBuffer).flip();
     return sendBuffer;
   }
 
@@ -109,7 +111,8 @@ public class KailleraRelay extends UDPRelay {
     ByteBuffer sendBuffer = ByteBuffer.allocate(receiveBuffer.limit());
     receiveBuffer.rewind();
     sendBuffer.put(receiveBuffer);
-    sendBuffer.flip();
+    // Cast to avoid issue with java version mismatch: https://stackoverflow.com/a/61267496/2875073
+    ((Buffer) sendBuffer).flip();
     return sendBuffer;
   }
 }

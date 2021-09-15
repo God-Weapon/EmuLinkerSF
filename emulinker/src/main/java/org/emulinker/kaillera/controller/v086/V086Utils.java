@@ -1,5 +1,6 @@
 package org.emulinker.kaillera.controller.v086;
 
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 
 /** Util methods mostly for dealing ByteBuffers. */
@@ -50,7 +51,8 @@ public final class V086Utils {
     original.rewind();
     clone.put(original);
     original.rewind();
-    clone.flip();
+    // Cast to avoid issue with java version mismatch: https://stackoverflow.com/a/61267496/2875073
+    ((Buffer) clone).flip();
     original.position(position);
     return clone;
   }
