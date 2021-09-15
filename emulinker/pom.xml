@@ -232,6 +232,14 @@
           <artifactId>spotless-maven-plugin</artifactId>
           <version>2.12.2</version>
           <configuration>
+            <compilerArgs>
+              <!-- These additional flags are here to support JDK 16. https://errorprone.info/docs/installation -->
+              <arg>--add-exports jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED</arg>
+              <arg>--add-exports jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED</arg>
+              <arg>--add-exports jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED</arg>
+              <arg>--add-exports jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED</arg>
+              <arg>--add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</arg>
+            </compilerArgs>
 
             <formats>
               <!-- you can define as many formats as you want, each is independent -->

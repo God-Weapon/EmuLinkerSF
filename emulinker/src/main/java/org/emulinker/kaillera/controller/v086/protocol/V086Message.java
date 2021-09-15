@@ -57,7 +57,8 @@ public abstract class V086Message extends ByteBufferMessage {
     } else {
       UnsignedUtil.putUnsignedShort(buffer, getNumber());
       // there no realistic reason to use unsigned here since a single packet can't be that large
-      // Cast to avoid issue with java version mismatch: https://stackoverflow.com/a/61267496/2875073
+      // Cast to avoid issue with java version mismatch:
+      // https://stackoverflow.com/a/61267496/2875073
       ((Buffer) buffer).mark();
       UnsignedUtil.putUnsignedShort(buffer, len);
       //		buffer.putShort((short)getLength());

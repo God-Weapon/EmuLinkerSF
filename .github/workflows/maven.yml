@@ -25,3 +25,5 @@ jobs:
       run: mvn compile --file=emulinker/pom.xml
     - name: Run tests
       run: mvn test --file=emulinker/pom.xml
+    - name: Lint
+      run: mvn spotless:check --file=emulinker/pom.xml

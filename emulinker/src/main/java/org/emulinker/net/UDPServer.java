@@ -179,7 +179,8 @@ public abstract class UDPServer implements Executable, Startable {
           	catch(Exception e) {}
           }
           */
-          // Cast to avoid issue with java version mismatch: https://stackoverflow.com/a/61267496/2875073
+          // Cast to avoid issue with java version mismatch:
+          // https://stackoverflow.com/a/61267496/2875073
           ((Buffer) buffer).flip();
           //					log.debug("receive("+EmuUtil.dumpBuffer(buffer, false)+")");
           handleReceived(buffer, fromSocketAddress);

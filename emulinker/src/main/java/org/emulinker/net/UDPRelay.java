@@ -77,7 +77,8 @@ public abstract class UDPRelay implements Runnable {
           threadPool.execute(clientHandler);
         }
 
-        // Cast to avoid issue with java version mismatch: https://stackoverflow.com/a/61267496/2875073
+        // Cast to avoid issue with java version mismatch:
+        // https://stackoverflow.com/a/61267496/2875073
         ((Buffer) buffer).flip();
         clientHandler.send(buffer);
       }
@@ -132,7 +133,8 @@ public abstract class UDPRelay implements Runnable {
 
           if (!receiveAddress.getAddress().equals(serverSocketAddress.getAddress())) continue;
 
-        // Cast to avoid issue with java version mismatch: https://stackoverflow.com/a/61267496/2875073
+          // Cast to avoid issue with java version mismatch:
+          // https://stackoverflow.com/a/61267496/2875073
           ((Buffer) buffer).flip();
 
           //					log.info(EmuUtil.formatSocketAddress(clientSocketAddress) + " <- \t" +

@@ -205,7 +205,7 @@ public class GameChatAction implements V086Action, V086GameEventHandler {
             return;
           }
 
-          if(user.getGame() != user1.getGame()) {
+          if (user.getGame() != user1.getGame()) {
             user1.getGame().announce("User not in this game!", user1);
             return;
           }
@@ -308,7 +308,7 @@ public class GameChatAction implements V086Action, V086GameEventHandler {
                 return;
               }
 
-              if(user.getGame() != user1.getGame()) {
+              if (user.getGame() != user1.getGame()) {
                 user1.getGame().announce("User not in this game!", user1);
                 return;
               }
