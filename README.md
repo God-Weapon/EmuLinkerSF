@@ -17,3 +17,5 @@ From the emulinker/ directory:
 | `mvn test`           | Run tests.                                                                  |
 | `mvn package`        | Build the jar.                                                              |
 | `mvn exec:java`      | Run the server locally.                                                     |
+
+Note: If you use non-ASCII characters in the `conf/language.properties` file, you need to run with at least Java 9 for the characters to appear correctly.
