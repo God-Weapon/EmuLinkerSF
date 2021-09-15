@@ -113,6 +113,7 @@ public class GameOwnerCommandAction implements V086Action {
                 + user
                 + ": "
                 + chat); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        game.announce("GameOwner Command Error: You are not an owner!", user);
         return;
       }
     }
