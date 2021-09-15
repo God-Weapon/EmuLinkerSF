@@ -3,6 +3,7 @@ package org.emulinker.kaillera.controller.v086.protocol;
 import java.nio.ByteBuffer;
 import java.util.*;
 import org.emulinker.kaillera.controller.messaging.*;
+import org.emulinker.kaillera.controller.v086.V086Utils;
 import org.emulinker.kaillera.relay.KailleraRelay;
 import org.emulinker.util.*;
 
@@ -63,11 +64,9 @@ public class ServerStatus extends V086Message {
 
   @Override
   public int getBodyLength() {
-    // TODO(nue): Fix this like
-    // https://github.com/hopskipnfall/EmuLinkerSF-Netosuma/commit/3db728bbbb542987e2bc287314125b053492ce99.
     int len = 9;
-    for (User u : users) len += u.getLength();
-    for (Game g : games) len += g.getLength();
+    for (User u : users) len += u.getNumBytes();
+    for (Game g : games) len += g.getNumBytes();
     return len;
   }
 
@@ -218,9 +217,8 @@ public class ServerStatus extends V086Message {
           + "]";
     }
 
-    public int getLength() {
-      // return (charset.encode(userName).remaining() + 9);
-      return (userName.length() + 9);
+    public int getNumBytes() {
+      return V086Utils.getNumBytes(userName) + 9;
     }
 
     public void writeTo(ByteBuffer buffer) {
@@ -309,11 +307,11 @@ public class ServerStatus extends V086Message {
           + "]";
     }
 
-    public int getLength() {
+    public int getNumBytes() {
       // return (charset.encode(romName).remaining() + 1 + 4 +
       // charset.encode(clientType).remaining() + 1 + charset.encode(userName).remaining() + 1 +
       // charset.encode(players).remaining() + 1 + 1);
-      return (romName.length()
+      return V086Utils.getNumBytes(romName)
           + 1
           + 4
           + clientType.length()
@@ -322,7 +320,7 @@ public class ServerStatus extends V086Message {
           + 1
           + players.length()
           + 1
-          + 1);
+          + 1;
     }
 
     public void writeTo(ByteBuffer buffer) {

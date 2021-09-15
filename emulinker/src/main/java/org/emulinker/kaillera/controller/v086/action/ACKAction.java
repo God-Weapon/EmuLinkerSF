@@ -155,7 +155,7 @@ public class ACKAction implements V086Action, V086UserEventHandler {
       ServerStatus.User user = users.get(0);
       users.remove(0);
 
-      if ((counter + user.getLength()) >= 300) {
+      if ((counter + user.getNumBytes()) >= 300) {
         sendServerStatus(clientHandler, usersSubList, gamesSubList, counter);
         usersSubList = new ArrayList<ServerStatus.User>();
         gamesSubList = new ArrayList<ServerStatus.Game>();
@@ -167,7 +167,7 @@ public class ACKAction implements V086Action, V086UserEventHandler {
         } // SF MOD
       }
 
-      counter += user.getLength();
+      counter += user.getNumBytes();
       usersSubList.add(user);
     }
 
@@ -175,7 +175,7 @@ public class ACKAction implements V086Action, V086UserEventHandler {
       ServerStatus.Game game = games.get(0);
       games.remove(0);
 
-      if ((counter + game.getLength()) >= 300) {
+      if ((counter + game.getNumBytes()) >= 300) {
         sendServerStatus(clientHandler, usersSubList, gamesSubList, counter);
         usersSubList = new ArrayList<ServerStatus.User>();
         gamesSubList = new ArrayList<ServerStatus.Game>();
@@ -187,7 +187,7 @@ public class ACKAction implements V086Action, V086UserEventHandler {
         } // SF MOD
       }
 
-      counter += game.getLength();
+      counter += game.getNumBytes();
       gamesSubList.add(game);
     }
 
