@@ -5,7 +5,7 @@
 
   <groupId>org.emulinker</groupId>
   <artifactId>emulinkersf-netosuma</artifactId>
-  <version>0.1.1</version>
+  <version>0.1.2</version>
 
   <name>EmulinkerSF-Netosuma</name>
   <url>https://github.com/hopskipnfall/EmuLinkerSF-Netosuma</url>

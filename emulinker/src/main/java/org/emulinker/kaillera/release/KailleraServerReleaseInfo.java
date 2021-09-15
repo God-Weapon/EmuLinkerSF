@@ -12,7 +12,7 @@ public final class KailleraServerReleaseInfo implements ReleaseInfo {
 
   private final int majorVersion = 0;
   private final int minorVersion = 1;
-  private final int buildNumber = 1;
+  private final int buildNumber = 2;
 
   private final String releaseDate = "2021-09-15";
   private final String licenseInfo =
