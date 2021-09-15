@@ -3,6 +3,7 @@ package org.emulinker.kaillera.controller.v086.protocol;
 import java.nio.ByteBuffer;
 import java.util.*;
 import org.emulinker.kaillera.controller.messaging.*;
+import org.emulinker.kaillera.controller.v086.V086Utils;
 import org.emulinker.kaillera.relay.KailleraRelay;
 import org.emulinker.util.*;
 
@@ -52,9 +53,7 @@ public class PlayerInformation extends V086Message {
 
   @Override
   public int getBodyLength() {
-    int len = 5;
-    for (Player p : players) len += p.getLength();
-    return len;
+    return 5 + players.stream().mapToInt(p -> p.getNumBytes()).sum();
   }
 
   @Override
@@ -160,9 +159,8 @@ public class PlayerInformation extends V086Message {
           + "]";
     }
 
-    public int getLength() {
-      // return (charset.encode(userName).remaining() + 2);
-      return (userName.length() + 8);
+    public int getNumBytes() {
+      return V086Utils.getNumBytes(userName) + 8;
     }
 
     public void writeTo(ByteBuffer buffer) {

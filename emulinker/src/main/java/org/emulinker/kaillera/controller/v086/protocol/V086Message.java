@@ -33,7 +33,7 @@ public abstract class V086Message extends ByteBufferMessage {
 
   @Override
   public int getLength() {
-    return (getBodyLength() + 1);
+    return getBodyLength() + 1;
     // return (getBodyLength() + 5);
   }
 

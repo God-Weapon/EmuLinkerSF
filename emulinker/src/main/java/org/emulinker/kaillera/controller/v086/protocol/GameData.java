@@ -61,7 +61,7 @@ public class GameData extends V086Message {
 
   @Override
   public int getBodyLength() {
-    return (gameData.length + 3);
+    return gameData.length + 3;
   }
 
   @Override
