@@ -5,7 +5,6 @@ import java.net.*;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
-import java.util.*;
 import org.apache.commons.logging.*;
 import org.emulinker.util.*;
 import org.picocontainer.Startable;

@@ -4,10 +4,10 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.emulinker</groupId>
-  <artifactId>emulinker</artifactId>
-  <version>0.93.1</version>
+  <artifactId>emulinkersf-netosuma</artifactId>
+  <version>0.1.0</version>
 
-  <name>emulinker</name>
+  <name>EmulinkerSF-Netosuma</name>
   <url>https://github.com/hopskipnfall/EmuLinkerSF-Netosuma</url>
 
   <properties>

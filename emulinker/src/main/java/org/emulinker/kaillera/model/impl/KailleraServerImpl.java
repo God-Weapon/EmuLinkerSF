@@ -680,15 +680,16 @@ public class KailleraServerImpl implements KailleraServer, Executable {
       Thread.sleep(20);
     } catch (Exception e) {
     }
-    userImpl.addEvent(
-        new InfoMessageEvent(
-            user,
-            getReleaseInfo().getProductName()
-                + " v"
-                + getReleaseInfo().getVersionString()
-                + ": "
-                + getReleaseInfo().getReleaseDate()
-                + " - Visit: www.EmuLinker.org"));
+    // TODO(nue): Localize this welcome message?
+    // userImpl.addEvent(
+    //     new InfoMessageEvent(
+    //         user,
+    //         getReleaseInfo().getProductName()
+    //             + " v"
+    //             + getReleaseInfo().getVersionString()
+    //             + ": "
+    //             + getReleaseInfo().getReleaseDate()
+    //             + " - Visit: www.EmuLinker.org"));
 
     try {
       Thread.sleep(20);

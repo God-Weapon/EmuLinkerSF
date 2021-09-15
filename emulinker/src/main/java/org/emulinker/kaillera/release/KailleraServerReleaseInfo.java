@@ -8,13 +8,13 @@ import org.emulinker.util.EmuUtil;
  * welcome message for printing at server startup.
  */
 public final class KailleraServerReleaseInfo implements ReleaseInfo {
-  private final String productName = "EmuLinkerSF (Beta)";
+  private final String productName = "EmuLinkerSF-Netosuma (Beta)";
 
   private final int majorVersion = 0;
-  private final int minorVersion = 93;
-  private final int buildNumber = 1;
+  private final int minorVersion = 1;
+  private final int buildNumber = 0;
 
-  private final String releaseDate = "2021-08-17";
+  private final String releaseDate = "2021-09-15";
   private final String licenseInfo =
       "Usage of this sofware is subject to the terms found in the included license";
   private final String website = "https://github.com/hopskipnfall/EmuLinkerSF-Netosuma";

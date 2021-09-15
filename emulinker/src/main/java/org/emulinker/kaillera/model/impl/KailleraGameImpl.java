@@ -504,20 +504,22 @@ public final class KailleraGameImpl implements KailleraGame {
     // if(user.equals(owner))
     // {
 
-    announce(
-        "Help: "
-            + getServer().getReleaseInfo().getProductName()
-            + " v"
-            + getServer().getReleaseInfo().getVersionString()
-            + ": "
-            + getServer().getReleaseInfo().getReleaseDate()
-            + " - Visit: www.EmuLinker.org",
-        user);
-    announce("************************", user);
-    announce("Type /p2pon to ignore ALL server activity during gameplay.", user);
-    announce("This will reduce lag that you contribute due to a busy server.", user);
-    announce("If server is greater than 60 users, option is auto set.", user);
-    announce("************************", user);
+    // TODO(nue): Localize this welcome message?
+    // announce(
+    //     "Help: "
+    //         + getServer().getReleaseInfo().getProductName()
+    //         + " v"
+    //         + getServer().getReleaseInfo().getVersionString()
+    //         + ": "
+    //         + getServer().getReleaseInfo().getReleaseDate()
+    //         + " - Visit: www.EmuLinker.org",
+    //     user);
+    // announce("************************", user);
+    // announce("Type /p2pon to ignore ALL server activity during gameplay.", user);
+    // announce("This will reduce lag that you contribute due to a busy server.", user);
+    // announce("If server is greater than 60 users, option is auto set.", user);
+    // announce("************************", user);
+
     /*
     if(autoFireDetector != null)
     {

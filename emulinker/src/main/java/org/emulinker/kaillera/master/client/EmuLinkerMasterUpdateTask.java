@@ -92,19 +92,21 @@ public class EmuLinkerMasterUpdateTask implements MasterListUpdateTask {
       }
     }
 
-    String updateAvailable = props.getProperty("updateAvailable");
-    if (updateAvailable != null && updateAvailable.equalsIgnoreCase("true")) {
-      String latestVersion = props.getProperty("latest");
-      String notes = props.getProperty("notes");
-      StringBuilder sb = new StringBuilder();
-      sb.append("A updated version of EmuLinkerSF is available: ");
-      sb.append(latestVersion);
-      if (notes != null) {
-        sb.append(" (");
-        sb.append(notes);
-        sb.append(")");
-      }
-      log.warn(sb.toString());
-    }
+    // TODO(nue): Consider adding a server that can give update available notices for the Netosuma
+    // build.
+    // String updateAvailable = props.getProperty("updateAvailable");
+    // if (updateAvailable != null && updateAvailable.equalsIgnoreCase("true")) {
+    //   String latestVersion = props.getProperty("latest");
+    //   String notes = props.getProperty("notes");
+    //   StringBuilder sb = new StringBuilder();
+    //   sb.append("A updated version of EmuLinkerSF is available: ");
+    //   sb.append(latestVersion);
+    //   if (notes != null) {
+    //     sb.append(" (");
+    //     sb.append(notes);
+    //     sb.append(")");
+    //   }
+    //   log.warn(sb.toString());
+    // }
   }
 }
