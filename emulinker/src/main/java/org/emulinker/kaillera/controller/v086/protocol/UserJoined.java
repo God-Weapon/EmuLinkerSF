@@ -1,103 +1,77 @@
 package org.emulinker.kaillera.controller.v086.protocol;
 
+import com.google.auto.value.AutoValue;
+import com.google.common.base.Strings;
 import java.nio.ByteBuffer;
 import org.emulinker.kaillera.controller.messaging.*;
+import org.emulinker.kaillera.model.KailleraUser;
 import org.emulinker.kaillera.relay.KailleraRelay;
 import org.emulinker.util.*;
 
-public class UserJoined extends V086Message {
+@AutoValue
+public abstract class UserJoined extends V086Message {
   public static final byte ID = 0x02;
-  public static final String DESC = "User Joined";
+  private static final String DESC = "User Joined";
 
-  private String userName;
-  private int userID;
-  private long ping;
-  private byte connectionType;
+  public abstract String username();
 
-  public UserJoined(int messageNumber, String userName, int userID, long ping, byte connectionType)
+  public abstract int userId();
+
+  public abstract long ping();
+
+  public abstract byte connectionType();
+
+  public static AutoValue_UserJoined create(
+      int messageNumber, String username, int userId, long ping, byte connectionType)
       throws MessageFormatException {
-    super(messageNumber);
+    V086Message.validateMessageNumber(messageNumber, DESC);
 
-    if (userName.length() == 0)
+    if (Strings.isNullOrEmpty(username))
       throw new MessageFormatException(
-          "Invalid "
-              + getDescription()
-              + " format: userName.length == 0, (userID = "
-              + userID
-              + ")");
+          "Invalid " + DESC + " format: userName.length == 0, (userID = " + userId + ")");
 
-    if (userID < 0 || userID > 65535)
+    if (userId < 0 || userId > 65535)
       throw new MessageFormatException(
-          "Invalid " + getDescription() + " format: userID out of acceptable range: " + userID);
+          "Invalid " + DESC + " format: userID out of acceptable range: " + userId);
 
     if (ping < 0 || ping > 2048) // what should max ping be?
     throw new MessageFormatException(
-          "Invalid " + getDescription() + " format: ping out of acceptable range: " + ping);
+          "Invalid " + DESC + " format: ping out of acceptable range: " + ping);
 
     if (connectionType < 1 || connectionType > 6)
       throw new MessageFormatException(
-          "Invalid "
-              + getDescription()
-              + " format: connectionType out of acceptable range: "
-              + connectionType);
+          "Invalid " + DESC + " format: connectionType out of acceptable range: " + connectionType);
 
-    this.userName = userName; // check userName length?
-    this.userID = userID;
-    this.ping = ping;
-    this.connectionType = connectionType;
+    return new AutoValue_UserJoined(
+        messageNumber, ID, DESC, username, userId, ping, connectionType);
   }
 
-  @Override
-  public byte getID() {
-    return ID;
-  }
-
-  @Override
-  public String getDescription() {
-    return DESC;
-  }
-
-  public String getUserName() {
-    return userName;
-  }
-
-  public int getUserID() {
-    return userID;
-  }
-
-  public long getPing() {
-    return ping;
-  }
-
-  public byte getConnectionType() {
-    return connectionType;
-  }
-
+  // TODO(nue): Get rid of this.
   @Override
   public String toString() {
     return getInfoString()
         + "[userName="
-        + userName
+        + username()
         + " userID="
-        + userID
+        + userId()
         + " ping="
-        + ping
+        + ping()
         + " connectionType="
-        + org.emulinker.kaillera.model.KailleraUser.CONNECTION_TYPE_NAMES[connectionType]
+        + KailleraUser.CONNECTION_TYPE_NAMES[connectionType()]
         + "]";
   }
 
   @Override
   public int getBodyLength() {
-    return getNumBytes(userName) + 8;
+    return getNumBytes(username()) + 8;
   }
 
   @Override
   public void writeBodyTo(ByteBuffer buffer) {
-    EmuUtil.writeString(buffer, userName, 0x00, KailleraRelay.config.charset());
-    UnsignedUtil.putUnsignedShort(buffer, userID);
-    UnsignedUtil.putUnsignedInt(buffer, ping);
-    buffer.put(connectionType);
+    EmuUtil.writeString(buffer, username(), 0x00, KailleraRelay.config.charset());
+    UnsignedUtil.putUnsignedShort(buffer, userId());
+    UnsignedUtil.putUnsignedInt(buffer, ping());
+    buffer.put(connectionType());
   }
 
   public static UserJoined parse(int messageNumber, ByteBuffer buffer)
@@ -112,6 +86,6 @@ public class UserJoined extends V086Message {
     long ping = UnsignedUtil.getUnsignedInt(buffer);
     byte connectionType = buffer.get();
 
-    return new UserJoined(messageNumber, userName, userID, ping, connectionType);
+    return UserJoined.create(messageNumber, userName, userID, ping, connectionType);
   }
 }

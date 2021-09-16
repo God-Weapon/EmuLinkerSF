@@ -5,7 +5,7 @@ import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 
 public class ConnectMessage_TOO extends ConnectMessage {
   public static final String ID = "TOO";
-  public static final String DESC = "Server Full Response";
+  private static final String DESC = "Server Full Response";
 
   @Override
   public String getID() {
@@ -13,7 +13,7 @@ public class ConnectMessage_TOO extends ConnectMessage {
   }
 
   @Override
-  public String getDescription() {
+  public String description() {
     return DESC;
   }
 

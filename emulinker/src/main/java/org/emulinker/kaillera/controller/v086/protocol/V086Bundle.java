@@ -6,7 +6,7 @@ import org.emulinker.kaillera.controller.messaging.*;
 import org.emulinker.util.*;
 
 public class V086Bundle extends ByteBufferMessage {
-  public static final String DESC = "Kaillera v.086 Message Bundle";
+  private static final String DESC = "Kaillera v.086 Message Bundle";
 
   // protected List<V086Message>	messages;
   protected V086Message[] messages;
@@ -25,7 +25,7 @@ public class V086Bundle extends ByteBufferMessage {
   }
 
   @Override
-  public String getDescription() {
+  public String description() {
     return DESC;
   }
 

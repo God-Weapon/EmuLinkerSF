@@ -38,7 +38,7 @@ public class GameDesynchAction implements V086GameEventHandler {
 
     try {
       clientHandler.send(
-          new GameChat_Notification(
+          GameChat_Notification.create(
               clientHandler.getNextMessageNumber(),
               EmuLang.getString("GameDesynchAction.DesynchDetected"),
               desynchEvent.getMessage()));

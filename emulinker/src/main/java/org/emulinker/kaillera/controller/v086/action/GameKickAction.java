@@ -37,13 +37,13 @@ public class GameKickAction implements V086Action {
     GameKick kickRequest = (GameKick) message;
 
     try {
-      clientHandler.getUser().gameKick(kickRequest.getUserID());
+      clientHandler.getUser().gameKick(kickRequest.userId());
     } catch (GameKickException e) {
       log.debug("Failed to kick: " + e.getMessage());
       // new SF MOD - kick errors notifications
       try {
         clientHandler.send(
-            new GameChat_Notification(
+            GameChat_Notification.create(
                 clientHandler.getNextMessageNumber(), "Error", e.getMessage()));
       } catch (MessageFormatException ex) {
         log.error("Failed to contruct GameChat_Notification message: " + e.getMessage(), e);

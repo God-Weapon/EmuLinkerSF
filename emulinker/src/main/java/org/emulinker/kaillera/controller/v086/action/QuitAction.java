@@ -49,7 +49,7 @@ public class QuitAction implements V086Action, V086ServerEventHandler {
     Quit_Request quitRequest = (Quit_Request) message;
 
     try {
-      clientHandler.getUser().quit(quitRequest.getMessage());
+      clientHandler.getUser().quit(quitRequest.message());
     } catch (ActionException e) {
       throw new FatalActionException("Failed to quit: " + e.getMessage());
     }
@@ -64,7 +64,7 @@ public class QuitAction implements V086Action, V086ServerEventHandler {
     try {
       KailleraUser user = userQuitEvent.getUser();
       clientHandler.send(
-          new Quit_Notification(
+          Quit_Notification.create(
               clientHandler.getNextMessageNumber(),
               user.getName(),
               user.getID(),

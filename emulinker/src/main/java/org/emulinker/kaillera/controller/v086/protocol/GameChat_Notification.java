@@ -1,22 +1,16 @@
 package org.emulinker.kaillera.controller.v086.protocol;
 
+import com.google.auto.value.AutoValue;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 
-public class GameChat_Notification extends GameChat {
-  public static final String DESC = "In-Game Chat Notification";
+@AutoValue
+public abstract class GameChat_Notification extends GameChat {
+  private static final String DESC = "In-Game Chat Notification";
 
-  public GameChat_Notification(int messageNumber, String userName, String message)
-      throws MessageFormatException {
-    super(messageNumber, userName, message);
-  }
+  public static AutoValue_GameChat_Notification create(
+      int messageNumber, String username, String message) throws MessageFormatException {
+    V086Message.validateMessageNumber(messageNumber, DESC);
 
-  @Override
-  public String getDescription() {
-    return DESC;
-  }
-
-  @Override
-  public String toString() {
-    return getInfoString() + "[userName=" + getUserName() + " message: " + getMessage() + "]";
+    return new AutoValue_GameChat_Notification(messageNumber, ID, DESC, username, message);
   }
 }

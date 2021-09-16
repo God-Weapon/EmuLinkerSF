@@ -61,11 +61,11 @@ public class DropGameAction implements V086Action, V086GameEventHandler {
     try {
       KailleraUser user = userDroppedEvent.getUser();
       int playerNumber = userDroppedEvent.getPlayerNumber();
-      //			clientHandler.send(new PlayerDrop_Notification(clientHandler.getNextMessageNumber(),
+      //			clientHandler.send(PlayerDrop_Notification.create(clientHandler.getNextMessageNumber(),
       // user.getName(), (byte) game.getPlayerNumber(user)));
       if (user.getStealth() == false)
         clientHandler.send(
-            new PlayerDrop_Notification(
+            PlayerDrop_Notification.create(
                 clientHandler.getNextMessageNumber(), user.getName(), (byte) playerNumber));
     } catch (MessageFormatException e) {
       log.error("Failed to contruct PlayerDrop_Notification message: " + e.getMessage(), e);

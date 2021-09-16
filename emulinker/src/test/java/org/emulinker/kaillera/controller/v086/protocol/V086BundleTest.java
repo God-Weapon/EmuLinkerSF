@@ -24,9 +24,8 @@ public class V086BundleTest {
     assertThat(parsedBundle.getMessages()[0]).isInstanceOf(UserInformation.class);
 
     UserInformation userInformation = (UserInformation) parsedBundle.getMessages()[0];
-    // TODO: Consider using AutoValue so we can just directly compare objects.
-    assertThat(userInformation.getClientType()).isEqualTo("Project 64k 0.13 (01 Aug 2003)");
-    assertThat(userInformation.getUserName()).isEqualTo("鵺");
+    assertThat(userInformation.clientType()).isEqualTo("Project 64k 0.13 (01 Aug 2003)");
+    assertThat(userInformation.username()).isEqualTo("鵺");
   }
 
   @Test
@@ -40,7 +39,7 @@ public class V086BundleTest {
     V086Bundle parsedBundle =
         V086Bundle.parse(V086Utils.hexStringToByteBuffer(hexInput), lastMessageNumber);
     assertThat(parsedBundle.getMessages()).hasLength(1);
-    assertThat(parsedBundle.getMessages()[0]).isInstanceOf(ClientACK.class);
+    assertThat(parsedBundle.getMessages()[0]).isEqualTo(ClientACK.create(/* messageNumber= */ 1));
   }
 
   @Test
@@ -57,6 +56,6 @@ public class V086BundleTest {
     assertThat(parsedBundle.getMessages()[0]).isInstanceOf(CreateGame_Request.class);
 
     CreateGame_Request message = (CreateGame_Request) parsedBundle.getMessages()[0];
-    assertThat(message.toString()).isEqualTo("10:0A/Create Game Request[romName=SmashRemix0.9.7]");
+    assertThat(message).isEqualTo(CreateGame_Request.create(10, "SmashRemix0.9.7"));
   }
 }

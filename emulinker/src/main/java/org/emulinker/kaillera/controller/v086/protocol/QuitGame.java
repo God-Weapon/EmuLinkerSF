@@ -8,45 +8,19 @@ import org.emulinker.util.*;
 public abstract class QuitGame extends V086Message {
   public static final byte ID = 0x0B;
 
-  private String userName;
-  private int userID;
+  public abstract String username();
 
-  public QuitGame(int messageNumber, String userName, int userID) throws MessageFormatException {
-    super(messageNumber);
-
-    if (userID < 0 || userID > 0xFFFF)
-      throw new MessageFormatException(
-          "Invalid " + getDescription() + " format: userID out of acceptable range: " + userID);
-
-    this.userName = userName; // check userName length?
-    this.userID = userID;
-  }
-
-  @Override
-  public byte getID() {
-    return ID;
-  }
-
-  @Override
-  public abstract String getDescription();
-
-  public String getUserName() {
-    return userName;
-  }
-
-  public int getUserID() {
-    return userID;
-  }
+  public abstract int userId();
 
   @Override
   public int getBodyLength() {
-    return getNumBytes(userName) + 3;
+    return getNumBytes(username()) + 3;
   }
 
   @Override
   public void writeBodyTo(ByteBuffer buffer) {
-    EmuUtil.writeString(buffer, userName, 0x00, KailleraRelay.config.charset());
-    UnsignedUtil.putUnsignedShort(buffer, userID);
+    EmuUtil.writeString(buffer, username(), 0x00, KailleraRelay.config.charset());
+    UnsignedUtil.putUnsignedShort(buffer, userId());
   }
 
   public static QuitGame parse(int messageNumber, ByteBuffer buffer)
@@ -59,7 +33,9 @@ public abstract class QuitGame extends V086Message {
 
     int userID = UnsignedUtil.getUnsignedShort(buffer);
 
-    if (userName.length() == 0 && userID == 0xFFFF) return new QuitGame_Request(messageNumber);
-    else return new QuitGame_Notification(messageNumber, userName, userID);
+    if (userName.length() == 0 && userID == 0xFFFF) {
+      return QuitGame_Request.create(messageNumber);
+    }
+    return QuitGame_Notification.create(messageNumber, userName, userID);
   }
 }

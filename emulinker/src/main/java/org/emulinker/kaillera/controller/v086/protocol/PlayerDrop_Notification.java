@@ -1,31 +1,24 @@
 package org.emulinker.kaillera.controller.v086.protocol;
 
+import com.google.auto.value.AutoValue;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 
-public class PlayerDrop_Notification extends PlayerDrop {
-  public static final String DESC = "Player Drop Notification";
+@AutoValue
+public abstract class PlayerDrop_Notification extends PlayerDrop {
+  private static final String DESC = "Player Drop Notification";
 
-  public PlayerDrop_Notification(int messageNumber, String userName, byte playerNumber)
-      throws MessageFormatException {
-    super(messageNumber, userName, playerNumber);
+  public static AutoValue_PlayerDrop_Notification create(
+      int messageNumber, String username, byte playerNumber) throws MessageFormatException {
+    V086Message.validateMessageNumber(messageNumber, DESC);
 
-    if (userName.length() == 0)
+    if (playerNumber < 0 || playerNumber > 255) {
       throw new MessageFormatException(
-          "Invalid " + getDescription() + " format: userName.length == 0");
-  }
+          "Invalid " + DESC + " format: playerNumber out of acceptable range: " + playerNumber);
+    }
 
-  @Override
-  public String getDescription() {
-    return DESC;
-  }
-
-  @Override
-  public String toString() {
-    return getInfoString()
-        + "[userName="
-        + getUserName()
-        + " playerNumber="
-        + getPlayerNumber()
-        + "]";
+    if (username.length() == 0) {
+      throw new MessageFormatException("Invalid " + DESC + " format: userName.length == 0");
+    }
+    return new AutoValue_PlayerDrop_Notification(messageNumber, ID, DESC, username, playerNumber);
   }
 }

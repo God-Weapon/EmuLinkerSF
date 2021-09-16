@@ -6,7 +6,7 @@ import org.emulinker.util.EmuUtil;
 
 public class ConnectMessage_HELLOD00D extends ConnectMessage {
   public static final String ID = "HELLOD00D";
-  public static final String DESC = "Server Connection Response";
+  private static final String DESC = "Server Connection Response";
 
   private int port;
 
@@ -20,7 +20,7 @@ public class ConnectMessage_HELLOD00D extends ConnectMessage {
   }
 
   @Override
-  public String getDescription() {
+  public String description() {
     return DESC;
   }
 

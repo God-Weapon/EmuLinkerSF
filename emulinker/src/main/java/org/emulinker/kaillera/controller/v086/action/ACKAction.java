@@ -66,7 +66,7 @@ public class ACKAction implements V086Action, V086UserEventHandler {
       } catch (LoginException e) {
         try {
           clientHandler.send(
-              new ConnectionRejected(
+              ConnectionRejected.create(
                   clientHandler.getNextMessageNumber(), "server", user.getID(), e.getMessage()));
         } catch (MessageFormatException e2) {
           log.error("Failed to contruct new ConnectionRejected", e);
@@ -76,7 +76,7 @@ public class ACKAction implements V086Action, V086UserEventHandler {
       }
     } else {
       try {
-        clientHandler.send(new ServerACK(clientHandler.getNextMessageNumber()));
+        clientHandler.send(ServerACK.create(clientHandler.getNextMessageNumber()));
       } catch (MessageFormatException e) {
         log.error("Failed to contruct new ServerACK", e);
         return;
@@ -100,7 +100,7 @@ public class ACKAction implements V086Action, V086UserEventHandler {
       for (KailleraUser user : server.getUsers()) {
         if (user.getStatus() != KailleraUser.STATUS_CONNECTING && !user.equals(thisUser))
           users.add(
-              new ServerStatus.User(
+              ServerStatus.User.create(
                   user.getName(),
                   user.getPing(),
                   (byte) user.getStatus(),
@@ -119,7 +119,7 @@ public class ACKAction implements V086Action, V086UserEventHandler {
           if (!user.getStealth()) num++;
         }
         games.add(
-            new ServerStatus.Game(
+            ServerStatus.Game.create(
                 game.getRomName(),
                 game.getID(),
                 game.getClientType(),
@@ -202,7 +202,7 @@ public class ACKAction implements V086Action, V086UserEventHandler {
       int counter) {
     StringBuilder sb = new StringBuilder();
     for (ServerStatus.Game game : games) {
-      sb.append(game.getGameID());
+      sb.append(game.gameId());
       sb.append(",");
     }
     log.debug(
@@ -217,7 +217,7 @@ public class ACKAction implements V086Action, V086UserEventHandler {
             + " bytes, games: "
             + sb.toString());
     try {
-      clientHandler.send(new ServerStatus(clientHandler.getNextMessageNumber(), users, games));
+      clientHandler.send(ServerStatus.create(clientHandler.getNextMessageNumber(), users, games));
     } catch (MessageFormatException e) {
       log.error("Failed to contruct new ServerStatus for users", e);
     }

@@ -8,59 +8,22 @@ import org.emulinker.util.*;
 public abstract class Quit extends V086Message {
   public static final byte ID = 0x01;
 
-  private String userName;
-  private int userID;
-  private String message;
+  public abstract String username();
 
-  public Quit(int messageNumber, String userName, int userID, String message)
-      throws MessageFormatException {
-    super(messageNumber);
+  public abstract int userId();
 
-    if (userID < 0 || userID > 0xFFFF)
-      throw new MessageFormatException(
-          "Invalid " + getDescription() + " format: userID out of acceptable range: " + userID);
-
-    if (message == null)
-      throw new MessageFormatException("Invalid " + getDescription() + " format: message == null!");
-
-    this.userName = userName; // check userName length?
-    this.userID = userID;
-    this.message = message;
-  }
-
-  @Override
-  public byte getID() {
-    return ID;
-  }
-
-  @Override
-  public abstract String getDescription();
-
-  public String getUserName() {
-    return userName;
-  }
-
-  public int getUserID() {
-    return userID;
-  }
-
-  public String getMessage() {
-    return message;
-  }
-
-  @Override
-  public abstract String toString();
+  public abstract String message();
 
   @Override
   public int getBodyLength() {
-    return getNumBytes(userName) + getNumBytes(message) + 4;
+    return getNumBytes(username()) + getNumBytes(message()) + 4;
   }
 
   @Override
   public void writeBodyTo(ByteBuffer buffer) {
-    EmuUtil.writeString(buffer, userName, 0x00, KailleraRelay.config.charset());
-    UnsignedUtil.putUnsignedShort(buffer, userID);
-    EmuUtil.writeString(buffer, message, 0x00, KailleraRelay.config.charset());
+    EmuUtil.writeString(buffer, username(), 0x00, KailleraRelay.config.charset());
+    UnsignedUtil.putUnsignedShort(buffer, userId());
+    EmuUtil.writeString(buffer, message(), 0x00, KailleraRelay.config.charset());
   }
 
   public static Quit parse(int messageNumber, ByteBuffer buffer)
@@ -75,7 +38,9 @@ public abstract class Quit extends V086Message {
 
     String message = EmuUtil.readString(buffer, 0x00, KailleraRelay.config.charset());
 
-    if (userName.length() == 0 && userID == 0xFFFF) return new Quit_Request(messageNumber, message);
-    else return new Quit_Notification(messageNumber, userName, userID, message);
+    if (userName.length() == 0 && userID == 0xFFFF) {
+      return Quit_Request.create(messageNumber, message);
+    }
+    return Quit_Notification.create(messageNumber, userName, userID, message);
   }
 }

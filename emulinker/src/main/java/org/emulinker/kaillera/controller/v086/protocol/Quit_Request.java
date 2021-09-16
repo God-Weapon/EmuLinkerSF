@@ -1,21 +1,19 @@
 package org.emulinker.kaillera.controller.v086.protocol;
 
+import com.google.auto.value.AutoValue;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 
-public class Quit_Request extends Quit {
-  public static final String DESC = "User Quit Request";
+@AutoValue
+public abstract class Quit_Request extends Quit {
+  private static final String DESC = "User Quit Request";
 
-  public Quit_Request(int messageNumber, String message) throws MessageFormatException {
-    super(messageNumber, "", 0xFFFF, message);
-  }
+  private static final int USER_ID = 0xFFFF;
+  private static final String USERNAME = "";
 
-  @Override
-  public String getDescription() {
-    return DESC;
-  }
+  public static Quit_Request create(int messageNumber, String message)
+      throws MessageFormatException {
+    V086Message.validateMessageNumber(messageNumber, DESC);
 
-  @Override
-  public String toString() {
-    return getInfoString() + "[message=" + getMessage() + "]";
+    return new AutoValue_Quit_Request(messageNumber, ID, DESC, USERNAME, USER_ID, message);
   }
 }

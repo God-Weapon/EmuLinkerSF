@@ -8,44 +8,19 @@ import org.emulinker.util.EmuUtil;
 public abstract class Chat extends V086Message {
   public static final byte ID = 0x07;
 
-  private String userName;
-  private String message;
+  public abstract String username();
 
-  public Chat(int messageNumber, String userName, String message) throws MessageFormatException {
-    super(messageNumber);
-
-    this.userName = userName;
-    this.message = message;
-  }
-
-  @Override
-  public byte getID() {
-    return ID;
-  }
-
-  @Override
-  public abstract String getDescription();
-
-  public String getUserName() {
-    return userName;
-  }
-
-  public String getMessage() {
-    return message;
-  }
-
-  @Override
-  public abstract String toString();
+  public abstract String message();
 
   @Override
   public int getBodyLength() {
-    return getNumBytes(userName) + getNumBytes(message) + 2;
+    return getNumBytes(username()) + getNumBytes(message()) + 2;
   }
 
   @Override
   public void writeBodyTo(ByteBuffer buffer) {
-    EmuUtil.writeString(buffer, userName, 0x00, KailleraRelay.config.charset());
-    EmuUtil.writeString(buffer, message, 0x00, KailleraRelay.config.charset());
+    EmuUtil.writeString(buffer, username(), 0x00, KailleraRelay.config.charset());
+    EmuUtil.writeString(buffer, message(), 0x00, KailleraRelay.config.charset());
   }
 
   public static Chat parse(int messageNumber, ByteBuffer buffer)
@@ -59,9 +34,9 @@ public abstract class Chat extends V086Message {
     String message = EmuUtil.readString(buffer, 0x00, KailleraRelay.config.charset());
 
     if (userName.length() == 0) {
-      return new Chat_Request(messageNumber, message);
+      return Chat_Request.create(messageNumber, message);
     } else {
-      return new Chat_Notification(messageNumber, userName, message);
+      return Chat_Notification.create(messageNumber, userName, message);
     }
   }
 }

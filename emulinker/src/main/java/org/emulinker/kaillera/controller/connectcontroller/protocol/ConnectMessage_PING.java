@@ -6,7 +6,7 @@ import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 
 public class ConnectMessage_PING extends ConnectMessage {
   public static final String ID = "PING";
-  public static final String DESC = "Client Ping";
+  private static final String DESC = "Client Ping";
 
   private InetSocketAddress clientSocketAddress;
 
@@ -18,7 +18,7 @@ public class ConnectMessage_PING extends ConnectMessage {
   }
 
   @Override
-  public String getDescription() {
+  public String description() {
     return DESC;
   }
 

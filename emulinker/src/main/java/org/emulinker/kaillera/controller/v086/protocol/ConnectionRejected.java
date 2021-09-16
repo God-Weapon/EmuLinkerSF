@@ -1,83 +1,53 @@
 package org.emulinker.kaillera.controller.v086.protocol;
 
+import com.google.auto.value.AutoValue;
 import java.nio.ByteBuffer;
 import org.emulinker.kaillera.controller.messaging.*;
 import org.emulinker.kaillera.relay.KailleraRelay;
 import org.emulinker.util.*;
 
-public class ConnectionRejected extends V086Message {
+@AutoValue
+public abstract class ConnectionRejected extends V086Message {
   public static final byte ID = 0x16;
-  public static final String DESC = "Connection Rejected";
+  private static final String DESC = "Connection Rejected";
 
-  private String userName;
-  private int userID;
-  private String message;
+  public abstract String username();
 
-  public ConnectionRejected(int messageNumber, String userName, int userID, String message)
+  public abstract int userId();
+
+  public abstract String message();
+
+  public static AutoValue_ConnectionRejected create(
+      int messageNumber, String username, int userId, String message)
       throws MessageFormatException {
-    super(messageNumber);
+    V086Message.validateMessageNumber(messageNumber, DESC);
 
-    if (userName.length() == 0)
+    if (username.length() == 0) {
+      throw new MessageFormatException("Invalid " + DESC + " format: userName.length == 0");
+    }
+
+    if (userId < 0 || userId > 0xFFFF) {
       throw new MessageFormatException(
-          "Invalid " + getDescription() + " format: userName.length == 0");
+          "Invalid " + DESC + " format: userID out of acceptable range: " + userId);
+    }
 
-    if (userID < 0 || userID > 0xFFFF)
-      throw new MessageFormatException(
-          "Invalid " + getDescription() + " format: userID out of acceptable range: " + userID);
+    if (message.length() == 0) {
+      throw new MessageFormatException("Invalid " + DESC + " format: message.length == 0");
+    }
 
-    if (message.length() == 0)
-      throw new MessageFormatException(
-          "Invalid " + getDescription() + " format: message.length == 0");
-
-    this.userName = userName;
-    this.userID = userID;
-    this.message = message;
-  }
-
-  @Override
-  public byte getID() {
-    return ID;
-  }
-
-  @Override
-  public String getDescription() {
-    return DESC;
-  }
-
-  public String getUserName() {
-    return userName;
-  }
-
-  public int getUserID() {
-    return userID;
-  }
-
-  public String getMessage() {
-    return message;
-  }
-
-  @Override
-  public String toString() {
-    return getInfoString()
-        + "[userName="
-        + userName
-        + " userID="
-        + userID
-        + " message="
-        + message
-        + "]";
+    return new AutoValue_ConnectionRejected(messageNumber, ID, DESC, username, userId, message);
   }
 
   @Override
   public int getBodyLength() {
-    return getNumBytes(userName) + getNumBytes(message) + 4;
+    return getNumBytes(username()) + getNumBytes(message()) + 4;
   }
 
   @Override
   public void writeBodyTo(ByteBuffer buffer) {
-    EmuUtil.writeString(buffer, userName, 0x00, KailleraRelay.config.charset());
-    UnsignedUtil.putUnsignedShort(buffer, userID);
-    EmuUtil.writeString(buffer, message, 0x00, KailleraRelay.config.charset());
+    EmuUtil.writeString(buffer, username(), 0x00, KailleraRelay.config.charset());
+    UnsignedUtil.putUnsignedShort(buffer, userId());
+    EmuUtil.writeString(buffer, message(), 0x00, KailleraRelay.config.charset());
   }
 
   public static ConnectionRejected parse(int messageNumber, ByteBuffer buffer)
@@ -94,6 +64,6 @@ public class ConnectionRejected extends V086Message {
 
     String message = EmuUtil.readString(buffer, 0x00, KailleraRelay.config.charset());
 
-    return new ConnectionRejected(messageNumber, userName, userID, message);
+    return ConnectionRejected.create(messageNumber, userName, userID, message);
   }
 }

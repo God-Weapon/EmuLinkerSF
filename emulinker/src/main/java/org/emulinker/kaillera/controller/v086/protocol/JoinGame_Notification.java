@@ -1,51 +1,53 @@
 package org.emulinker.kaillera.controller.v086.protocol;
 
+import com.google.auto.value.AutoValue;
+import com.google.common.base.Strings;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 
-public class JoinGame_Notification extends JoinGame {
-  public static final String DESC = "Join Game Notification";
+@AutoValue
+public abstract class JoinGame_Notification extends JoinGame {
+  private static final String DESC = "Join Game Notification";
 
-  public JoinGame_Notification(
+  public static AutoValue_JoinGame_Notification create(
       int messageNumber,
-      int gameID,
+      int gameId,
       int val1,
-      String userName,
+      String username,
       long ping,
-      int userID,
+      int userId,
       byte connectionType)
       throws MessageFormatException {
-    super(messageNumber, gameID, val1, userName, ping, userID, connectionType);
+    V086Message.validateMessageNumber(messageNumber, DESC);
 
-    if (userName.length() == 0)
+    if (gameId < 0 || gameId > 0xFFFF) {
       throw new MessageFormatException(
-          "Invalid " + getDescription() + " format: userName.length() == 0");
+          "Invalid " + DESC + " format: gameID out of acceptable range: " + gameId);
+    }
+
+    if (ping < 0 || ping > 0xFFFF) {
+      throw new MessageFormatException(
+          "Invalid " + DESC + " format: ping out of acceptable range: " + ping);
+    }
+
+    if (userId < 0 || userId > 0xFFFF) {
+      throw new MessageFormatException(
+          "Invalid " + DESC + " format: userID out of acceptable range: " + userId);
+    }
+
+    if (connectionType < 1 || connectionType > 6) {
+      throw new MessageFormatException(
+          "Invalid " + DESC + " format: connectionType out of acceptable range: " + connectionType);
+    }
+
+    if (Strings.isNullOrEmpty(username)) {
+      throw new MessageFormatException("Invalid " + DESC + " format: userName.length() == 0");
+    }
+    return new AutoValue_JoinGame_Notification(
+        messageNumber, JoinGame.ID, gameId, val1, username, ping, userId, connectionType);
   }
 
   @Override
-  public byte getID() {
-    return ID;
-  }
-
-  @Override
-  public String getDescription() {
+  public String description() {
     return DESC;
-  }
-
-  @Override
-  public String toString() {
-    return getInfoString()
-        + "[gameID="
-        + getGameID()
-        + " val1="
-        + getVal1()
-        + " userName="
-        + getUserName()
-        + " ping="
-        + getPing()
-        + " userID="
-        + getUserID()
-        + " connectionType="
-        + getConnectionType()
-        + "]";
   }
 }

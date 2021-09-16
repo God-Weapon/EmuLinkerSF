@@ -1,46 +1,32 @@
 package org.emulinker.kaillera.controller.v086.protocol;
 
+import com.google.auto.value.AutoValue;
 import java.nio.ByteBuffer;
 import org.emulinker.kaillera.controller.messaging.*;
 import org.emulinker.util.UnsignedUtil;
 
-public class KeepAlive extends V086Message {
+@AutoValue
+public abstract class KeepAlive extends V086Message {
   public static final byte ID = 0x09;
-  public static final String DESC = "KeepAlive";
+  private static final String DESC = "KeepAlive";
 
-  private short val;
+  public abstract short val();
 
-  public KeepAlive(int messageNumber) throws MessageFormatException {
-    this(messageNumber, (short) 0x00);
-  }
+  // TODO(nue): Is anybody using this?
+  // public KeepAlive(int messageNumber) throws MessageFormatException {
+  //   this(messageNumber, (short) 0x00);
+  // }
 
-  public KeepAlive(int messageNumber, short val) throws MessageFormatException {
-    super(messageNumber);
+  public static AutoValue_KeepAlive create(int messageNumber, short val)
+      throws MessageFormatException {
+    V086Message.validateMessageNumber(messageNumber, DESC);
 
-    if (val < 0 || val > 0xFF)
+    if (val < 0 || val > 0xFF) {
       throw new MessageFormatException(
-          "Invalid " + getDescription() + " format: val out of acceptable range: " + val);
+          "Invalid " + DESC + " format: val out of acceptable range: " + val);
+    }
 
-    this.val = val;
-  }
-
-  @Override
-  public byte getID() {
-    return ID;
-  }
-
-  @Override
-  public String getDescription() {
-    return DESC;
-  }
-
-  public short getVal() {
-    return val;
-  }
-
-  @Override
-  public String toString() {
-    return getInfoString() + "[val=" + val + "]";
+    return new AutoValue_KeepAlive(messageNumber, ID, DESC, val);
   }
 
   @Override
@@ -50,13 +36,13 @@ public class KeepAlive extends V086Message {
 
   @Override
   public void writeBodyTo(ByteBuffer buffer) {
-    UnsignedUtil.putUnsignedByte(buffer, val);
+    UnsignedUtil.putUnsignedByte(buffer, val());
   }
 
   public static KeepAlive parse(int messageNumber, ByteBuffer buffer)
       throws ParseException, MessageFormatException {
     if (buffer.remaining() < 1) throw new ParseException("Failed byte count validation!");
 
-    return new KeepAlive(messageNumber, UnsignedUtil.getUnsignedByte(buffer));
+    return KeepAlive.create(messageNumber, UnsignedUtil.getUnsignedByte(buffer));
   }
 }

@@ -44,7 +44,7 @@ public class GameStatusAction implements V086ServerEventHandler {
         if (!user.getStealth()) num++;
       }
       clientHandler.send(
-          new GameStatus(
+          GameStatus.create(
               clientHandler.getNextMessageNumber(),
               game.getID(),
               (short) 0,

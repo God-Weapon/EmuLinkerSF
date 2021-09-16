@@ -1,42 +1,27 @@
 package org.emulinker.kaillera.controller.v086.protocol;
 
+import com.google.auto.value.AutoValue;
 import java.nio.ByteBuffer;
 import org.emulinker.kaillera.controller.messaging.*;
 import org.emulinker.util.*;
 
-public class GameKick extends V086Message {
+@AutoValue
+public abstract class GameKick extends V086Message {
   public static final byte ID = 0x0F;
-  public static final String DESC = "Game Kick Request";
+  private static final String DESC = "Game Kick Request";
 
-  private int userID;
+  public abstract int userId();
 
-  public GameKick(int messageNumber, int userID) throws MessageFormatException {
-    super(messageNumber);
+  public static AutoValue_GameKick create(int messageNumber, int userId)
+      throws MessageFormatException {
+    V086Message.validateMessageNumber(messageNumber, DESC);
 
-    if (userID < 0 || userID > 0xFFFF)
+    if (userId < 0 || userId > 0xFFFF) {
       throw new MessageFormatException(
-          "Invalid " + getDescription() + " format: userID out of acceptable range: " + userID);
+          "Invalid " + DESC + " format: userID out of acceptable range: " + userId);
+    }
 
-    this.userID = userID;
-  }
-
-  @Override
-  public byte getID() {
-    return ID;
-  }
-
-  @Override
-  public String getDescription() {
-    return DESC;
-  }
-
-  public int getUserID() {
-    return userID;
-  }
-
-  @Override
-  public String toString() {
-    return getInfoString() + "[userID=" + userID + "]";
+    return new AutoValue_GameKick(messageNumber, ID, DESC, userId);
   }
 
   @Override
@@ -47,7 +32,7 @@ public class GameKick extends V086Message {
   @Override
   public void writeBodyTo(ByteBuffer buffer) {
     buffer.put((byte) 0x00);
-    UnsignedUtil.putUnsignedShort(buffer, userID);
+    UnsignedUtil.putUnsignedShort(buffer, userId());
   }
 
   public static GameKick parse(int messageNumber, ByteBuffer buffer)
@@ -59,6 +44,6 @@ public class GameKick extends V086Message {
     if (b != 0x00)
     	throw new MessageFormatException("Invalid " + DESC + " format: byte 0 = " + EmuUtil.byteToHex(b));
     */
-    return new GameKick(messageNumber, UnsignedUtil.getUnsignedShort(buffer));
+    return GameKick.create(messageNumber, UnsignedUtil.getUnsignedShort(buffer));
   }
 }

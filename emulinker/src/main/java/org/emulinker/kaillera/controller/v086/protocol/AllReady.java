@@ -1,30 +1,19 @@
 package org.emulinker.kaillera.controller.v086.protocol;
 
+import com.google.auto.value.AutoValue;
 import java.nio.ByteBuffer;
 import org.emulinker.kaillera.controller.messaging.*;
 import org.emulinker.util.EmuUtil;
 
-public class AllReady extends V086Message {
+@AutoValue
+public abstract class AllReady extends V086Message {
   public static final byte ID = 0x15;
-  public static final String DESC = "All Ready Signal";
 
-  public AllReady(int messageNumber) throws MessageFormatException {
-    super(messageNumber);
-  }
+  private static final String DESC = "All Ready Signal";
 
-  @Override
-  public byte getID() {
-    return ID;
-  }
-
-  @Override
-  public String getDescription() {
-    return DESC;
-  }
-
-  @Override
-  public String toString() {
-    return getInfoString();
+  public static AutoValue_AllReady create(int messageNumber) throws MessageFormatException {
+    V086Message.validateMessageNumber(messageNumber, DESC);
+    return new AutoValue_AllReady(messageNumber, ID, DESC);
   }
 
   @Override
@@ -47,6 +36,6 @@ public class AllReady extends V086Message {
       throw new MessageFormatException(
           "Invalid " + DESC + " format: byte 0 = " + EmuUtil.byteToHex(b));
 
-    return new AllReady(messageNumber);
+    return AllReady.create(messageNumber);
   }
 }

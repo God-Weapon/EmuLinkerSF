@@ -55,7 +55,7 @@ public class UserReadyAction implements V086Action, V086GameEventHandler {
     clientHandler.resetGameDataCache();
 
     try {
-      clientHandler.send(new AllReady(clientHandler.getNextMessageNumber()));
+      clientHandler.send(AllReady.create(clientHandler.getNextMessageNumber()));
     } catch (MessageFormatException e) {
       log.error("Failed to contruct AllReady message: " + e.getMessage(), e);
     }

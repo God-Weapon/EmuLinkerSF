@@ -37,7 +37,7 @@ public class InfoMessageAction implements V086UserEventHandler {
 
     try {
       clientHandler.send(
-          new InformationMessage(
+          InformationMessage.create(
               clientHandler.getNextMessageNumber(), "server", infoEvent.getMessage()));
     } catch (MessageFormatException e) {
       log.error("Failed to contruct InformationMessage message: " + e.getMessage(), e);

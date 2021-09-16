@@ -1,52 +1,35 @@
 package org.emulinker.kaillera.controller.v086.protocol;
 
+import com.google.auto.value.AutoValue;
 import java.nio.ByteBuffer;
 import org.emulinker.kaillera.controller.messaging.*;
 import org.emulinker.util.*;
 
-public class CloseGame extends V086Message {
+@AutoValue
+public abstract class CloseGame extends V086Message {
   public static final byte ID = 0x10;
-  public static final String DESC = "Close Game";
 
-  private int gameID;
-  private int val1;
+  private static final String DESC = "Close Game";
 
-  public CloseGame(int messageNumber, int gameID, int val1) throws MessageFormatException {
-    super(messageNumber);
+  public abstract int gameId();
 
-    if (gameID < 0 || gameID > 0xFFFF)
+  public abstract int val1();
+
+  public static AutoValue_CloseGame create(int messageNumber, int gameId, int val1)
+      throws MessageFormatException {
+    V086Message.validateMessageNumber(messageNumber, DESC);
+
+    if (gameId < 0 || gameId > 0xFFFF) {
       throw new MessageFormatException(
-          "Invalid " + getDescription() + " format: gameID out of acceptable range: " + gameID);
+          "Invalid " + DESC + " format: gameID out of acceptable range: " + gameId);
+    }
 
-    if (val1 < 0 || val1 > 0xFFFF)
+    if (val1 < 0 || val1 > 0xFFFF) {
       throw new MessageFormatException(
-          "Invalid " + getDescription() + " format: val1 out of acceptable range: " + val1);
+          "Invalid " + DESC + " format: val1 out of acceptable range: " + val1);
+    }
 
-    this.gameID = gameID;
-    this.val1 = val1;
-  }
-
-  @Override
-  public byte getID() {
-    return ID;
-  }
-
-  @Override
-  public String getDescription() {
-    return DESC;
-  }
-
-  public int getGameID() {
-    return gameID;
-  }
-
-  public int getVal1() {
-    return val1;
-  }
-
-  @Override
-  public String toString() {
-    return getInfoString() + "[gameID=" + gameID + " val1=" + val1 + "]";
+    return new AutoValue_CloseGame(messageNumber, ID, DESC, gameId, val1);
   }
 
   @Override
@@ -57,8 +40,8 @@ public class CloseGame extends V086Message {
   @Override
   public void writeBodyTo(ByteBuffer buffer) {
     buffer.put((byte) 0x00);
-    UnsignedUtil.putUnsignedShort(buffer, gameID);
-    UnsignedUtil.putUnsignedShort(buffer, val1);
+    UnsignedUtil.putUnsignedShort(buffer, gameId());
+    UnsignedUtil.putUnsignedShort(buffer, val1());
   }
 
   public static CloseGame parse(int messageNumber, ByteBuffer buffer)
@@ -74,6 +57,6 @@ public class CloseGame extends V086Message {
     int gameID = UnsignedUtil.getUnsignedShort(buffer);
     int val1 = UnsignedUtil.getUnsignedShort(buffer);
 
-    return new CloseGame(messageNumber, gameID, val1);
+    return CloseGame.create(messageNumber, gameID, val1);
   }
 }

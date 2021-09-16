@@ -1,37 +1,29 @@
 package org.emulinker.kaillera.controller.v086.protocol;
 
+import com.google.auto.value.AutoValue;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 
-public class Quit_Notification extends Quit {
-  public static final String DESC = "User Quit Notification";
+@AutoValue
+public abstract class Quit_Notification extends Quit {
+  private static final String DESC = "User Quit Notification";
 
-  public Quit_Notification(int messageNumber, String userName, int userID, String message)
+  public static AutoValue_Quit_Notification create(
+      int messageNumber, String username, int userId, String message)
       throws MessageFormatException {
-    super(messageNumber, userName, userID, message);
+    V086Message.validateMessageNumber(messageNumber, DESC);
 
-    if (userName.length() == 0)
+    if (userId < 0 || userId > 0xFFFF) {
       throw new MessageFormatException(
-          "Invalid "
-              + getDescription()
-              + " format: userName.length == 0, (userID = "
-              + userID
-              + ")");
-  }
+          "Invalid " + DESC + " format: userID out of acceptable range: " + userId);
+    }
 
-  @Override
-  public String getDescription() {
-    return DESC;
-  }
+    if (message == null)
+      throw new MessageFormatException("Invalid " + DESC + " format: message == null!");
 
-  @Override
-  public String toString() {
-    return getInfoString()
-        + "[userName="
-        + getUserName()
-        + " userID="
-        + getUserID()
-        + " message="
-        + getMessage()
-        + "]";
+    if (username.length() == 0) {
+      throw new MessageFormatException(
+          "Invalid " + DESC + " format: userName.length == 0, (userID = " + userId + ")");
+    }
+    return new AutoValue_Quit_Notification(messageNumber, ID, DESC, username, userId, message);
   }
 }

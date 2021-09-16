@@ -1,29 +1,30 @@
 package org.emulinker.kaillera.controller.v086.protocol;
 
+import com.google.auto.value.AutoValue;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 
-public class StartGame_Notification extends StartGame {
-  public static final String DESC = "Start Game Notification";
+@AutoValue
+public abstract class StartGame_Notification extends StartGame {
+  private static final String DESC = "Start Game Notification";
 
-  public StartGame_Notification(int messageNumber, int val1, short playerNumber, short numPlayers)
+  public static AutoValue_StartGame_Notification create(
+      int messageNumber, int val1, short playerNumber, short numPlayers)
       throws MessageFormatException {
-    super(messageNumber, val1, playerNumber, numPlayers);
-  }
+    V086Message.validateMessageNumber(messageNumber, DESC);
 
-  @Override
-  public String getDescription() {
-    return DESC;
-  }
+    if (val1 < 0 || val1 > 0xFFFF)
+      throw new MessageFormatException(
+          "Invalid " + DESC + " format: val1 out of acceptable range: " + val1);
 
-  @Override
-  public String toString() {
-    return getInfoString()
-        + "[val1="
-        + getVal1()
-        + " playerNumber="
-        + getPlayerNumber()
-        + " numPlayers="
-        + getNumPlayers()
-        + "]";
+    if (playerNumber < 0 || playerNumber > 0xFF)
+      throw new MessageFormatException(
+          "Invalid " + DESC + " format: playerNumber out of acceptable range: " + playerNumber);
+
+    if (numPlayers < 0 || numPlayers > 0xFF)
+      throw new MessageFormatException(
+          "Invalid " + DESC + " format: numPlayers out of acceptable range: " + numPlayers);
+
+    return new AutoValue_StartGame_Notification(
+        messageNumber, ID, DESC, val1, playerNumber, numPlayers);
   }
 }

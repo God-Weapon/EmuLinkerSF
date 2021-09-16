@@ -1,26 +1,22 @@
 package org.emulinker.kaillera.controller.v086.protocol;
 
+import com.google.auto.value.AutoValue;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 
-public class CreateGame_Request extends CreateGame {
-  public static final String DESC = "Create Game Request";
+@AutoValue
+public abstract class CreateGame_Request extends CreateGame {
+  private static final String DESC = "Create Game Request";
 
-  public CreateGame_Request(int messageNumber, String romName) throws MessageFormatException {
-    super(messageNumber, "", romName, "", 0xFFFF, 0xFFFF);
-  }
+  private static final int GAME_ID = 0xFFFF;
+  private static final int VAL1 = 0xFFFF;
+  private static final String USERNAME = "";
+  private static final String CLIENT_TYPE = "";
 
-  @Override
-  public byte getID() {
-    return ID;
-  }
+  public static AutoValue_CreateGame_Request create(int messageNumber, String romName)
+      throws MessageFormatException {
+    V086Message.validateMessageNumber(messageNumber, DESC);
 
-  @Override
-  public String getDescription() {
-    return DESC;
-  }
-
-  @Override
-  public String toString() {
-    return getInfoString() + "[romName=" + getRomName() + "]";
+    return new AutoValue_CreateGame_Request(
+        messageNumber, ID, DESC, USERNAME, romName, CLIENT_TYPE, GAME_ID, VAL1);
   }
 }

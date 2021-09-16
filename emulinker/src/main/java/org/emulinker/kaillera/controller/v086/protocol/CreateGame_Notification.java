@@ -1,39 +1,32 @@
 package org.emulinker.kaillera.controller.v086.protocol;
 
+import com.google.auto.value.AutoValue;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 
-public class CreateGame_Notification extends CreateGame {
-  public static final String DESC = "Create Game Notification";
+@AutoValue
+public abstract class CreateGame_Notification extends CreateGame {
+  private static final String DESC = "Create Game Notification";
 
-  public CreateGame_Notification(
-      int messageNumber, String userName, String romName, String clientType, int gameID, int val1)
+  public static AutoValue_CreateGame_Notification create(
+      int messageNumber, String username, String romName, String clientType, int gameId, int val1)
       throws MessageFormatException {
-    super(messageNumber, userName, romName, clientType, gameID, val1);
-  }
+    V086Message.validateMessageNumber(messageNumber, DESC);
 
-  @Override
-  public byte getID() {
-    return ID;
-  }
+    if (romName.length() == 0) {
+      throw new MessageFormatException("Invalid " + DESC + " format: romName.length == 0");
+    }
 
-  @Override
-  public String getDescription() {
-    return DESC;
-  }
+    if (gameId < 0 || gameId > 0xFFFF) {
+      throw new MessageFormatException(
+          "Invalid " + DESC + " format: gameID out of acceptable range: " + gameId);
+    }
 
-  @Override
-  public String toString() {
-    return getInfoString()
-        + "[userName="
-        + getUserName()
-        + " romName="
-        + getRomName()
-        + " clientType="
-        + getClientType()
-        + " gameID="
-        + getGameID()
-        + " val1="
-        + getVal1()
-        + "]";
+    if (val1 != 0x0000 && val1 != 0xFFFF) {
+      throw new MessageFormatException(
+          "Invalid " + DESC + " format: val1 out of acceptable range: " + val1);
+    }
+
+    return new AutoValue_CreateGame_Notification(
+        messageNumber, ID, DESC, username, romName, clientType, gameId, val1);
   }
 }

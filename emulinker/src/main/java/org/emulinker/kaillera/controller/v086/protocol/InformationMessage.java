@@ -1,65 +1,43 @@
 package org.emulinker.kaillera.controller.v086.protocol;
 
+import com.google.auto.value.AutoValue;
 import java.nio.ByteBuffer;
 import org.emulinker.kaillera.controller.messaging.*;
 import org.emulinker.kaillera.relay.KailleraRelay;
 import org.emulinker.util.EmuUtil;
 
-public class InformationMessage extends V086Message {
+@AutoValue
+public abstract class InformationMessage extends V086Message {
   public static final byte ID = 0x17;
-  public static final String DESC = "Information Message";
+  private static final String DESC = "Information Message";
 
-  private String source;
-  private String message;
+  public abstract String source();
 
-  public InformationMessage(int messageNumber, String source, String message)
-      throws MessageFormatException {
-    super(messageNumber);
+  public abstract String message();
 
-    if (source.length() == 0)
-      throw new MessageFormatException(
-          "Invalid " + getDescription() + " format: source.length == 0");
+  public static AutoValue_InformationMessage create(
+      int messageNumber, String source, String message) throws MessageFormatException {
+    V086Message.validateMessageNumber(messageNumber, DESC);
 
-    if (message.length() == 0)
-      throw new MessageFormatException(
-          "Invalid " + getDescription() + " format: message.length == 0");
+    if (source.length() == 0) {
+      throw new MessageFormatException("Invalid " + DESC + " format: source.length == 0");
+    }
 
-    this.source = source;
-    this.message = message;
-  }
-
-  @Override
-  public byte getID() {
-    return ID;
-  }
-
-  @Override
-  public String getDescription() {
-    return DESC;
-  }
-
-  public String getSource() {
-    return source;
-  }
-
-  public String getMessage() {
-    return message;
-  }
-
-  @Override
-  public String toString() {
-    return getInfoString() + "[source: " + source + " message: " + message + "]";
+    if (message.length() == 0) {
+      throw new MessageFormatException("Invalid " + DESC + " format: message.length == 0");
+    }
+    return new AutoValue_InformationMessage(messageNumber, ID, DESC, source, message);
   }
 
   @Override
   public int getBodyLength() {
-    return getNumBytes(source) + getNumBytes(message) + 2;
+    return getNumBytes(source()) + getNumBytes(message()) + 2;
   }
 
   @Override
   public void writeBodyTo(ByteBuffer buffer) {
-    EmuUtil.writeString(buffer, source, 0x00, KailleraRelay.config.charset());
-    EmuUtil.writeString(buffer, message, 0x00, KailleraRelay.config.charset());
+    EmuUtil.writeString(buffer, source(), 0x00, KailleraRelay.config.charset());
+    EmuUtil.writeString(buffer, message(), 0x00, KailleraRelay.config.charset());
   }
 
   public static InformationMessage parse(int messageNumber, ByteBuffer buffer)
@@ -72,6 +50,6 @@ public class InformationMessage extends V086Message {
 
     String message = EmuUtil.readString(buffer, 0x00, KailleraRelay.config.charset());
 
-    return new InformationMessage(messageNumber, source, message);
+    return InformationMessage.create(messageNumber, source, message);
   }
 }

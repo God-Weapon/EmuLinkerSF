@@ -1,25 +1,18 @@
 package org.emulinker.kaillera.controller.v086.protocol;
 
+import com.google.auto.value.AutoValue;
 import java.nio.ByteBuffer;
 import org.emulinker.kaillera.controller.messaging.*;
 import org.emulinker.util.*;
 
-public class ClientACK extends ACK {
+@AutoValue
+public abstract class ClientACK extends ACK {
   public static final byte ID = 0x06;
-  public static final String DESC = "Client to Server ACK";
+  private static final String DESC = "Client to Server ACK";
 
-  public ClientACK(int messageNumber) throws MessageFormatException {
-    super(messageNumber, 0, 1, 2, 3);
-  }
-
-  @Override
-  public byte getID() {
-    return ID;
-  }
-
-  @Override
-  public String getDescription() {
-    return DESC;
+  public static ClientACK create(int messageNumber) throws MessageFormatException {
+    V086Message.validateMessageNumber(messageNumber, DESC);
+    return new AutoValue_ClientACK(messageNumber, ID, DESC, 0, 1, 2, 3);
   }
 
   public static ClientACK parse(int messageNumber, ByteBuffer buffer)
@@ -42,6 +35,6 @@ public class ClientACK extends ACK {
     // throw new MessageFormatException("Invalid " + DESC + " format: bytes do not match acceptable
     // format!");
 
-    return new ClientACK(messageNumber);
+    return ClientACK.create(messageNumber);
   }
 }

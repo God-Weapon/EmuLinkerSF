@@ -74,13 +74,13 @@ public class QuitGameAction implements V086Action, V086GameEventHandler {
 
       if (user.getStealth() == false)
         clientHandler.send(
-            new QuitGame_Notification(
+            QuitGame_Notification.create(
                 clientHandler.getNextMessageNumber(), user.getName(), user.getID()));
 
       if (thisUser == user) {
         if (user.getStealth() == true)
           clientHandler.send(
-              new QuitGame_Notification(
+              QuitGame_Notification.create(
                   clientHandler.getNextMessageNumber(), user.getName(), user.getID()));
       }
     } catch (MessageFormatException e) {

@@ -1,21 +1,19 @@
 package org.emulinker.kaillera.controller.v086.protocol;
 
+import com.google.auto.value.AutoValue;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 
-public class PlayerDrop_Request extends PlayerDrop {
-  public static final String DESC = "Player Drop Request";
+@AutoValue
+public abstract class PlayerDrop_Request extends PlayerDrop {
+  private static final String DESC = "Player Drop Request";
 
-  public PlayerDrop_Request(int messageNumber) throws MessageFormatException {
-    super(messageNumber, "", (byte) 0);
-  }
+  private static final String USERNAME = "";
+  private static final byte PLAYER_NUMBER = (byte) 0;
 
-  @Override
-  public String getDescription() {
-    return DESC;
-  }
+  public static AutoValue_PlayerDrop_Request create(int messageNumber)
+      throws MessageFormatException {
+    V086Message.validateMessageNumber(messageNumber, DESC);
 
-  @Override
-  public String toString() {
-    return getInfoString();
+    return new AutoValue_PlayerDrop_Request(messageNumber, ID, DESC, USERNAME, PLAYER_NUMBER);
   }
 }

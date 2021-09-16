@@ -487,9 +487,9 @@ public class V086Controller implements KailleraServerController {
         synchronized (inSynch) {
           V086Message[] messages = inBundle.getMessages();
           if (inBundle.getNumMessages() == 1) {
-            lastMessageNumber = messages[0].getNumber();
+            lastMessageNumber = messages[0].messageNumber();
 
-            V086Action action = actions[messages[0].getID()];
+            V086Action action = actions[messages[0].messageId()];
             if (action == null) {
               log.error("No action defined to handle client message: " + messages[0]);
             }
@@ -505,7 +505,7 @@ public class V086Controller implements KailleraServerController {
                */
               {
                 prevMessageNumber = lastMessageNumber;
-                lastMessageNumber = messages[i].getNumber();
+                lastMessageNumber = messages[i].messageNumber();
 
                 if ((prevMessageNumber + 1) != lastMessageNumber) {
                   if (prevMessageNumber == 0xFFFF && lastMessageNumber == 0) {
@@ -522,7 +522,7 @@ public class V086Controller implements KailleraServerController {
                   }
                 }
 
-                V086Action action = actions[messages[i].getID()];
+                V086Action action = actions[messages[i].messageId()];
                 if (action == null) {
                   log.error("No action defined to handle client message: " + messages[i]);
                   continue;

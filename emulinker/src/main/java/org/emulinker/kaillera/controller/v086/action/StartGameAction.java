@@ -52,7 +52,7 @@ public class StartGameAction implements V086Action, V086GameEventHandler {
 
       try {
         clientHandler.send(
-            new GameChat_Notification(
+            GameChat_Notification.create(
                 clientHandler.getNextMessageNumber(), "Error", e.getMessage()));
       } catch (MessageFormatException ex) {
         log.error("Failed to contruct GameChat_Notification message: " + e.getMessage(), e);
@@ -79,7 +79,7 @@ public class StartGameAction implements V086Action, V086GameEventHandler {
 
       int playerNumber = game.getPlayerNumber(clientHandler.getUser());
       clientHandler.send(
-          new StartGame_Notification(
+          StartGame_Notification.create(
               clientHandler.getNextMessageNumber(),
               (short) delay,
               (byte) playerNumber,

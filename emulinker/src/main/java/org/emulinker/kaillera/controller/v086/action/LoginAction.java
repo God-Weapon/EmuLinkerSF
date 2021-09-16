@@ -45,15 +45,15 @@ public class LoginAction implements V086Action, V086ServerEventHandler {
 
     UserInformation userInfo = (UserInformation) message;
     KailleraUser user = clientHandler.getUser();
-    user.setName(userInfo.getUserName());
-    user.setClientType(userInfo.getClientType());
+    user.setName(userInfo.username());
+    user.setClientType(userInfo.clientType());
     user.setSocketAddress(clientHandler.getRemoteSocketAddress());
-    user.setConnectionType(userInfo.getConnectionType());
+    user.setConnectionType(userInfo.connectionType());
 
     clientHandler.startSpeedTest();
 
     try {
-      clientHandler.send(new ServerACK(clientHandler.getNextMessageNumber()));
+      clientHandler.send(ServerACK.create(clientHandler.getNextMessageNumber()));
     } catch (MessageFormatException e) {
       log.error("Failed to contruct ServerACK message: " + e.getMessage(), e);
     }
@@ -68,7 +68,7 @@ public class LoginAction implements V086Action, V086ServerEventHandler {
     try {
       KailleraUserImpl user = (KailleraUserImpl) userJoinedEvent.getUser();
       clientHandler.send(
-          new UserJoined(
+          UserJoined.create(
               clientHandler.getNextMessageNumber(),
               user.getName(),
               user.getID(),
@@ -98,7 +98,7 @@ public class LoginAction implements V086Action, V086ServerEventHandler {
           sb.append(user.getConnectionType());
 
           clientHandler.send(
-              new InformationMessage(
+              InformationMessage.create(
                   clientHandler.getNextMessageNumber(), "server", sb.toString()));
         }
       }

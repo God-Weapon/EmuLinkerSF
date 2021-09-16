@@ -7,29 +7,20 @@ import org.emulinker.kaillera.relay.KailleraRelay;
 import org.emulinker.util.*;
 
 public abstract class V086Message extends ByteBufferMessage {
-  protected int number;
-  protected byte messageType;
+  public abstract int messageNumber();
 
-  protected V086Message(int number) throws MessageFormatException {
-    if (number < 0 || number > 0xFFFF)
+  protected static void validateMessageNumber(int messageNumber, String description)
+      throws MessageFormatException {
+    if (messageNumber < 0 || messageNumber > 0xFFFF) {
       throw new MessageFormatException(
-          "Invalid " + getDescription() + " format: Invalid message number: " + number);
-
-    if (messageType < 0 || messageType > 0x17)
-      throw new MessageFormatException(
-          "Invalid " + getDescription() + " format: Invalid message type: " + messageType);
-
-    this.number = number;
+          "Invalid " + description + " format: Invalid message number: " + messageNumber);
+    }
   }
 
-  public int getNumber() {
-    return number;
-  }
-
-  public abstract byte getID();
+  public abstract byte messageId();
 
   @Override
-  public abstract String getDescription();
+  public abstract String description();
 
   @Override
   public int getLength() {
@@ -44,8 +35,9 @@ public abstract class V086Message extends ByteBufferMessage {
 
   public abstract int getBodyLength();
 
+  // TODO(nue): Figure out how to stuff this in the AutoValue toString.
   protected String getInfoString() {
-    return (getNumber() + ":" + EmuUtil.byteToHex(getID()) + "/" + getDescription());
+    return (messageNumber() + ":" + EmuUtil.byteToHex(messageId()) + "/" + description());
   }
 
   @Override
@@ -55,14 +47,14 @@ public abstract class V086Message extends ByteBufferMessage {
       log.warn(
           "Ran out of output buffer space, consider increasing the controllers.v086.bufferSize setting!");
     } else {
-      UnsignedUtil.putUnsignedShort(buffer, getNumber());
+      UnsignedUtil.putUnsignedShort(buffer, messageNumber());
       // there no realistic reason to use unsigned here since a single packet can't be that large
       // Cast to avoid issue with java version mismatch:
       // https://stackoverflow.com/a/61267496/2875073
       ((Buffer) buffer).mark();
       UnsignedUtil.putUnsignedShort(buffer, len);
       //		buffer.putShort((short)getLength());
-      buffer.put(getID());
+      buffer.put(messageId());
       writeBodyTo(buffer);
     }
   }
@@ -176,11 +168,12 @@ public abstract class V086Message extends ByteBufferMessage {
     }
 
     // removed to improve speed
-    if (message.getLength() != messageLength)
+    if (message.getLength() != messageLength) {
       //			throw new ParseException("Bundle contained length " + messageLength + " !=  parsed length
       // " + message.getLength());
       log.debug(
           "Bundle contained length " + messageLength + " !=  parsed length " + message.getLength());
+    }
 
     return message;
   }

@@ -7,7 +7,7 @@ import org.emulinker.util.EmuUtil;
 
 public class ConnectMessage_HELLO extends ConnectMessage {
   public static final String ID = "HELLO";
-  public static final String DESC = "Client Connection Request";
+  private static final String DESC = "Client Connection Request";
 
   private String protocol;
   private InetSocketAddress clientSocketAddress;
@@ -22,7 +22,7 @@ public class ConnectMessage_HELLO extends ConnectMessage {
   }
 
   @Override
-  public String getDescription() {
+  public String description() {
     return DESC;
   }
 

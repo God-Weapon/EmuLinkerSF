@@ -11,7 +11,7 @@ public abstract class ByteBufferMessage {
 
   public abstract int getLength();
 
-  public abstract String getDescription();
+  public abstract String description();
 
   @Override
   public abstract String toString();

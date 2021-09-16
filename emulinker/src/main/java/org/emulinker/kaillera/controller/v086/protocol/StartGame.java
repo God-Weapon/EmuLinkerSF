@@ -7,64 +7,11 @@ import org.emulinker.util.UnsignedUtil;
 public abstract class StartGame extends V086Message {
   public static final byte ID = 0x11;
 
-  private int val1;
-  private short playerNumber;
-  private short numPlayers;
+  public abstract int val1();
 
-  public StartGame(int messageNumber, short playerNumber, short numPlayers)
-      throws MessageFormatException {
-    this(messageNumber, 1, playerNumber, numPlayers);
-  }
+  public abstract short playerNumber();
 
-  public StartGame(int messageNumber, int val1, short playerNumber, short numPlayers)
-      throws MessageFormatException {
-    super(messageNumber);
-
-    if (val1 < 0 || val1 > 0xFFFF)
-      throw new MessageFormatException(
-          "Invalid " + getDescription() + " format: val1 out of acceptable range: " + val1);
-
-    if (playerNumber < 0 || playerNumber > 0xFF)
-      throw new MessageFormatException(
-          "Invalid "
-              + getDescription()
-              + " format: playerNumber out of acceptable range: "
-              + playerNumber);
-
-    if (numPlayers < 0 || numPlayers > 0xFF)
-      throw new MessageFormatException(
-          "Invalid "
-              + getDescription()
-              + " format: numPlayers out of acceptable range: "
-              + numPlayers);
-
-    this.val1 = val1;
-    this.playerNumber = playerNumber;
-    this.numPlayers = numPlayers;
-  }
-
-  @Override
-  public byte getID() {
-    return ID;
-  }
-
-  @Override
-  public abstract String getDescription();
-
-  public int getVal1() {
-    return val1;
-  }
-
-  public short getPlayerNumber() {
-    return playerNumber;
-  }
-
-  public short getNumPlayers() {
-    return numPlayers;
-  }
-
-  @Override
-  public abstract String toString();
+  public abstract short numPlayers();
 
   @Override
   public int getBodyLength() {
@@ -74,9 +21,9 @@ public abstract class StartGame extends V086Message {
   @Override
   public void writeBodyTo(ByteBuffer buffer) {
     buffer.put((byte) 0x00);
-    UnsignedUtil.putUnsignedShort(buffer, val1);
-    UnsignedUtil.putUnsignedByte(buffer, playerNumber);
-    UnsignedUtil.putUnsignedByte(buffer, numPlayers);
+    UnsignedUtil.putUnsignedShort(buffer, val1());
+    UnsignedUtil.putUnsignedByte(buffer, playerNumber());
+    UnsignedUtil.putUnsignedByte(buffer, numPlayers());
   }
 
   public static StartGame parse(int messageNumber, ByteBuffer buffer)
@@ -92,7 +39,7 @@ public abstract class StartGame extends V086Message {
     short numPlayers = UnsignedUtil.getUnsignedByte(buffer);
 
     if (val1 == 0xFFFF && playerNumber == 0xFF && numPlayers == 0xFF)
-      return new StartGame_Request(messageNumber);
-    else return new StartGame_Notification(messageNumber, val1, playerNumber, numPlayers);
+      return StartGame_Request.create(messageNumber);
+    else return StartGame_Notification.create(messageNumber, val1, playerNumber, numPlayers);
   }
 }

@@ -8,45 +8,19 @@ import org.emulinker.util.EmuUtil;
 public abstract class GameChat extends V086Message {
   public static final byte ID = 0x08;
 
-  private String userName;
-  private String message;
+  public abstract String username();
 
-  public GameChat(int messageNumber, String userName, String message)
-      throws MessageFormatException {
-    super(messageNumber);
-
-    this.userName = userName;
-    this.message = message;
-  }
-
-  @Override
-  public byte getID() {
-    return ID;
-  }
-
-  @Override
-  public abstract String getDescription();
-
-  public String getUserName() {
-    return userName;
-  }
-
-  public String getMessage() {
-    return message;
-  }
-
-  @Override
-  public abstract String toString();
+  public abstract String message();
 
   @Override
   public int getBodyLength() {
-    return getNumBytes(userName) + getNumBytes(message) + 2;
+    return getNumBytes(username()) + getNumBytes(message()) + 2;
   }
 
   @Override
   public void writeBodyTo(ByteBuffer buffer) {
-    EmuUtil.writeString(buffer, userName, 0x00, KailleraRelay.config.charset());
-    EmuUtil.writeString(buffer, message, 0x00, KailleraRelay.config.charset());
+    EmuUtil.writeString(buffer, username(), 0x00, KailleraRelay.config.charset());
+    EmuUtil.writeString(buffer, message(), 0x00, KailleraRelay.config.charset());
   }
 
   public static GameChat parse(int messageNumber, ByteBuffer buffer)
@@ -59,7 +33,9 @@ public abstract class GameChat extends V086Message {
 
     String message = EmuUtil.readString(buffer, 0x00, KailleraRelay.config.charset());
 
-    if (userName.length() == 0) return new GameChat_Request(messageNumber, message);
-    else return new GameChat_Notification(messageNumber, userName, message);
+    if (userName.length() == 0) {
+      return GameChat_Request.create(messageNumber, message);
+    }
+    return GameChat_Notification.create(messageNumber, userName, message);
   }
 }

@@ -41,7 +41,7 @@ public class GameInfoAction implements V086GameEventHandler {
 
     try {
       clientHandler.send(
-          new GameChat_Notification(
+          GameChat_Notification.create(
               clientHandler.getNextMessageNumber(), "Server", infoEvent.getMessage()));
     } catch (MessageFormatException e) {
       log.error("Failed to contruct GameChat_Notification message: " + e.getMessage(), e);

@@ -36,7 +36,7 @@ public class CachedGameDataAction implements V086Action {
     try {
       KailleraUser user = clientHandler.getUser();
 
-      int key = ((CachedGameData) message).getKey();
+      int key = ((CachedGameData) message).key();
       byte[] data = clientHandler.getClientGameDataCache().get(key);
 
       if (data == null) {
@@ -50,7 +50,8 @@ public class CachedGameDataAction implements V086Action {
 
       if (e.hasResponse()) {
         try {
-          clientHandler.send(new GameData(clientHandler.getNextMessageNumber(), e.getResponse()));
+          clientHandler.send(
+              GameData.create(clientHandler.getNextMessageNumber(), e.getResponse()));
         } catch (MessageFormatException e2) {
           log.error("Failed to contruct GameData message: " + e2.getMessage(), e2);
         }
@@ -58,14 +59,14 @@ public class CachedGameDataAction implements V086Action {
     } catch (IndexOutOfBoundsException e) {
       log.error(
           "Game data error!  The client cached key "
-              + ((CachedGameData) message).getKey()
+              + ((CachedGameData) message).key()
               + " was not found in the cache!",
           e);
 
       // This may not always be the best thing to do...
       try {
         clientHandler.send(
-            new GameChat_Notification(
+            GameChat_Notification.create(
                 clientHandler.getNextMessageNumber(),
                 "Error",
                 "Game Data Error!  Game state will be inconsistent!"));

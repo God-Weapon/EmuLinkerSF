@@ -1,79 +1,60 @@
 package org.emulinker.kaillera.controller.v086.protocol;
 
+import com.google.auto.value.AutoValue;
 import java.nio.ByteBuffer;
 import org.emulinker.kaillera.controller.messaging.*;
 import org.emulinker.kaillera.model.KailleraUser;
 import org.emulinker.kaillera.relay.KailleraRelay;
 import org.emulinker.util.EmuUtil;
 
-public class UserInformation extends V086Message {
+@AutoValue
+public abstract class UserInformation extends V086Message {
   public static final byte ID = 0x03;
-  public static final String DESC = "User Information";
+  private static final String DESC = "User Information";
 
-  private String userName;
-  private String clientType;
-  private byte connectionType;
+  public abstract String username();
 
-  public UserInformation(int messageNumber, String userName, String clientType, byte connectionType)
+  public abstract String clientType();
+
+  public abstract byte connectionType();
+
+  public static AutoValue_UserInformation create(
+      int messageNumber, String username, String clientType, byte connectionType)
       throws MessageFormatException {
-    super(messageNumber);
-    this.userName = userName;
-    this.clientType = clientType;
+    V086Message.validateMessageNumber(messageNumber, DESC);
 
-    if (connectionType < 1 || connectionType > 6)
+    if (connectionType < 1 || connectionType > 6) {
       throw new MessageFormatException(
-          "Invalid "
-              + getDescription()
-              + " format: connectionType out of acceptable range: "
-              + connectionType);
+          "Invalid " + DESC + " format: connectionType out of acceptable range: " + connectionType);
+    }
 
-    this.connectionType = connectionType;
-  }
-
-  @Override
-  public byte getID() {
-    return ID;
-  }
-
-  @Override
-  public String getDescription() {
-    return DESC;
+    return new AutoValue_UserInformation(
+        messageNumber, ID, DESC, username, clientType, connectionType);
   }
 
   @Override
   public int getBodyLength() {
-    return getNumBytes(userName) + getNumBytes(clientType) + 3;
+    return getNumBytes(username()) + getNumBytes(clientType()) + 3;
   }
 
-  public String getUserName() {
-    return userName;
-  }
-
-  public String getClientType() {
-    return clientType;
-  }
-
-  public byte getConnectionType() {
-    return connectionType;
-  }
-
+  // TODO(nue): Get rid of this.
   @Override
-  public String toString() {
+  public final String toString() {
     return getInfoString()
         + "[userName="
-        + userName
+        + username()
         + " clientType="
-        + clientType
+        + clientType()
         + " connectionType="
-        + KailleraUser.CONNECTION_TYPE_NAMES[connectionType]
+        + KailleraUser.CONNECTION_TYPE_NAMES[connectionType()]
         + "]";
   }
 
   @Override
   public void writeBodyTo(ByteBuffer buffer) {
-    EmuUtil.writeString(buffer, userName, 0x00, KailleraRelay.config.charset());
-    EmuUtil.writeString(buffer, clientType, 0x00, KailleraRelay.config.charset());
-    buffer.put(connectionType);
+    EmuUtil.writeString(buffer, username(), 0x00, KailleraRelay.config.charset());
+    EmuUtil.writeString(buffer, clientType(), 0x00, KailleraRelay.config.charset());
+    buffer.put(connectionType());
   }
 
   public static UserInformation parse(int messageNumber, ByteBuffer buffer)
@@ -90,6 +71,6 @@ public class UserInformation extends V086Message {
 
     byte connectionType = buffer.get();
 
-    return new UserInformation(messageNumber, userName, clientType, connectionType);
+    return UserInformation.create(messageNumber, userName, clientType, connectionType);
   }
 }

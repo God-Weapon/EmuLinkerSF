@@ -52,8 +52,8 @@ public class V086Relay extends UDPRelay {
 
     V086Message[] inMessages = inBundle.getMessages();
     for (int i = 0; i < inBundle.getNumMessages(); i++) {
-      if (inMessages[i].getNumber() > lastClientMessageNumber)
-        lastClientMessageNumber = inMessages[i].getNumber();
+      if (inMessages[i].messageNumber() > lastClientMessageNumber)
+        lastClientMessageNumber = inMessages[i].messageNumber();
     }
 
     ByteBuffer sendBuffer = ByteBuffer.allocate(receiveBuffer.limit());
@@ -93,8 +93,8 @@ public class V086Relay extends UDPRelay {
 
     V086Message[] inMessages = inBundle.getMessages();
     for (int i = 0; i < inBundle.getNumMessages(); i++) {
-      if (inMessages[i].getNumber() > lastServerMessageNumber)
-        lastServerMessageNumber = inMessages[i].getNumber();
+      if (inMessages[i].messageNumber() > lastServerMessageNumber)
+        lastServerMessageNumber = inMessages[i].messageNumber();
     }
 
     ByteBuffer sendBuffer = ByteBuffer.allocate(receiveBuffer.limit());

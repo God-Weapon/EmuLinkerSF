@@ -50,19 +50,19 @@ public class CreateGameAction implements V086Action, V086ServerEventHandler {
     CreateGame createGameMessage = (CreateGame) message;
 
     try {
-      clientHandler.getUser().createGame(createGameMessage.getRomName());
+      clientHandler.getUser().createGame(createGameMessage.romName());
     } catch (CreateGameException e) {
       log.info(
-          "Create Game Denied: " + clientHandler.getUser() + ": " + createGameMessage.getRomName());
+          "Create Game Denied: " + clientHandler.getUser() + ": " + createGameMessage.romName());
 
       try {
         clientHandler.send(
-            new InformationMessage(
+            InformationMessage.create(
                 clientHandler.getNextMessageNumber(),
                 "server",
                 EmuLang.getString("CreateGameAction.CreateGameDenied", e.getMessage())));
         clientHandler.send(
-            new QuitGame_Notification(
+            QuitGame_Notification.create(
                 clientHandler.getNextMessageNumber(),
                 clientHandler.getUser().getName(),
                 clientHandler.getUser().getID()));
@@ -71,16 +71,16 @@ public class CreateGameAction implements V086Action, V086ServerEventHandler {
       }
     } catch (FloodException e) {
       log.info(
-          "Create Game Denied: " + clientHandler.getUser() + ": " + createGameMessage.getRomName());
+          "Create Game Denied: " + clientHandler.getUser() + ": " + createGameMessage.romName());
 
       try {
         clientHandler.send(
-            new InformationMessage(
+            InformationMessage.create(
                 clientHandler.getNextMessageNumber(),
                 "server",
                 EmuLang.getString("CreateGameAction.CreateGameDeniedFloodControl")));
         clientHandler.send(
-            new QuitGame_Notification(
+            QuitGame_Notification.create(
                 clientHandler.getNextMessageNumber(),
                 clientHandler.getUser().getName(),
                 clientHandler.getUser().getID()));
@@ -100,7 +100,7 @@ public class CreateGameAction implements V086Action, V086ServerEventHandler {
       KailleraGame game = gameCreatedEvent.getGame();
       KailleraUser owner = game.getOwner();
       clientHandler.send(
-          new CreateGame_Notification(
+          CreateGame_Notification.create(
               clientHandler.getNextMessageNumber(),
               owner.getName(),
               game.getRomName(),

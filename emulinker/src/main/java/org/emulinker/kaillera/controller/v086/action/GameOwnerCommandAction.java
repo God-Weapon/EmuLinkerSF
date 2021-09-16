@@ -92,7 +92,7 @@ public class GameOwnerCommandAction implements V086Action {
   public void performAction(V086Message message, V086Controller.V086ClientHandler clientHandler)
       throws FatalActionException {
     GameChat chatMessage = (GameChat) message;
-    String chat = chatMessage.getMessage();
+    String chat = chatMessage.message();
 
     KailleraUserImpl user = (KailleraUserImpl) clientHandler.getUser();
     KailleraGameImpl game = user.getGame();

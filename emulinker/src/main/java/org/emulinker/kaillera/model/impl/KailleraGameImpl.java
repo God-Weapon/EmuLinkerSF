@@ -799,7 +799,7 @@ public final class KailleraGameImpl implements KailleraGame {
 
     if (user.getP2P()) {
       // KailleraUserImpl u = (KailleraUserImpl) user;
-      // u.addEvent(new ServerACK(.getNextMessageNumber());
+      // u.addEvent(ServerACK.create(.getNextMessageNumber());
       // u.addEvent(new ConnectedEvent(server, user));
       // u.addEvent(new UserQuitEvent(server, user, "Rejoining..."));
       // try{user.quit("Rejoining...");}catch(Exception e){}

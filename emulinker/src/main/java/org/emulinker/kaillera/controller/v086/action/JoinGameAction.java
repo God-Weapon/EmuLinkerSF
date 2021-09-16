@@ -50,16 +50,16 @@ public class JoinGameAction implements V086Action, V086GameEventHandler {
     JoinGame_Request joinGameRequest = (JoinGame_Request) message;
 
     try {
-      clientHandler.getUser().joinGame(joinGameRequest.getGameID());
+      clientHandler.getUser().joinGame(joinGameRequest.gameId());
     } catch (JoinGameException e) {
       try {
         clientHandler.send(
-            new InformationMessage(
+            InformationMessage.create(
                 clientHandler.getNextMessageNumber(),
                 "server",
                 EmuLang.getString("JoinGameAction.JoinGameDenied", e.getMessage())));
         clientHandler.send(
-            new QuitGame_Notification(
+            QuitGame_Notification.create(
                 clientHandler.getNextMessageNumber(),
                 clientHandler.getUser().getName(),
                 clientHandler.getUser().getID()));
@@ -87,7 +87,7 @@ public class JoinGameAction implements V086Action, V086GameEventHandler {
           if (!player.equals(thisUser)) {
             if (player.getStealth() == false)
               players.add(
-                  new PlayerInformation.Player(
+                  PlayerInformation.Player.create(
                       player.getName(),
                       player.getPing(),
                       player.getID(),
@@ -95,12 +95,12 @@ public class JoinGameAction implements V086Action, V086GameEventHandler {
           }
         }
 
-        clientHandler.send(new PlayerInformation(clientHandler.getNextMessageNumber(), players));
+        clientHandler.send(PlayerInformation.create(clientHandler.getNextMessageNumber(), players));
       }
 
       if (user.getStealth() == false)
         clientHandler.send(
-            new JoinGame_Notification(
+            JoinGame_Notification.create(
                 clientHandler.getNextMessageNumber(),
                 game.getID(),
                 0,

@@ -1,102 +1,67 @@
 package org.emulinker.kaillera.controller.v086.protocol;
 
+import com.google.auto.value.AutoValue;
 import java.nio.ByteBuffer;
 import org.emulinker.kaillera.controller.messaging.*;
+import org.emulinker.kaillera.model.KailleraGame;
 import org.emulinker.util.*;
 
-public class GameStatus extends V086Message {
+@AutoValue
+public abstract class GameStatus extends V086Message {
   public static final byte ID = 0x0E;
-  public static final String DESC = "Game Status";
+  private static final String DESC = "Game Status";
 
-  private int gameID;
-  private int val1;
-  private byte gameStatus;
-  private byte numPlayers;
-  private byte maxPlayers;
+  public abstract int gameId();
 
-  public GameStatus(
-      int messageNumber, int gameID, int val1, byte gameStatus, byte numPlayers, byte maxPlayers)
+  public abstract int val1();
+
+  public abstract byte gameStatus();
+
+  public abstract byte numPlayers();
+
+  public abstract byte maxPlayers();
+
+  public static AutoValue_GameStatus create(
+      int messageNumber, int gameId, int val1, byte gameStatus, byte numPlayers, byte maxPlayers)
       throws MessageFormatException {
-    super(messageNumber);
+    V086Message.validateMessageNumber(messageNumber, DESC);
 
-    if (gameID < 0 || gameID > 0xFFFF)
+    if (gameId < 0 || gameId > 0xFFFF) {
       throw new MessageFormatException(
-          "Invalid " + getDescription() + " format: gameID out of acceptable range: " + gameID);
+          "Invalid " + DESC + " format: gameID out of acceptable range: " + gameId);
+    }
 
-    if (val1 < 0 || val1 > 0xFFFF)
+    if (val1 < 0 || val1 > 0xFFFF) {
       throw new MessageFormatException(
-          "Invalid " + getDescription() + " format: val1 out of acceptable range: " + val1);
+          "Invalid " + DESC + " format: val1 out of acceptable range: " + val1);
+    }
 
-    if (gameStatus < 0 || gameStatus > 2)
+    if (gameStatus < 0 || gameStatus > 2) {
       throw new MessageFormatException(
-          "Invalid "
-              + getDescription()
-              + " format: gameStatus out of acceptable range: "
-              + gameStatus);
+          "Invalid " + DESC + " format: gameStatus out of acceptable range: " + gameStatus);
+    }
 
-    if (numPlayers < 0 || numPlayers > 0xFF)
+    if (numPlayers < 0 || numPlayers > 0xFF) {
       throw new MessageFormatException(
-          "Invalid "
-              + getDescription()
-              + " format: numPlayers out of acceptable range: "
-              + numPlayers);
+          "Invalid " + DESC + " format: numPlayers out of acceptable range: " + numPlayers);
+    }
 
-    if (maxPlayers < 0 || maxPlayers > 0xFF)
+    if (maxPlayers < 0 || maxPlayers > 0xFF) {
       throw new MessageFormatException(
-          "Invalid "
-              + getDescription()
-              + " format: maxPlayers out of acceptable range: "
-              + maxPlayers);
+          "Invalid " + DESC + " format: maxPlayers out of acceptable range: " + maxPlayers);
+    }
 
-    this.gameID = gameID;
-    this.val1 = val1;
-    this.gameStatus = gameStatus;
-    this.numPlayers = numPlayers;
-    this.maxPlayers = maxPlayers;
+    return new AutoValue_GameStatus(
+        messageNumber, ID, DESC, gameId, val1, gameStatus, numPlayers, maxPlayers);
   }
 
-  @Override
-  public byte getID() {
-    return ID;
-  }
-
-  @Override
-  public String getDescription() {
-    return DESC;
-  }
-
-  public int getGameID() {
-    return gameID;
-  }
-
-  public int getVal1() {
-    return val1;
-  }
-
-  public byte getGameStatus() {
-    return gameStatus;
-  }
-
-  public byte getNumPlayers() {
-    return numPlayers;
-  }
-
-  public byte getMaxPlayers() {
-    return maxPlayers;
-  }
-
+  // TODO(nue): See if we can remove this.
   @Override
   public String toString() {
     return getInfoString()
-        + "[gameID="
-        + gameID
-        + " gameStatus="
-        + org.emulinker.kaillera.model.KailleraGame.STATUS_NAMES[gameStatus]
-        + " numPlayers="
-        + numPlayers
-        + " maxPlayers="
-        + maxPlayers
-        + "]";
+        + String.format(
+            "[gameID=%d gameStatus=%s numPlayers=%d maxPlayers=%d]",
+            gameId(), KailleraGame.STATUS_NAMES[gameStatus()], numPlayers(), maxPlayers());
   }
 
   @Override
@@ -107,11 +72,11 @@ public class GameStatus extends V086Message {
   @Override
   public void writeBodyTo(ByteBuffer buffer) {
     buffer.put((byte) 0x00);
-    UnsignedUtil.putUnsignedShort(buffer, gameID);
-    UnsignedUtil.putUnsignedShort(buffer, val1);
-    buffer.put(gameStatus);
-    buffer.put(numPlayers);
-    buffer.put(maxPlayers);
+    UnsignedUtil.putUnsignedShort(buffer, gameId());
+    UnsignedUtil.putUnsignedShort(buffer, val1());
+    buffer.put(gameStatus());
+    buffer.put(numPlayers());
+    buffer.put(maxPlayers());
   }
 
   public static GameStatus parse(int messageNumber, ByteBuffer buffer)
@@ -130,6 +95,6 @@ public class GameStatus extends V086Message {
     byte numPlayers = buffer.get();
     byte maxPlayers = buffer.get();
 
-    return new GameStatus(messageNumber, gameID, val1, gameStatus, numPlayers, maxPlayers);
+    return GameStatus.create(messageNumber, gameID, val1, gameStatus, numPlayers, maxPlayers);
   }
 }

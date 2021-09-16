@@ -43,7 +43,7 @@ public class GameDataAction implements V086Action, V086GameEventHandler {
       throws FatalActionException {
     try {
       KailleraUser user = clientHandler.getUser();
-      byte[] data = ((GameData) message).getGameData();
+      byte[] data = ((GameData) message).gameData();
 
       clientHandler.getClientGameDataCache().add(data);
       user.addGameData(data);
@@ -52,7 +52,8 @@ public class GameDataAction implements V086Action, V086GameEventHandler {
 
       if (e.hasResponse()) {
         try {
-          clientHandler.send(new GameData(clientHandler.getNextMessageNumber(), e.getResponse()));
+          clientHandler.send(
+              GameData.create(clientHandler.getNextMessageNumber(), e.getResponse()));
         } catch (MessageFormatException e2) {
           log.error("Failed to contruct GameData message: " + e2.getMessage(), e2);
         }
@@ -69,13 +70,13 @@ public class GameDataAction implements V086Action, V086GameEventHandler {
       clientHandler.getServerGameDataCache().add(data);
 
       try {
-        clientHandler.send(new GameData(clientHandler.getNextMessageNumber(), data));
+        clientHandler.send(GameData.create(clientHandler.getNextMessageNumber(), data));
       } catch (MessageFormatException e) {
         log.error("Failed to contruct GameData message: " + e.getMessage(), e);
       }
     } else {
       try {
-        clientHandler.send(new CachedGameData(clientHandler.getNextMessageNumber(), key));
+        clientHandler.send(CachedGameData.create(clientHandler.getNextMessageNumber(), key));
       } catch (MessageFormatException e) {
         log.error("Failed to contruct CachedGameData message: " + e.getMessage(), e);
       }

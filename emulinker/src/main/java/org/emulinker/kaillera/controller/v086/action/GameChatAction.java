@@ -56,15 +56,13 @@ public class GameChatAction implements V086Action, V086GameEventHandler {
 
     if (clientHandler.getUser().getGame() == null) return;
 
-    if (((GameChat) message).getMessage().startsWith(ADMIN_COMMAND_ESCAPE_STRING)) {
+    if (((GameChat) message).message().startsWith(ADMIN_COMMAND_ESCAPE_STRING)) {
       // if(clientHandler.getUser().getAccess() >= AccessManager.ACCESS_ADMIN ||
       // clientHandler.getUser().equals(clientHandler.getUser().getGame().getOwner())){
       try {
-        if (GameOwnerCommandAction.getInstance()
-            .isValidCommand(((GameChat) message).getMessage())) {
+        if (GameOwnerCommandAction.getInstance().isValidCommand(((GameChat) message).message())) {
           GameOwnerCommandAction.getInstance().performAction(message, clientHandler);
-          if (((GameChat) message).getMessage().equals("/help"))
-            checkCommands(message, clientHandler);
+          if (((GameChat) message).message().equals("/help")) checkCommands(message, clientHandler);
         } else checkCommands(message, clientHandler);
         return;
       } catch (FatalActionException e) {
@@ -79,7 +77,7 @@ public class GameChatAction implements V086Action, V086GameEventHandler {
     GameChat_Request gameChatMessage = (GameChat_Request) message;
 
     try {
-      clientHandler.getUser().gameChat(gameChatMessage.getMessage(), gameChatMessage.getNumber());
+      clientHandler.getUser().gameChat(gameChatMessage.message(), gameChatMessage.messageNumber());
     } catch (GameChatException e) {
       log.debug("Failed to send game chat message: " + e.getMessage());
     }
@@ -98,7 +96,7 @@ public class GameChatAction implements V086Action, V086GameEventHandler {
     }
 
     if (doCommand) {
-      if (((GameChat) message).getMessage().equals("/msgon")) {
+      if (((GameChat) message).message().equals("/msgon")) {
         KailleraUserImpl user = (KailleraUserImpl) clientHandler.getUser();
         try {
           clientHandler.getUser().setMsg(true);
@@ -106,7 +104,7 @@ public class GameChatAction implements V086Action, V086GameEventHandler {
         } catch (Exception e) {
         }
         return;
-      } else if (((GameChat) message).getMessage().equals("/msgoff")) {
+      } else if (((GameChat) message).message().equals("/msgoff")) {
         KailleraUserImpl user = (KailleraUserImpl) clientHandler.getUser();
         try {
           clientHandler.getUser().setMsg(false);
@@ -114,9 +112,9 @@ public class GameChatAction implements V086Action, V086GameEventHandler {
         } catch (Exception e) {
         }
         return;
-      } else if (((GameChat) message).getMessage().startsWith("/p2p")) {
+      } else if (((GameChat) message).message().startsWith("/p2p")) {
         KailleraUserImpl user = (KailleraUserImpl) clientHandler.getUser();
-        if (((GameChat) message).getMessage().equals("/p2pon")) {
+        if (((GameChat) message).message().equals("/p2pon")) {
           if (clientHandler.getUser().getGame().getOwner().equals(clientHandler.getUser())) {
             clientHandler.getUser().getGame().setP2P(true);
             for (KailleraUserImpl u : clientHandler.getUser().getGame().getPlayers()) {
@@ -138,7 +136,7 @@ public class GameChatAction implements V086Action, V086GameEventHandler {
               }
             }
           }
-        } else if (((GameChat) message).getMessage().equals("/p2poff")) {
+        } else if (((GameChat) message).message().equals("/p2poff")) {
           if (clientHandler.getUser().getGame().getOwner().equals(clientHandler.getUser())) {
             clientHandler.getUser().getGame().setP2P(false);
             for (KailleraUserImpl u : clientHandler.getUser().getGame().getPlayers()) {
@@ -164,9 +162,9 @@ public class GameChatAction implements V086Action, V086GameEventHandler {
           user.getGame().announce("Failed P2P: /p2pon or /p2poff", user); // $NON-NLS-2$
         }
         return;
-      } else if (((GameChat) message).getMessage().startsWith("/msg")) {
+      } else if (((GameChat) message).message().startsWith("/msg")) {
         KailleraUserImpl user1 = (KailleraUserImpl) clientHandler.getUser();
-        Scanner scanner = new Scanner(((GameChat) message).getMessage()).useDelimiter(" ");
+        Scanner scanner = new Scanner(((GameChat) message).message()).useDelimiter(" ");
 
         int access =
             clientHandler
@@ -389,7 +387,7 @@ public class GameChatAction implements V086Action, V086GameEventHandler {
             return;
           }
         }
-      } else if (((GameChat) message).getMessage().equals("/ignoreall")) {
+      } else if (((GameChat) message).message().equals("/ignoreall")) {
         KailleraUserImpl user = (KailleraUserImpl) clientHandler.getUser();
         try {
           clientHandler.getUser().setIgnoreAll(true);
@@ -401,7 +399,7 @@ public class GameChatAction implements V086Action, V086GameEventHandler {
         } catch (Exception e) {
         }
         return;
-      } else if (((GameChat) message).getMessage().equals("/unignoreall")) {
+      } else if (((GameChat) message).message().equals("/unignoreall")) {
         KailleraUserImpl user = (KailleraUserImpl) clientHandler.getUser();
         try {
           clientHandler.getUser().setIgnoreAll(false);
@@ -413,9 +411,9 @@ public class GameChatAction implements V086Action, V086GameEventHandler {
         } catch (Exception e) {
         }
         return;
-      } else if (((GameChat) message).getMessage().startsWith("/ignore")) {
+      } else if (((GameChat) message).message().startsWith("/ignore")) {
         KailleraUserImpl user1 = (KailleraUserImpl) clientHandler.getUser();
-        Scanner scanner = new Scanner(((GameChat) message).getMessage()).useDelimiter(" ");
+        Scanner scanner = new Scanner(((GameChat) message).message()).useDelimiter(" ");
 
         try {
           scanner.next();
@@ -465,9 +463,9 @@ public class GameChatAction implements V086Action, V086GameEventHandler {
                   + clientHandler.getRemoteSocketAddress().getHostName());
           return;
         }
-      } else if (((GameChat) message).getMessage().startsWith("/unignore")) {
+      } else if (((GameChat) message).message().startsWith("/unignore")) {
         KailleraUserImpl user1 = (KailleraUserImpl) clientHandler.getUser();
-        Scanner scanner = new Scanner(((GameChat) message).getMessage()).useDelimiter(" ");
+        Scanner scanner = new Scanner(((GameChat) message).message()).useDelimiter(" ");
 
         try {
           scanner.next();
@@ -503,7 +501,7 @@ public class GameChatAction implements V086Action, V086GameEventHandler {
           else
             try {
               clientHandler.send(
-                  new InformationMessage(
+                  InformationMessage.create(
                       clientHandler.getNextMessageNumber(), "server", "User Not Found!"));
             } catch (Exception e) {
             }
@@ -519,8 +517,8 @@ public class GameChatAction implements V086Action, V086GameEventHandler {
           return;
         }
 
-      } else if (((GameChat) message).getMessage().startsWith("/me")) {
-        int space = ((GameChat) message).getMessage().indexOf(' ');
+      } else if (((GameChat) message).message().startsWith("/me")) {
+        int space = ((GameChat) message).message().indexOf(' ');
         if (space < 0) {
           clientHandler
               .getUser()
@@ -529,7 +527,7 @@ public class GameChatAction implements V086Action, V086GameEventHandler {
           return;
         }
 
-        String announcement = ((GameChat) message).getMessage().substring(space + 1);
+        String announcement = ((GameChat) message).message().substring(space + 1);
         if (announcement.startsWith(":"))
           announcement =
               announcement.substring(
@@ -561,7 +559,7 @@ public class GameChatAction implements V086Action, V086GameEventHandler {
           }
           return;
         }
-      } else if (((GameChat) message).getMessage().equals("/help")) {
+      } else if (((GameChat) message).message().equals("/help")) {
         KailleraUserImpl user = (KailleraUserImpl) clientHandler.getUser();
         user.getGame()
             .announce(
@@ -599,7 +597,7 @@ public class GameChatAction implements V086Action, V086GameEventHandler {
             .getUser()
             .getGame()
             .announce(
-                "Unknown Command: " + ((GameChat) message).getMessage(), clientHandler.getUser());
+                "Unknown Command: " + ((GameChat) message).message(), clientHandler.getUser());
     } else {
       clientHandler.getUser().getGame().announce("Denied: Flood Control", clientHandler.getUser());
     }
@@ -625,7 +623,7 @@ public class GameChatAction implements V086Action, V086GameEventHandler {
       String m = gameChatEvent.getMessage();
 
       clientHandler.send(
-          new GameChat_Notification(
+          GameChat_Notification.create(
               clientHandler.getNextMessageNumber(), gameChatEvent.getUser().getName(), m));
     } catch (MessageFormatException e) {
       log.error("Failed to contruct GameChat_Notification message: " + e.getMessage(), e);
