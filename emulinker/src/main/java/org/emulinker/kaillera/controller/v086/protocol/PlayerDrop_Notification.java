@@ -1,6 +1,7 @@
 package org.emulinker.kaillera.controller.v086.protocol;
 
 import com.google.auto.value.AutoValue;
+import com.google.common.base.Strings;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 
 @AutoValue
@@ -16,7 +17,7 @@ public abstract class PlayerDrop_Notification extends PlayerDrop {
           "Invalid " + DESC + " format: playerNumber out of acceptable range: " + playerNumber);
     }
 
-    if (username.length() == 0) {
+    if (Strings.isNullOrEmpty(username)) {
       throw new MessageFormatException("Invalid " + DESC + " format: userName.length == 0");
     }
     return new AutoValue_PlayerDrop_Notification(messageNumber, ID, DESC, username, playerNumber);

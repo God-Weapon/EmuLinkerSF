@@ -1,5 +1,6 @@
 package org.emulinker.kaillera.admin;
 
+import com.google.common.base.Strings;
 import java.io.IOException;
 import java.util.concurrent.ThreadPoolExecutor;
 import org.apache.commons.configuration.Configuration;
@@ -59,12 +60,12 @@ public class KailleraAdminHttpServer implements Startable {
       log.info("Configuring admin server security.");
 
       String realmName = config.getString("adminserver.realmname");
-      if (realmName == null || realmName.trim().length() == 0) {
+      if (Strings.isNullOrEmpty(realmName) || realmName.isBlank()) {
         realmName = "Emulinker";
       }
 
       String userFile = config.getString("adminserver.userfile");
-      if (userFile == null || userFile.trim().length() == 0) {
+      if (Strings.isNullOrEmpty(userFile) || userFile.isBlank()) {
         userFile = "conf/user.properties";
       }
 

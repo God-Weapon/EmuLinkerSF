@@ -1,5 +1,6 @@
 package org.emulinker.kaillera.access;
 
+import com.google.common.base.Strings;
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -169,7 +170,7 @@ public class AccessManager2 implements AccessManager, Startable, Runnable {
       BufferedReader reader = new BufferedReader(temp);
       String line = null;
       while ((line = reader.readLine()) != null) {
-        if (line.length() == 0 || line.startsWith("#") || line.startsWith("//")) continue;
+        if (Strings.isNullOrEmpty(line) || line.startsWith("#") || line.startsWith("//")) continue;
 
         StringTokenizer st = new StringTokenizer(line, ",");
         if (st.countTokens() < 3) {

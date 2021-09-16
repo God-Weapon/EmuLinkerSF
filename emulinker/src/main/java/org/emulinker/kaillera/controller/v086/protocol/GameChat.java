@@ -1,5 +1,6 @@
 package org.emulinker.kaillera.controller.v086.protocol;
 
+import com.google.common.base.Strings;
 import java.nio.ByteBuffer;
 import org.emulinker.kaillera.controller.messaging.*;
 import org.emulinker.kaillera.relay.KailleraRelay;
@@ -33,7 +34,7 @@ public abstract class GameChat extends V086Message {
 
     String message = EmuUtil.readString(buffer, 0x00, KailleraRelay.config.charset());
 
-    if (userName.length() == 0) {
+    if (Strings.isNullOrEmpty(userName)) {
       return GameChat_Request.create(messageNumber, message);
     }
     return GameChat_Notification.create(messageNumber, userName, message);

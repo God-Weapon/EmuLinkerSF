@@ -1,6 +1,7 @@
 package org.emulinker.kaillera.controller.v086.protocol;
 
 import com.google.auto.value.AutoValue;
+import com.google.common.base.Strings;
 import java.nio.ByteBuffer;
 import org.emulinker.kaillera.controller.messaging.*;
 import org.emulinker.kaillera.relay.KailleraRelay;
@@ -22,7 +23,7 @@ public abstract class ConnectionRejected extends V086Message {
       throws MessageFormatException {
     V086Message.validateMessageNumber(messageNumber, DESC);
 
-    if (username.length() == 0) {
+    if (Strings.isNullOrEmpty(username)) {
       throw new MessageFormatException("Invalid " + DESC + " format: userName.length == 0");
     }
 
@@ -31,7 +32,7 @@ public abstract class ConnectionRejected extends V086Message {
           "Invalid " + DESC + " format: userID out of acceptable range: " + userId);
     }
 
-    if (message.length() == 0) {
+    if (Strings.isNullOrEmpty(message)) {
       throw new MessageFormatException("Invalid " + DESC + " format: message.length == 0");
     }
 

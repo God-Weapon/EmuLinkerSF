@@ -1,5 +1,6 @@
 package org.emulinker.kaillera.controller.v086.protocol;
 
+import com.google.common.base.Strings;
 import java.nio.ByteBuffer;
 import org.emulinker.kaillera.controller.messaging.*;
 import org.emulinker.kaillera.relay.KailleraRelay;
@@ -55,7 +56,7 @@ public abstract class JoinGame extends V086Message {
     int userID = UnsignedUtil.getUnsignedShort(buffer);
     byte connectionType = buffer.get();
 
-    if (userName.length() == 0 && ping == 0 && userID == 0xFFFF)
+    if (Strings.isNullOrEmpty(userName) && ping == 0 && userID == 0xFFFF)
       return JoinGame_Request.create(messageNumber, gameID, connectionType);
     else
       return JoinGame_Notification.create(

@@ -1,5 +1,6 @@
 package org.emulinker.kaillera.model.impl;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import java.net.InetSocketAddress;
 import java.util.*;
@@ -473,7 +474,8 @@ public class KailleraServerImpl implements KailleraServer, Executable {
           EmuLang.getString("KailleraServerImpl.LoginErrorInvalidPing", user.getPing()));
     }
 
-    if (access == AccessManager.ACCESS_NORMAL && user.getName().trim().length() == 0) {
+    if (access == AccessManager.ACCESS_NORMAL && Strings.isNullOrEmpty(user.getName())
+        || user.getName().isBlank()) {
       log.info(user + " login denied: Empty UserName");
       users.remove(userListKey);
       throw new UserNameException(EmuLang.getString("KailleraServerImpl.LoginDeniedUserNameEmpty"));
@@ -720,7 +722,7 @@ public class KailleraServerImpl implements KailleraServer, Executable {
     if (userGame != null) user.quitGame();
 
     String quitMsg = message.trim();
-    if (quitMsg.length() == 0
+    if (Strings.isNullOrEmpty(quitMsg)
         || (maxQuitMessageLength > 0 && quitMsg.length() > maxQuitMessageLength))
       quitMsg = EmuLang.getString("KailleraServerImpl.StandardQuitMessage");
 
@@ -767,7 +769,8 @@ public class KailleraServerImpl implements KailleraServer, Executable {
     }
 
     message = message.trim();
-    if (message.length() == 0 || message.startsWith("�") || message.startsWith("�")) return;
+    if (Strings.isNullOrEmpty(message) || message.startsWith("�") || message.startsWith("�"))
+      return;
 
     if (access == AccessManager.ACCESS_NORMAL) {
       char[] chars = message.toCharArray();
@@ -941,7 +944,7 @@ public class KailleraServerImpl implements KailleraServer, Executable {
     }
 
     message = message.trim();
-    if (message.length() == 0) return false;
+    if (Strings.isNullOrEmpty(message)) return false;
 
     if (access == AccessManager.ACCESS_NORMAL) {
       char[] chars = message.toCharArray();

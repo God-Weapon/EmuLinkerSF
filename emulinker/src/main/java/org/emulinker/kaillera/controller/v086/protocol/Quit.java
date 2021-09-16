@@ -1,5 +1,6 @@
 package org.emulinker.kaillera.controller.v086.protocol;
 
+import com.google.common.base.Strings;
 import java.nio.ByteBuffer;
 import org.emulinker.kaillera.controller.messaging.*;
 import org.emulinker.kaillera.relay.KailleraRelay;
@@ -38,7 +39,7 @@ public abstract class Quit extends V086Message {
 
     String message = EmuUtil.readString(buffer, 0x00, KailleraRelay.config.charset());
 
-    if (userName.length() == 0 && userID == 0xFFFF) {
+    if (Strings.isNullOrEmpty(userName) && userID == 0xFFFF) {
       return Quit_Request.create(messageNumber, message);
     }
     return Quit_Notification.create(messageNumber, userName, userID, message);

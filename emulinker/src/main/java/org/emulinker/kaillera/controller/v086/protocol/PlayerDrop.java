@@ -1,5 +1,6 @@
 package org.emulinker.kaillera.controller.v086.protocol;
 
+import com.google.common.base.Strings;
 import java.nio.ByteBuffer;
 import org.emulinker.kaillera.controller.messaging.*;
 import org.emulinker.kaillera.relay.KailleraRelay;
@@ -45,7 +46,7 @@ public abstract class PlayerDrop extends V086Message {
     String userName = EmuUtil.readString(buffer, 0x00, KailleraRelay.config.charset());
     byte playerNumber = buffer.get();
 
-    if (userName.length() == 0 && playerNumber == 0) {
+    if (Strings.isNullOrEmpty(userName) && playerNumber == 0) {
       return PlayerDrop_Request.create(messageNumber);
     }
     return PlayerDrop_Notification.create(messageNumber, userName, playerNumber);

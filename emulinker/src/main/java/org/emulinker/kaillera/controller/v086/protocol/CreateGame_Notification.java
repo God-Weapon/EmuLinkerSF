@@ -1,6 +1,7 @@
 package org.emulinker.kaillera.controller.v086.protocol;
 
 import com.google.auto.value.AutoValue;
+import com.google.common.base.Strings;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 
 @AutoValue
@@ -12,7 +13,7 @@ public abstract class CreateGame_Notification extends CreateGame {
       throws MessageFormatException {
     V086Message.validateMessageNumber(messageNumber, DESC);
 
-    if (romName.length() == 0) {
+    if (Strings.isNullOrEmpty(romName)) {
       throw new MessageFormatException("Invalid " + DESC + " format: romName.length == 0");
     }
 

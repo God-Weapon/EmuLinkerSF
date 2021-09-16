@@ -1,5 +1,6 @@
 package org.emulinker.kaillera.controller.v086.action;
 
+import com.google.common.base.Strings;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 import org.apache.commons.logging.*;
@@ -287,7 +288,7 @@ public class ChatAction implements V086Action, V086ServerEventHandler {
           String m = sb.toString();
 
           m = m.trim();
-          if (m.length() == 0 || m.startsWith("�") || m.startsWith("�")) return;
+          if (Strings.isNullOrEmpty(m) || m.startsWith("�") || m.startsWith("�")) return;
 
           if (access == AccessManager.ACCESS_NORMAL) {
             char[] chars = m.toCharArray();
@@ -406,7 +407,7 @@ public class ChatAction implements V086Action, V086ServerEventHandler {
               String m = sb.toString();
 
               m = m.trim();
-              if (m.length() == 0 || m.startsWith("�") || m.startsWith("�")) return;
+              if (Strings.isNullOrEmpty(m) || m.startsWith("�") || m.startsWith("�")) return;
 
               if (access == AccessManager.ACCESS_NORMAL) {
                 char[] chars = m.toCharArray();

@@ -1,5 +1,6 @@
 package org.emulinker.kaillera.controller.v086.protocol;
 
+import com.google.common.base.Strings;
 import java.nio.ByteBuffer;
 import org.emulinker.kaillera.controller.messaging.*;
 import org.emulinker.kaillera.relay.KailleraRelay;
@@ -33,7 +34,7 @@ public abstract class QuitGame extends V086Message {
 
     int userID = UnsignedUtil.getUnsignedShort(buffer);
 
-    if (userName.length() == 0 && userID == 0xFFFF) {
+    if (Strings.isNullOrEmpty(userName) && userID == 0xFFFF) {
       return QuitGame_Request.create(messageNumber);
     }
     return QuitGame_Notification.create(messageNumber, userName, userID);

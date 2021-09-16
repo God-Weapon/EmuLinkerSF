@@ -40,7 +40,8 @@ public abstract class JoinGame_Notification extends JoinGame {
     }
 
     if (Strings.isNullOrEmpty(username)) {
-      throw new MessageFormatException("Invalid " + DESC + " format: userName.length() == 0");
+      throw new MessageFormatException(
+          "Invalid " + DESC + " format: Strings.isNullOrEmpty(userName)");
     }
     return new AutoValue_JoinGame_Notification(
         messageNumber, JoinGame.ID, gameId, val1, username, ping, userId, connectionType);

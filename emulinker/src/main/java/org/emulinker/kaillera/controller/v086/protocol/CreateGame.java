@@ -1,5 +1,6 @@
 package org.emulinker.kaillera.controller.v086.protocol;
 
+import com.google.common.base.Strings;
 import java.nio.ByteBuffer;
 import org.emulinker.kaillera.controller.messaging.*;
 import org.emulinker.kaillera.relay.KailleraRelay;
@@ -51,7 +52,7 @@ public abstract class CreateGame extends V086Message {
     int gameID = UnsignedUtil.getUnsignedShort(buffer);
     int val1 = UnsignedUtil.getUnsignedShort(buffer);
 
-    if (userName.length() == 0 && gameID == 0xFFFF && val1 == 0xFFFF)
+    if (Strings.isNullOrEmpty(userName) && gameID == 0xFFFF && val1 == 0xFFFF)
       return CreateGame_Request.create(messageNumber, romName);
     else
       return CreateGame_Notification.create(

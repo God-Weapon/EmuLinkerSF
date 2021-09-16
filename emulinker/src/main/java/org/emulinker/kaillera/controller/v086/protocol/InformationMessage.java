@@ -1,6 +1,7 @@
 package org.emulinker.kaillera.controller.v086.protocol;
 
 import com.google.auto.value.AutoValue;
+import com.google.common.base.Strings;
 import java.nio.ByteBuffer;
 import org.emulinker.kaillera.controller.messaging.*;
 import org.emulinker.kaillera.relay.KailleraRelay;
@@ -19,11 +20,11 @@ public abstract class InformationMessage extends V086Message {
       int messageNumber, String source, String message) throws MessageFormatException {
     V086Message.validateMessageNumber(messageNumber, DESC);
 
-    if (source.length() == 0) {
+    if (Strings.isNullOrEmpty(source)) {
       throw new MessageFormatException("Invalid " + DESC + " format: source.length == 0");
     }
 
-    if (message.length() == 0) {
+    if (Strings.isNullOrEmpty(message)) {
       throw new MessageFormatException("Invalid " + DESC + " format: message.length == 0");
     }
     return new AutoValue_InformationMessage(messageNumber, ID, DESC, source, message);

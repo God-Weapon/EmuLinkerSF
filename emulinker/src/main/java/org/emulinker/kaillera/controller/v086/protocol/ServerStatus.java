@@ -1,6 +1,7 @@
 package org.emulinker.kaillera.controller.v086.protocol;
 
 import com.google.auto.value.AutoValue;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import java.nio.ByteBuffer;
 import java.util.*;
@@ -156,7 +157,7 @@ public abstract class ServerStatus extends V086Message {
     public static AutoValue_ServerStatus_User create(
         String username, long ping, byte status, int userId, byte connectionType)
         throws MessageFormatException {
-      if (username.length() == 0)
+      if (Strings.isNullOrEmpty(username))
         throw new MessageFormatException(
             "Invalid " + DESC + " format: userName.length == 0, (userID = " + userId + ")");
 
@@ -224,17 +225,17 @@ public abstract class ServerStatus extends V086Message {
     public static AutoValue_ServerStatus_Game create(
         String romName, int gameId, String clientType, String username, String players, byte status)
         throws MessageFormatException {
-      if (romName.length() == 0)
+      if (Strings.isNullOrEmpty(romName))
         throw new MessageFormatException("Invalid " + DESC + " format: romName.length == 0");
 
       if (gameId < 0 || gameId > 0xFFFF)
         throw new MessageFormatException(
             "Invalid " + DESC + " format: gameID out of acceptable range: " + gameId);
 
-      if (clientType.length() == 0)
+      if (Strings.isNullOrEmpty(clientType))
         throw new MessageFormatException("Invalid " + DESC + " format: clientType.length == 0");
 
-      if (username.length() == 0)
+      if (Strings.isNullOrEmpty(username))
         throw new MessageFormatException("Invalid " + DESC + " format: userName.length == 0");
 
       if (status < 0 || status > 2)
@@ -263,17 +264,13 @@ public abstract class ServerStatus extends V086Message {
           + "]";
     }
 
-    // TODO(nue): FIX THIS! It's not calculating the number of bytes correctly!!
     public int getNumBytes() {
-      // return (charset.encode(romName).remaining() + 1 + 4 +
-      // charset.encode(clientType).remaining() + 1 + charset.encode(userName).remaining() + 1 +
-      // charset.encode(players).remaining() + 1 + 1);
       return V086Utils.getNumBytes(romName())
           + 1
           + 4
-          + clientType().length()
+          + V086Utils.getNumBytes(clientType())
           + 1
-          + username().length()
+          + V086Utils.getNumBytes(username())
           + 1
           + players().length()
           + 1
