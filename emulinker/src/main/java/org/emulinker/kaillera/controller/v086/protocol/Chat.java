@@ -10,7 +10,6 @@ public abstract class Chat extends V086Message {
 
   private String userName;
   private String message;
-  private ByteBuffer body;
 
   public Chat(int messageNumber, String userName, String message) throws MessageFormatException {
     super(messageNumber);

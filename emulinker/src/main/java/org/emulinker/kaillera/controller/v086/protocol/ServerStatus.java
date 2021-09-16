@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 import java.util.*;
 import org.emulinker.kaillera.controller.messaging.*;
 import org.emulinker.kaillera.controller.v086.V086Utils;
+import org.emulinker.kaillera.model.KailleraUser;
 import org.emulinker.kaillera.relay.KailleraRelay;
 import org.emulinker.util.*;
 
@@ -32,11 +33,11 @@ public class ServerStatus extends V086Message {
     return DESC;
   }
 
-  public List getUsers() {
+  public List<User> getUsers() {
     return users;
   }
 
-  public List getGames() {
+  public List<Game> getGames() {
     return games;
   }
 
@@ -52,10 +53,13 @@ public class ServerStatus extends V086Message {
       sb.append(EmuUtil.LB);
     }
 
-    if (!games.isEmpty()) sb.append(EmuUtil.LB);
+    if (!games.isEmpty()) {
+      sb.append(EmuUtil.LB);
+    }
 
     for (Game g : games) {
-      sb.append("\t" + g);
+      sb.append("\t");
+      sb.append(g);
       sb.append(EmuUtil.LB);
     }
 
@@ -65,8 +69,8 @@ public class ServerStatus extends V086Message {
   @Override
   public int getBodyLength() {
     int len = 9;
-    for (User u : users) len += u.getNumBytes();
-    for (Game g : games) len += g.getNumBytes();
+    len += users.stream().mapToInt(u -> u.getNumBytes()).sum();
+    len += games.stream().mapToInt(g -> g.getNumBytes()).sum();
     return len;
   }
 
@@ -76,20 +80,22 @@ public class ServerStatus extends V086Message {
     buffer.putInt(users.size());
     buffer.putInt(games.size());
 
-    for (User u : users) u.writeTo(buffer);
-
-    for (Game g : games) g.writeTo(buffer);
+    users.forEach(u -> u.writeTo(buffer));
+    games.forEach(g -> g.writeTo(buffer));
   }
 
   public static ServerStatus parse(int messageNumber, ByteBuffer buffer)
       throws ParseException, MessageFormatException {
-    if (buffer.remaining() < 9) throw new ParseException("Failed byte count validation!");
+    if (buffer.remaining() < 9) {
+      throw new ParseException("Failed byte count validation!");
+    }
 
     byte b = buffer.get();
 
-    if (b != 0x00)
+    if (b != 0x00) {
       throw new MessageFormatException(
           "Invalid " + DESC + " format: byte 0 = " + EmuUtil.byteToHex(b));
+    }
 
     int numUsers = buffer.getInt();
     int numGames = buffer.getInt();
@@ -204,17 +210,13 @@ public class ServerStatus extends V086Message {
 
     @Override
     public String toString() {
-      return "[userName="
-          + userName
-          + " ping="
-          + ping
-          + " status="
-          + org.emulinker.kaillera.model.KailleraUser.STATUS_NAMES[status]
-          + " userID="
-          + userID
-          + " connectionType="
-          + org.emulinker.kaillera.model.KailleraUser.CONNECTION_TYPE_NAMES[connectionType]
-          + "]";
+      return String.format(
+          "[userName=%s ping=%d status=%s userID=%d connectionType=%s]",
+          userName,
+          ping,
+          KailleraUser.STATUS_NAMES[status],
+          userID,
+          KailleraUser.CONNECTION_TYPE_NAMES[connectionType]);
     }
 
     public int getNumBytes() {

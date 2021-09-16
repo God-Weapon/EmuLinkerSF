@@ -41,12 +41,11 @@ public class PlayerDesynchAction implements V086GameEventHandler {
           new GameChat_Notification(
               clientHandler.getNextMessageNumber(),
               EmuLang.getString("PlayerDesynchAction.DesynchDetected"),
-              desynchEvent.getMessage())); // $NON-NLS-1$
+              desynchEvent.getMessage()));
       // if (clientHandler.getUser().getStatus() == KailleraUser.STATUS_PLAYING)
       //	clientHandler.getUser().dropGame();
     } catch (MessageFormatException e) {
-      log.error(
-          "Failed to contruct GameChat_Notification message: " + e.getMessage(), e); // $NON-NLS-1$
+      log.error("Failed to contruct GameChat_Notification message: " + e.getMessage(), e);
     }
     // catch (DropGameException e)
     // {

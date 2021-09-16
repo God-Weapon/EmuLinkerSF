@@ -21,7 +21,7 @@ public abstract class UDPRelay2 {
   protected boolean started = false;
   protected boolean stopFlag = false;
   protected Exception exception;
-  protected Hashtable relayThreads = new Hashtable();
+  protected Hashtable<InetSocketAddress, RelayThread> relayThreads = new Hashtable<>();
   protected Hashtable<Integer, DatagramChannel> channels =
       new Hashtable<Integer, DatagramChannel>();
 
@@ -81,9 +81,9 @@ public abstract class UDPRelay2 {
 
       stopFlag = true;
 
-      Enumeration e = relayThreads.elements();
+      Enumeration<RelayThread> e = relayThreads.elements();
       while (e.hasMoreElements()) {
-        ((RelayThread) e.nextElement()).close();
+        e.nextElement().close();
       }
 
       started = false;
@@ -239,7 +239,7 @@ public abstract class UDPRelay2 {
 
           if (sendBuffer == null || sendBuffer.limit() <= 0) continue;
 
-          RelayThread responseThread = (RelayThread) relayThreads.get(fromAddress);
+          RelayThread responseThread = relayThreads.get(fromAddress);
           if (responseThread == null) {
             log.debug(
                 "No RelayThread is registered to forward to "

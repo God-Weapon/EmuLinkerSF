@@ -1,6 +1,7 @@
 package org.emulinker.kaillera.controller.v086.action;
 
-import org.apache.commons.logging.*;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 import org.emulinker.kaillera.controller.v086.V086Controller;
 import org.emulinker.kaillera.controller.v086.protocol.*;
@@ -12,8 +13,6 @@ public class GameDataAction implements V086Action, V086GameEventHandler {
   private static Log log = LogFactory.getLog(GameDataAction.class);
   private static final String desc = "GameDataAction";
   private static GameDataAction singleton = new GameDataAction();
-
-  private static Log keyLog = LogFactory.getLog("KEYLOG");
 
   public static GameDataAction getInstance() {
     return singleton;

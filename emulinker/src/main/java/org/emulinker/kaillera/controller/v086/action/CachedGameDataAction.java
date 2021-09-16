@@ -6,14 +6,11 @@ import org.emulinker.kaillera.controller.v086.V086Controller;
 import org.emulinker.kaillera.controller.v086.protocol.*;
 import org.emulinker.kaillera.model.KailleraUser;
 import org.emulinker.kaillera.model.exception.GameDataException;
-import org.emulinker.util.*;
 
 public class CachedGameDataAction implements V086Action {
   private static Log log = LogFactory.getLog(CachedGameDataAction.class);
   private static final String desc = "CachedGameDataAction";
   private static CachedGameDataAction singleton = new CachedGameDataAction();
-
-  private static Log keyLog = LogFactory.getLog("KEYLOG");
 
   public static CachedGameDataAction getInstance() {
     return singleton;

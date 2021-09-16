@@ -1,9 +1,7 @@
 package org.emulinker.kaillera.master.client;
 
-import java.util.*;
 import java.util.concurrent.ThreadPoolExecutor;
 import org.apache.commons.configuration.Configuration;
-import org.apache.commons.httpclient.*;
 import org.apache.commons.logging.*;
 import org.emulinker.kaillera.controller.connectcontroller.ConnectController;
 import org.emulinker.kaillera.master.*;
@@ -17,10 +15,7 @@ public class MasterListUpdaterImpl implements MasterListUpdater, Executable, Sta
   private static Log log = LogFactory.getLog(MasterListUpdaterImpl.class);
 
   private ThreadPoolExecutor threadPool;
-  private ConnectController connectController;
-  private KailleraServer kailleraServer;
   private StatsCollector statsCollector;
-  private ReleaseInfo releaseInfo;
 
   private PublicServerInformation publicInfo;
 
@@ -42,10 +37,7 @@ public class MasterListUpdaterImpl implements MasterListUpdater, Executable, Sta
       ReleaseInfo releaseInfo)
       throws Exception {
     this.threadPool = threadPool;
-    this.connectController = connectController;
-    this.kailleraServer = kailleraServer;
     this.statsCollector = statsCollector;
-    this.releaseInfo = releaseInfo;
 
     touchKaillera = config.getBoolean("masterList.touchKaillera", false);
     touchEmulinker = config.getBoolean("masterList.touchEmulinker", false);
@@ -126,7 +118,6 @@ public class MasterListUpdaterImpl implements MasterListUpdater, Executable, Sta
         if (stopFlag) break;
 
         log.info("MasterListUpdater touching masters...");
-        List createdGamesList = statsCollector.getStartedGamesList();
 
         if (emulinkerMasterTask != null) emulinkerMasterTask.touchMaster();
 

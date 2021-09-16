@@ -28,14 +28,15 @@ public class ClientACK extends ACK {
 
     byte b = buffer.get();
 
-    if (b != 0x00)
+    if (b != 0x00) {
       throw new MessageFormatException(
           "Invalid " + DESC + " format: byte 0 = " + EmuUtil.byteToHex(b));
+    }
 
-    long val1 = UnsignedUtil.getUnsignedInt(buffer);
-    long val2 = UnsignedUtil.getUnsignedInt(buffer);
-    long val3 = UnsignedUtil.getUnsignedInt(buffer);
-    long val4 = UnsignedUtil.getUnsignedInt(buffer);
+    // long val1 = UnsignedUtil.getUnsignedInt(buffer);
+    // long val2 = UnsignedUtil.getUnsignedInt(buffer);
+    // long val3 = UnsignedUtil.getUnsignedInt(buffer);
+    // long val4 = UnsignedUtil.getUnsignedInt(buffer);
 
     // if (val1 != 0 || val2 != 1 || val3 != 2 || val4 != 3)
     // throw new MessageFormatException("Invalid " + DESC + " format: bytes do not match acceptable

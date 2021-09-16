@@ -28,7 +28,6 @@ public class V086Controller implements KailleraServerController {
 
   private ThreadPoolExecutor threadPool;
   private KailleraServer server;
-  private AccessManager accessManager;
   private String[] clientTypes;
   private Map<Integer, V086ClientHandler> clientHandlers =
       new ConcurrentHashMap<Integer, V086ClientHandler>();
@@ -51,8 +50,6 @@ public class V086Controller implements KailleraServerController {
       throws NoSuchElementException, ConfigurationException {
     this.threadPool = threadPool;
     this.server = server;
-    this.accessManager = accessManager;
-
     this.bufferSize = config.getInt("controllers.v086.bufferSize");
     this.clientTypes = config.getStringArray("controllers.v086.clientTypes.clientType");
 

@@ -102,8 +102,7 @@ public class GameChatAction implements V086Action, V086GameEventHandler {
         KailleraUserImpl user = (KailleraUserImpl) clientHandler.getUser();
         try {
           clientHandler.getUser().setMsg(true);
-          user.getGame()
-              .announce("Private messages are now on.", user); // $NON-NLS-1$ //$NON-NLS-2$
+          user.getGame().announce("Private messages are now on.", user); // $NON-NLS-2$
         } catch (Exception e) {
         }
         return;
@@ -111,8 +110,7 @@ public class GameChatAction implements V086Action, V086GameEventHandler {
         KailleraUserImpl user = (KailleraUserImpl) clientHandler.getUser();
         try {
           clientHandler.getUser().setMsg(false);
-          user.getGame()
-              .announce("Private messages are now off.", user); // $NON-NLS-1$ //$NON-NLS-2$
+          user.getGame().announce("Private messages are now off.", user); // $NON-NLS-2$
         } catch (Exception e) {
         }
         return;
@@ -163,14 +161,12 @@ public class GameChatAction implements V086Action, V086GameEventHandler {
             }
           }
         } else {
-          user.getGame()
-              .announce("Failed P2P: /p2pon or /p2poff", user); // $NON-NLS-1$ //$NON-NLS-2$
+          user.getGame().announce("Failed P2P: /p2pon or /p2poff", user); // $NON-NLS-2$
         }
         return;
       } else if (((GameChat) message).getMessage().startsWith("/msg")) {
         KailleraUserImpl user1 = (KailleraUserImpl) clientHandler.getUser();
-        Scanner scanner =
-            new Scanner(((GameChat) message).getMessage()).useDelimiter(" "); // $NON-NLS-1$
+        Scanner scanner = new Scanner(((GameChat) message).getMessage()).useDelimiter(" ");
 
         int access =
             clientHandler
@@ -197,7 +193,7 @@ public class GameChatAction implements V086Action, V086GameEventHandler {
           StringBuilder sb = new StringBuilder();
           while (scanner.hasNext()) {
             sb.append(scanner.next());
-            sb.append(" "); // $NON-NLS-1$
+            sb.append(" ");
           }
 
           if (user == null) {
@@ -300,7 +296,7 @@ public class GameChatAction implements V086Action, V086GameEventHandler {
               StringBuilder sb = new StringBuilder();
               while (scanner.hasNext()) {
                 sb.append(scanner.next());
-                sb.append(" "); // $NON-NLS-1$
+                sb.append(" ");
               }
 
               if (user == null) {
@@ -419,8 +415,7 @@ public class GameChatAction implements V086Action, V086GameEventHandler {
         return;
       } else if (((GameChat) message).getMessage().startsWith("/ignore")) {
         KailleraUserImpl user1 = (KailleraUserImpl) clientHandler.getUser();
-        Scanner scanner =
-            new Scanner(((GameChat) message).getMessage()).useDelimiter(" "); // $NON-NLS-1$
+        Scanner scanner = new Scanner(((GameChat) message).getMessage()).useDelimiter(" ");
 
         try {
           scanner.next();
@@ -462,8 +457,7 @@ public class GameChatAction implements V086Action, V086GameEventHandler {
           return;
         } catch (NoSuchElementException e) {
           KailleraUserImpl user = (KailleraUserImpl) clientHandler.getUser();
-          user.getGame()
-              .announce("Ignore User Error: /ignore <UserID>", user); // $NON-NLS-1$ //$NON-NLS-2$
+          user.getGame().announce("Ignore User Error: /ignore <UserID>", user); // $NON-NLS-2$
           log.info(
               "IGNORE USER ERROR: "
                   + user.getName()
@@ -473,8 +467,7 @@ public class GameChatAction implements V086Action, V086GameEventHandler {
         }
       } else if (((GameChat) message).getMessage().startsWith("/unignore")) {
         KailleraUserImpl user1 = (KailleraUserImpl) clientHandler.getUser();
-        Scanner scanner =
-            new Scanner(((GameChat) message).getMessage()).useDelimiter(" "); // $NON-NLS-1$
+        Scanner scanner = new Scanner(((GameChat) message).getMessage()).useDelimiter(" ");
 
         try {
           scanner.next();
@@ -517,8 +510,7 @@ public class GameChatAction implements V086Action, V086GameEventHandler {
           return;
         } catch (NoSuchElementException e) {
           KailleraUserImpl user = (KailleraUserImpl) clientHandler.getUser();
-          user.getGame()
-              .announce("Unignore User Error: /ignore <UserID>", user); // $NON-NLS-1$ //$NON-NLS-2$
+          user.getGame().announce("Unignore User Error: /ignore <UserID>", user); // $NON-NLS-2$
           log.info(
               "UNIGNORE USER ERROR: "
                   + user.getName()

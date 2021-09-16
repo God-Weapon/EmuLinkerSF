@@ -1,12 +1,8 @@
 package org.emulinker.kaillera.model.impl;
 
-import java.io.*;
-import org.emulinker.util.*;
-
 public class PlayerActionQueue {
   private int gameBufferSize;
   private int gameTimeoutMillis;
-  private boolean capture;
 
   private int thisPlayerNumber;
   private KailleraUserImpl thisPlayer;
@@ -31,7 +27,6 @@ public class PlayerActionQueue {
     this.thisPlayer = player;
     this.gameBufferSize = gameBufferSize;
     this.gameTimeoutMillis = gameTimeoutMillis;
-    this.capture = capture;
 
     array = new byte[gameBufferSize];
     heads = new int[numPlayers];

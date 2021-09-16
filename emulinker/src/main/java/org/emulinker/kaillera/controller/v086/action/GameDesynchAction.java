@@ -9,7 +9,7 @@ import org.emulinker.util.EmuLang;
 
 public class GameDesynchAction implements V086GameEventHandler {
   private static Log log = LogFactory.getLog(GameDesynchAction.class);
-  private static final String desc = "GameDesynchAction"; // $NON-NLS-1$
+  private static final String desc = "GameDesynchAction";
   private static GameDesynchAction singleton = new GameDesynchAction();
 
   public static GameDesynchAction getInstance() {
@@ -41,12 +41,11 @@ public class GameDesynchAction implements V086GameEventHandler {
           new GameChat_Notification(
               clientHandler.getNextMessageNumber(),
               EmuLang.getString("GameDesynchAction.DesynchDetected"),
-              desynchEvent.getMessage())); // $NON-NLS-1$
+              desynchEvent.getMessage()));
       // if (clientHandler.getUser().getStatus() == KailleraUser.STATUS_PLAYING)
       //	clientHandler.getUser().dropGame();
     } catch (MessageFormatException e) {
-      log.error(
-          "Failed to contruct GameChat_Notification message: " + e.getMessage(), e); // $NON-NLS-1$
+      log.error("Failed to contruct GameChat_Notification message: " + e.getMessage(), e);
     }
     // catch (DropGameException e)
     // {

@@ -1,11 +1,8 @@
 package org.emulinker.util;
 
 import java.util.concurrent.*;
-import org.apache.commons.logging.*;
 
 public class GameDataQueue {
-  private static Log log = LogFactory.getLog(GameDataQueue.class);
-
   private int gameID;
   private int numPlayers;
   private PlayerDataQueue[] playerQueues;
@@ -57,7 +54,6 @@ public class GameDataQueue {
   }
 
   private class PlayerDataQueue {
-    private int thisPlayerNumber;
     private CircularBlockingByteQueue[] queues;
     private int lastI = 0;
     private int lastJ = 0;
@@ -65,7 +61,6 @@ public class GameDataQueue {
     private int timeoutCounter = 0;
 
     private PlayerDataQueue(int playerNumber) {
-      this.thisPlayerNumber = playerNumber;
       queues = new CircularBlockingByteQueue[numPlayers];
       for (int i = 0; i < queues.length; i++)
         queues[i] = new CircularBlockingByteQueue(((numPlayers * 6) * 4));

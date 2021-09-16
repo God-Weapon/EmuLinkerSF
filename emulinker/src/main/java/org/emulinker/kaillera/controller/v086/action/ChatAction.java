@@ -48,32 +48,34 @@ public class ChatAction implements V086Action, V086ServerEventHandler {
   public void performAction(V086Message message, V086Controller.V086ClientHandler clientHandler)
       throws FatalActionException {
 
-    if (!(message instanceof Chat_Request))
+    if (!(message instanceof Chat_Request)) {
       throw new FatalActionException("Received incorrect instance of Chat: " + message);
+    }
 
-    if (((Chat) message).getMessage().startsWith(ADMIN_COMMAND_ESCAPE_STRING)) {
+    Chat_Request chatMessage = (Chat_Request) message;
+
+    if (chatMessage.getMessage().startsWith(ADMIN_COMMAND_ESCAPE_STRING)) {
       if (clientHandler.getUser().getAccess() > AccessManager.ACCESS_ELEVATED) {
         try {
-          if (AdminCommandAction.getInstance().isValidCommand(((Chat) message).getMessage())) {
-            AdminCommandAction.getInstance().performAction(message, clientHandler);
-            if (((Chat) message).getMessage().equals("/help"))
-              checkCommands(message, clientHandler);
-          } else checkCommands(message, clientHandler);
+          if (AdminCommandAction.getInstance().isValidCommand(chatMessage.getMessage())) {
+            AdminCommandAction.getInstance().performAction(chatMessage, clientHandler);
+            if (chatMessage.getMessage().equals("/help")) checkCommands(chatMessage, clientHandler);
+          } else checkCommands(chatMessage, clientHandler);
         } catch (FatalActionException e) {
           log.warn("Admin command failed: " + e.getMessage());
         }
         return;
       }
-      checkCommands(message, clientHandler);
+      checkCommands(chatMessage, clientHandler);
       return;
     }
 
     actionCount++;
 
     try {
-      clientHandler.getUser().chat(((Chat) message).getMessage());
+      clientHandler.getUser().chat(chatMessage.getMessage());
     } catch (ActionException e) {
-      log.info("Chat Denied: " + clientHandler.getUser() + ": " + ((Chat) message).getMessage());
+      log.info("Chat Denied: " + clientHandler.getUser() + ": " + chatMessage.getMessage());
 
       try {
         clientHandler.send(
@@ -87,7 +89,8 @@ public class ChatAction implements V086Action, V086ServerEventHandler {
     }
   }
 
-  private void checkCommands(V086Message message, V086Controller.V086ClientHandler clientHandler)
+  private void checkCommands(
+      Chat_Request chatMessage, V086Controller.V086ClientHandler clientHandler)
       throws FatalActionException {
     boolean doCommand = true;
     KailleraUserImpl userN = (KailleraUserImpl) clientHandler.getUser();
@@ -102,7 +105,7 @@ public class ChatAction implements V086Action, V086ServerEventHandler {
 
     if (doCommand) {
       // SF MOD - User Commands
-      if (((Chat) message).getMessage().equals("/alivecheck")) {
+      if (chatMessage.getMessage().equals("/alivecheck")) {
         try {
           clientHandler.send(
               new InformationMessage(
@@ -111,7 +114,7 @@ public class ChatAction implements V086Action, V086ServerEventHandler {
                   ":ALIVECHECK=EmulinkerSF Alive Check: You are still logged in."));
         } catch (Exception e) {
         }
-      } else if (((Chat) message).getMessage().equals("/version")
+      } else if (chatMessage.getMessage().equals("/version")
           && clientHandler.getUser().getAccess() < AccessManager.ACCESS_ADMIN) {
         ReleaseInfo releaseInfo = clientHandler.getUser().getServer().getReleaseInfo();
         try {
@@ -127,7 +130,7 @@ public class ChatAction implements V086Action, V086ServerEventHandler {
                       + releaseInfo.getReleaseDate()));
         } catch (Exception e) {
         }
-      } else if (((Chat) message).getMessage().equals("/myip")) {
+      } else if (chatMessage.getMessage().equals("/myip")) {
         try {
           clientHandler.send(
               new InformationMessage(
@@ -141,7 +144,7 @@ public class ChatAction implements V086Action, V086ServerEventHandler {
                           .getHostAddress()));
         } catch (Exception e) {
         }
-      } else if (((Chat) message).getMessage().equals("/msgon")) {
+      } else if (chatMessage.getMessage().equals("/msgon")) {
         clientHandler.getUser().setMsg(true);
         try {
           clientHandler.send(
@@ -149,7 +152,7 @@ public class ChatAction implements V086Action, V086ServerEventHandler {
                   clientHandler.getNextMessageNumber(), "server", "Private messages are now on."));
         } catch (Exception e) {
         }
-      } else if (((Chat) message).getMessage().equals("/msgoff")) {
+      } else if (chatMessage.getMessage().equals("/msgoff")) {
         clientHandler.getUser().setMsg(false);
         try {
           clientHandler.send(
@@ -157,8 +160,8 @@ public class ChatAction implements V086Action, V086ServerEventHandler {
                   clientHandler.getNextMessageNumber(), "server", "Private messages are now off."));
         } catch (Exception e) {
         }
-      } else if (((Chat) message).getMessage().startsWith("/me")) {
-        int space = ((Chat) message).getMessage().indexOf(' ');
+      } else if (chatMessage.getMessage().startsWith("/me")) {
+        int space = chatMessage.getMessage().indexOf(' ');
         if (space < 0) {
           try {
             clientHandler.send(
@@ -169,7 +172,7 @@ public class ChatAction implements V086Action, V086ServerEventHandler {
           return;
         }
 
-        String announcement = ((Chat) message).getMessage().substring(space + 1);
+        String announcement = chatMessage.getMessage().substring(space + 1);
         if (announcement.startsWith(":"))
           announcement =
               announcement.substring(
@@ -203,10 +206,9 @@ public class ChatAction implements V086Action, V086ServerEventHandler {
           KailleraUserImpl user1 = (KailleraUserImpl) clientHandler.getUser();
           clientHandler.getUser().getServer().announce(announcement, true, user1);
         }
-      } else if (((Chat) message).getMessage().startsWith("/msg")) {
+      } else if (chatMessage.getMessage().startsWith("/msg")) {
         KailleraUserImpl user1 = (KailleraUserImpl) clientHandler.getUser();
-        Scanner scanner =
-            new Scanner(((Chat) message).getMessage()).useDelimiter(" "); // $NON-NLS-1$
+        Scanner scanner = new Scanner(chatMessage.getMessage()).useDelimiter(" ");
 
         int access =
             clientHandler
@@ -238,7 +240,7 @@ public class ChatAction implements V086Action, V086ServerEventHandler {
           StringBuilder sb = new StringBuilder();
           while (scanner.hasNext()) {
             sb.append(scanner.next());
-            sb.append(" "); // $NON-NLS-1$
+            sb.append(" ");
           }
 
           if (user == null) {
@@ -364,7 +366,7 @@ public class ChatAction implements V086Action, V086ServerEventHandler {
               StringBuilder sb = new StringBuilder();
               while (scanner.hasNext()) {
                 sb.append(scanner.next());
-                sb.append(" "); // $NON-NLS-1$
+                sb.append(" ");
               }
 
               if (user == null) {
@@ -492,7 +494,7 @@ public class ChatAction implements V086Action, V086ServerEventHandler {
             return;
           }
         }
-      } else if (((Chat) message).getMessage().equals("/ignoreall")) {
+      } else if (chatMessage.getMessage().equals("/ignoreall")) {
         KailleraUserImpl user = (KailleraUserImpl) clientHandler.getUser();
         try {
           clientHandler.getUser().setIgnoreAll(true);
@@ -503,7 +505,7 @@ public class ChatAction implements V086Action, V086ServerEventHandler {
                   null); //$NON-NLS-1$ //$NON-NLS-2$
         } catch (Exception e) {
         }
-      } else if (((Chat) message).getMessage().equals("/unignoreall")) {
+      } else if (chatMessage.getMessage().equals("/unignoreall")) {
         KailleraUserImpl user = (KailleraUserImpl) clientHandler.getUser();
         try {
           clientHandler.getUser().setIgnoreAll(false);
@@ -514,9 +516,8 @@ public class ChatAction implements V086Action, V086ServerEventHandler {
                   null); //$NON-NLS-1$ //$NON-NLS-2$
         } catch (Exception e) {
         }
-      } else if (((Chat) message).getMessage().startsWith("/ignore")) {
-        Scanner scanner =
-            new Scanner(((Chat) message).getMessage()).useDelimiter(" "); // $NON-NLS-1$
+      } else if (chatMessage.getMessage().startsWith("/ignore")) {
+        Scanner scanner = new Scanner(chatMessage.getMessage()).useDelimiter(" ");
 
         try {
           scanner.next();
@@ -584,8 +585,7 @@ public class ChatAction implements V086Action, V086ServerEventHandler {
         } catch (NoSuchElementException e) {
           KailleraUserImpl user = (KailleraUserImpl) clientHandler.getUser();
           user.getServer()
-              .announce(
-                  "Ignore User Error: /ignore <UserID>", false, user); // $NON-NLS-1$ //$NON-NLS-2$
+              .announce("Ignore User Error: /ignore <UserID>", false, user); // $NON-NLS-2$
           log.info(
               "IGNORE USER ERROR: "
                   + user.getName()
@@ -593,9 +593,8 @@ public class ChatAction implements V086Action, V086ServerEventHandler {
                   + clientHandler.getRemoteSocketAddress().getHostName());
           return;
         }
-      } else if (((Chat) message).getMessage().startsWith("/unignore")) {
-        Scanner scanner =
-            new Scanner(((Chat) message).getMessage()).useDelimiter(" "); // $NON-NLS-1$
+      } else if (chatMessage.getMessage().startsWith("/unignore")) {
+        Scanner scanner = new Scanner(chatMessage.getMessage()).useDelimiter(" ");
 
         try {
           scanner.next();
@@ -662,7 +661,7 @@ public class ChatAction implements V086Action, V086ServerEventHandler {
           return;
         }
 
-      } else if (((Chat) message).getMessage().equals("/help")) {
+      } else if (chatMessage.getMessage().equals("/help")) {
         try {
           clientHandler.send(
               new InformationMessage(
@@ -762,9 +761,9 @@ public class ChatAction implements V086Action, V086ServerEventHandler {
           }
           return;
         }
-      } else if (((Chat) message).getMessage().startsWith("/finduser")
+      } else if (chatMessage.getMessage().startsWith("/finduser")
           && clientHandler.getUser().getAccess() < AccessManager.ACCESS_ADMIN) {
-        int space = ((Chat) message).getMessage().indexOf(' ');
+        int space = chatMessage.getMessage().indexOf(' ');
         if (space < 0) {
           try {
             clientHandler.send(
@@ -777,18 +776,18 @@ public class ChatAction implements V086Action, V086ServerEventHandler {
           return;
         }
         int foundCount = 0;
-        String str = (((Chat) message).getMessage().substring(space + 1));
+        String str = (chatMessage.getMessage().substring(space + 1));
         // WildcardStringPattern pattern = new WildcardStringPattern
         for (KailleraUserImpl user : clientHandler.getUser().getUsers()) {
           if (!user.isLoggedIn()) continue;
 
           if (user.getName().toLowerCase().contains(str.toLowerCase())) {
             StringBuilder sb = new StringBuilder();
-            sb.append("UserID: "); // $NON-NLS-1$
+            sb.append("UserID: ");
             sb.append(user.getID());
-            sb.append(", Nick: <"); // $NON-NLS-1$
+            sb.append(", Nick: <");
             sb.append(user.getName());
-            sb.append(">"); // $NON-NLS-1$
+            sb.append(">");
             sb.append(", Access: ");
             if (user.getAccessStr().equals("SuperAdmin") || user.getAccessStr().equals("Admin")) {
               sb.append("Normal");
@@ -797,9 +796,9 @@ public class ChatAction implements V086Action, V086ServerEventHandler {
             }
 
             if (user.getGame() != null) {
-              sb.append(", GameID: "); // $NON-NLS-1$
+              sb.append(", GameID: ");
               sb.append(user.getGame().getID());
-              sb.append(", Game: "); // $NON-NLS-1$
+              sb.append(", Game: ");
               sb.append(user.getGame().getRomName());
             }
             try {
@@ -820,9 +819,7 @@ public class ChatAction implements V086Action, V086ServerEventHandler {
           } catch (Exception e) {
           }
       } else
-        userN
-            .getServer()
-            .announce("Unknown Command: " + ((Chat) message).getMessage(), false, userN);
+        userN.getServer().announce("Unknown Command: " + chatMessage.getMessage(), false, userN);
     } else {
       userN.getServer().announce("Denied: Flood Control", false, userN);
     }
