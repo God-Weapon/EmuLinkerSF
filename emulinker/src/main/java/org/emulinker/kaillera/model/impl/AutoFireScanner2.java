@@ -1,14 +1,13 @@
 package org.emulinker.kaillera.model.impl;
 
+import com.google.common.flogger.FluentLogger;
 import java.util.*;
 import java.util.concurrent.*;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.emulinker.kaillera.model.*;
 import org.emulinker.util.*;
 
 public class AutoFireScanner2 implements AutoFireDetector {
-  protected static Log log = LogFactory.getLog(AutoFireScanner2.class);
+  private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
   // MAX DELAY, MIN REPEITIONS
   private static int SENSITIVITY_TABLE[][] = {
@@ -112,15 +111,15 @@ public class AutoFireScanner2 implements AutoFireDetector {
     protected synchronized void addData(byte[] data, int bytesPerAction) {
       if ((pos + data.length) >= sizeLimit) {
         int firstSize = (sizeLimit - pos);
-        //				log.debug("firstSize="+firstSize);
+        //				logger.atFine().log("firstSize="+firstSize);
         System.arraycopy(data, 0, buffer[tail], pos, firstSize);
         // tail = ((tail + 1) % bufferSize);
         tail++;
         if (tail == bufferSize) tail = 0;
-        //				log.debug("tail="+tail);
+        //				logger.atFine().log("tail="+tail);
         System.arraycopy(data, firstSize, buffer[tail], 0, (data.length - firstSize));
         pos = (data.length - firstSize);
-        //				log.debug("pos="+pos);
+        //				logger.atFine().log("pos="+pos);
         size++;
 
         if (this.bytesPerAction <= 0) this.bytesPerAction = bytesPerAction;
@@ -129,7 +128,7 @@ public class AutoFireScanner2 implements AutoFireDetector {
       } else {
         System.arraycopy(data, 0, buffer[tail], pos, data.length);
         pos += data.length;
-        //				log.debug("pos="+pos);
+        //				logger.atFine().log("pos="+pos);
       }
     }
 
@@ -149,7 +148,8 @@ public class AutoFireScanner2 implements AutoFireDetector {
           byte[] data = null;
           synchronized (this) {
             data = buffer[head];
-            //						log.debug("Scanning " + data.length + " bytes from buffer position " + head);
+            //						logger.atFine().log("Scanning " + data.length + " bytes from buffer position " +
+            // head);
             // head = ((head+1) % bufferSize);
             head++;
             if (head == bufferSize) head = 0;
@@ -176,7 +176,8 @@ public class AutoFireScanner2 implements AutoFireDetector {
 
           for (int i = 0; i < actionCount; i++) {
             System.arraycopy(data, (i * bytesPerAction), thisAction, 0, bytesPerAction);
-            //						log.debug("thisAction=" + EmuUtil.bytesToHex(thisAction) + " actionA=" +
+            //						logger.atFine().log("thisAction=" + EmuUtil.bytesToHex(thisAction) + " actionA="
+            // +
             // EmuUtil.bytesToHex(actionA) + " aCount=" + aCount + " actionB=" +
             // EmuUtil.bytesToHex(actionB) + " bCount=" + bCount + " aSequence=" + aSequence + "
             // aSequenceCount=" + aSequenceCount + " bSequence=" + bSequence + " bSequenceCount=" +
@@ -225,7 +226,8 @@ public class AutoFireScanner2 implements AutoFireDetector {
 
             //						if(aSequenceCount >= 3 && bSequenceCount >= 3 && !stopFlag)
             //						{
-            //							log.debug("thisAction=" + EmuUtil.bytesToHex(thisAction) + " actionA=" +
+            //							logger.atFine().log("thisAction=" + EmuUtil.bytesToHex(thisAction) + "
+            // actionA=" +
             // EmuUtil.bytesToHex(actionA) + " aCount=" + aCount + " actionB=" +
             // EmuUtil.bytesToHex(actionB) + " bCount=" + bCount + " aSequence=" + aSequence + "
             // aSequenceCount=" + aSequenceCount + " bSequence=" + bSequence + " bSequenceCount=" +
@@ -235,9 +237,8 @@ public class AutoFireScanner2 implements AutoFireDetector {
             if (aSequenceCount >= minReps && bSequenceCount >= minReps && !stopFlag) {
               KailleraGameImpl gameImpl = (KailleraGameImpl) game;
               gameImpl.announce(
-                  EmuLang.getString("AutoFireScanner2.AutoFireDetected", user.getName()),
-                  null); //$NON-NLS-1$
-              log.info(
+                  EmuLang.getString("AutoFireScanner2.AutoFireDetected", user.getName()), null);
+              logger.atInfo().log(
                   "AUTOUSERDUMP\t"
                       + EmuUtil.DATE_FORMAT.format(gameImpl.getStartDate())
                       + "\t"
@@ -249,11 +250,9 @@ public class AutoFireScanner2 implements AutoFireDetector {
                       + "\t"
                       + user.getName()
                       + "\t"
-                      + user.getSocketAddress()
-                          .getAddress()
-                          .getHostAddress()); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-              // //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
-              //							log.debug("thisAction=" + EmuUtil.bytesToHex(thisAction) + " actionA=" +
+                      + user.getSocketAddress().getAddress().getHostAddress());
+              //							logger.atFine().log("thisAction=" + EmuUtil.bytesToHex(thisAction) + "
+              // actionA=" +
               // EmuUtil.bytesToHex(actionA) + " aCount=" + aCount + " actionB=" +
               // EmuUtil.bytesToHex(actionB) + " bCount=" + bCount + " aSequence=" + aSequence + "
               // aSequenceCount=" + aSequenceCount + " bSequence=" + bSequence + " bSequenceCount="
@@ -263,9 +262,8 @@ public class AutoFireScanner2 implements AutoFireDetector {
           }
         }
       } catch (Exception e) {
-        log.error(
-            "AutoFireScanner2 thread for " + user + " caught exception!",
-            e); //$NON-NLS-1$ //$NON-NLS-2$
+        logger.atSevere().withCause(e).log(
+            "AutoFireScanner2 thread for " + user + " caught exception!");
       } finally {
         synchronized (this) {
           running = false;
@@ -273,7 +271,7 @@ public class AutoFireScanner2 implements AutoFireDetector {
       }
 
       //			long et = (System.currentTimeMillis()-st);
-      //			log.debug("Scanning completed in " + et + " ms");
+      //			logger.atFine().log("Scanning completed in " + et + " ms");
     }
   }
 }

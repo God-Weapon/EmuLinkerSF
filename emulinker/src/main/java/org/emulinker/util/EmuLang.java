@@ -1,13 +1,12 @@
 package org.emulinker.util;
 
+import com.google.common.flogger.FluentLogger;
 import java.text.MessageFormat;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 public class EmuLang {
-  private static Log log = LogFactory.getLog(EmuLang.class);
+  private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
   private static final String BUNDLE_NAME = "language";
 
@@ -48,7 +47,7 @@ public class EmuLang {
     try {
       return RESOURCE_BUNDLE.getString(key);
     } catch (MissingResourceException e) {
-      log.error("Missing language property: " + key);
+      logger.atSevere().withCause(e).log("Missing language property: " + key);
       return key;
     }
   }
@@ -58,7 +57,7 @@ public class EmuLang {
       String str = RESOURCE_BUNDLE.getString(key);
       return (new MessageFormat(str)).format(messageArgs);
     } catch (MissingResourceException e) {
-      log.error("Missing language property: " + key);
+      logger.atSevere().withCause(e).log("Missing language property: " + key);
       return key;
     }
   }

@@ -12,6 +12,7 @@ public abstract class GameData extends V086Message {
   public static final byte ID = 0x12;
   public static final String DESC = "Game Data";
 
+  @SuppressWarnings("mutable") // TODO(nue): Try to use an immutable structure.
   public abstract byte[] gameData();
 
   public static void main(String args[]) throws Exception {

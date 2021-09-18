@@ -1,23 +1,23 @@
 package org.emulinker.kaillera.controller.v086.action;
 
-import org.apache.commons.logging.*;
+import com.google.common.flogger.FluentLogger;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 import org.emulinker.kaillera.controller.v086.V086Controller;
 import org.emulinker.kaillera.controller.v086.protocol.CloseGame;
 import org.emulinker.kaillera.model.event.*;
 
+@Singleton
 public class CloseGameAction implements V086ServerEventHandler {
-  private static Log log = LogFactory.getLog(CloseGameAction.class);
-  private static final String desc = "CloseGameAction";
-  private static CloseGameAction singleton = new CloseGameAction();
+  private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
-  public static CloseGameAction getInstance() {
-    return singleton;
-  }
+  private static final String DESC = "CloseGameAction";
 
   private int handledCount;
 
-  private CloseGameAction() {}
+  @Inject
+  CloseGameAction() {}
 
   @Override
   public int getHandledEventCount() {
@@ -26,7 +26,7 @@ public class CloseGameAction implements V086ServerEventHandler {
 
   @Override
   public String toString() {
-    return desc;
+    return DESC;
   }
 
   @Override
@@ -40,7 +40,7 @@ public class CloseGameAction implements V086ServerEventHandler {
           CloseGame.create(
               clientHandler.getNextMessageNumber(), gameClosedEvent.getGame().getID(), (short) 0));
     } catch (MessageFormatException e) {
-      log.error("Failed to contruct CloseGame_Notification message: " + e.getMessage(), e);
+      logger.atSevere().withCause(e).log("Failed to contruct CloseGame_Notification message");
     }
   }
 }

@@ -1,6 +1,8 @@
 package org.emulinker.kaillera.controller.v086.action;
 
-import org.apache.commons.logging.*;
+import com.google.common.flogger.FluentLogger;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.emulinker.kaillera.access.AccessManager;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 import org.emulinker.kaillera.controller.v086.V086Controller;
@@ -9,19 +11,17 @@ import org.emulinker.kaillera.model.*;
 import org.emulinker.kaillera.model.event.*;
 import org.emulinker.kaillera.model.impl.*;
 
+@Singleton
 public class LoginAction implements V086Action, V086ServerEventHandler {
-  private static Log log = LogFactory.getLog(LoginAction.class);
-  private static final String desc = "LoginAction";
-  private static LoginAction singleton = new LoginAction();
+  private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
-  public static LoginAction getInstance() {
-    return singleton;
-  }
+  private static final String DESC = "LoginAction";
 
   private int actionCount = 0;
   private int handledCount = 0;
 
-  private LoginAction() {}
+  @Inject
+  LoginAction() {}
 
   @Override
   public int getActionPerformedCount() {
@@ -35,7 +35,7 @@ public class LoginAction implements V086Action, V086ServerEventHandler {
 
   @Override
   public String toString() {
-    return desc;
+    return DESC;
   }
 
   @Override
@@ -55,7 +55,7 @@ public class LoginAction implements V086Action, V086ServerEventHandler {
     try {
       clientHandler.send(ServerACK.create(clientHandler.getNextMessageNumber()));
     } catch (MessageFormatException e) {
-      log.error("Failed to contruct ServerACK message: " + e.getMessage(), e);
+      logger.atSevere().withCause(e).log("Failed to contruct ServerACK message");
     }
   }
 
@@ -103,7 +103,7 @@ public class LoginAction implements V086Action, V086ServerEventHandler {
         }
       }
     } catch (MessageFormatException e) {
-      log.error("Failed to contruct UserJoined_Notification message: " + e.getMessage(), e);
+      logger.atSevere().withCause(e).log("Failed to contruct UserJoined_Notification message");
     }
   }
 }

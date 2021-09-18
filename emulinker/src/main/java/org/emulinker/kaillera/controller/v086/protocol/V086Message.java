@@ -1,5 +1,6 @@
 package org.emulinker.kaillera.controller.v086.protocol;
 
+import com.google.common.flogger.FluentLogger;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import org.emulinker.kaillera.controller.messaging.*;
@@ -7,6 +8,8 @@ import org.emulinker.kaillera.relay.KailleraRelay;
 import org.emulinker.util.*;
 
 public abstract class V086Message extends ByteBufferMessage {
+  private static final FluentLogger logger = FluentLogger.forEnclosingClass();
+
   public abstract int messageNumber();
 
   protected static void validateMessageNumber(int messageNumber, String description)
@@ -44,7 +47,7 @@ public abstract class V086Message extends ByteBufferMessage {
   public void writeTo(ByteBuffer buffer) {
     int len = getLength();
     if (len > buffer.remaining()) {
-      log.warn(
+      logger.atWarning().log(
           "Ran out of output buffer space, consider increasing the controllers.v086.bufferSize setting!");
     } else {
       UnsignedUtil.putUnsignedShort(buffer, messageNumber());
@@ -171,7 +174,7 @@ public abstract class V086Message extends ByteBufferMessage {
     if (message.getLength() != messageLength) {
       //			throw new ParseException("Bundle contained length " + messageLength + " !=  parsed length
       // " + message.getLength());
-      log.debug(
+      logger.atFine().log(
           "Bundle contained length " + messageLength + " !=  parsed length " + message.getLength());
     }
 

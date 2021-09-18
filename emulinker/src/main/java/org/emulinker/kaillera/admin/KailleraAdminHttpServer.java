@@ -1,10 +1,10 @@
 package org.emulinker.kaillera.admin;
 
 import com.google.common.base.Strings;
+import com.google.common.flogger.FluentLogger;
 import java.io.IOException;
 import java.util.concurrent.ThreadPoolExecutor;
 import org.apache.commons.configuration.Configuration;
-import org.apache.commons.logging.*;
 import org.emulinker.kaillera.controller.connectcontroller.ConnectController;
 import org.emulinker.kaillera.model.KailleraServer;
 import org.mortbay.http.*;
@@ -12,10 +12,9 @@ import org.mortbay.http.handler.*;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.servlet.*;
 import org.mortbay.util.InetAddrPort;
-import org.picocontainer.Startable;
 
-public class KailleraAdminHttpServer implements Startable {
-  private static Log log = LogFactory.getLog(KailleraAdminHttpServer.class);
+public class KailleraAdminHttpServer {
+  private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
   protected Server appServer = new Server();
 
@@ -57,7 +56,7 @@ public class KailleraAdminHttpServer implements Startable {
     boolean isSecurity = config.getBoolean("adminserver.authenticate", false);
 
     if (isSecurity) {
-      log.info("Configuring admin server security.");
+      logger.atInfo().log("Configuring admin server security.");
 
       String realmName = config.getString("adminserver.realmname");
       if (Strings.isNullOrEmpty(realmName) || realmName.isBlank()) {
@@ -69,8 +68,8 @@ public class KailleraAdminHttpServer implements Startable {
         userFile = "conf/user.properties";
       }
 
-      log.info("Establishing realm " + realmName);
-      log.info("Loading usernames and passwords from " + userFile);
+      logger.atInfo().log("Establishing realm " + realmName);
+      logger.atInfo().log("Loading usernames and passwords from " + userFile);
 
       SecurityHandler sh = new SecurityHandler();
       sh.setAuthMethod("BASIC");
@@ -91,32 +90,30 @@ public class KailleraAdminHttpServer implements Startable {
       hur.load(userFile);
       context.setRealm(hur);
     } else {
-      log.info("Admin server security is disabled.");
+      logger.atInfo().log("Admin server security is disabled.");
     }
   }
 
-  @Override
   public void start() {
-    log.info("Starting Web-based Admin Interface.");
+    logger.atInfo().log("Starting Web-based Admin Interface.");
 
     if (!appServer.isStarted()) {
       try {
         appServer.start();
       } catch (Exception e) {
-        log.error("Failed to start admin server: " + e.getMessage(), e);
+        logger.atSevere().withCause(e).log("Failed to start admin server");
       }
     }
   }
 
-  @Override
   public void stop() {
-    log.info("Stoping!");
+    logger.atInfo().log("Stoping!");
 
     if (appServer.isStarted()) {
       try {
         appServer.stop();
       } catch (Exception e) {
-        log.error("Failed to stop admin server: " + e.getMessage(), e);
+        logger.atSevere().withCause(e).log("Failed to stop admin server");
       }
     }
   }

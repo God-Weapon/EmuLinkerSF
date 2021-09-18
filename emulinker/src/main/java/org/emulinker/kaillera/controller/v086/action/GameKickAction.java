@@ -1,23 +1,23 @@
 package org.emulinker.kaillera.controller.v086.action;
 
-import org.apache.commons.logging.*;
+import com.google.common.flogger.FluentLogger;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 import org.emulinker.kaillera.controller.v086.V086Controller;
 import org.emulinker.kaillera.controller.v086.protocol.*;
 import org.emulinker.kaillera.model.exception.GameKickException;
 
+@Singleton
 public class GameKickAction implements V086Action {
-  private static Log log = LogFactory.getLog(GameKickAction.class);
-  private static final String desc = "GameKickAction";
-  private static GameKickAction singleton = new GameKickAction();
+  private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
-  public static GameKickAction getInstance() {
-    return singleton;
-  }
+  private static final String DESC = "GameKickAction";
 
   private int actionCount = 0;
 
-  private GameKickAction() {}
+  @Inject
+  GameKickAction() {}
 
   @Override
   public int getActionPerformedCount() {
@@ -26,7 +26,7 @@ public class GameKickAction implements V086Action {
 
   @Override
   public String toString() {
-    return desc;
+    return DESC;
   }
 
   @Override
@@ -39,14 +39,14 @@ public class GameKickAction implements V086Action {
     try {
       clientHandler.getUser().gameKick(kickRequest.userId());
     } catch (GameKickException e) {
-      log.debug("Failed to kick: " + e.getMessage());
+      logger.atSevere().withCause(e).log("Failed to kick");
       // new SF MOD - kick errors notifications
       try {
         clientHandler.send(
             GameChat_Notification.create(
                 clientHandler.getNextMessageNumber(), "Error", e.getMessage()));
       } catch (MessageFormatException ex) {
-        log.error("Failed to contruct GameChat_Notification message: " + e.getMessage(), e);
+        logger.atSevere().withCause(ex).log("Failed to contruct GameChat_Notification message");
       }
     }
   }

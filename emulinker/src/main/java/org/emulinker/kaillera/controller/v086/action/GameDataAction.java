@@ -1,7 +1,8 @@
 package org.emulinker.kaillera.controller.v086.action;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import com.google.common.flogger.FluentLogger;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 import org.emulinker.kaillera.controller.v086.V086Controller;
 import org.emulinker.kaillera.controller.v086.protocol.*;
@@ -9,19 +10,17 @@ import org.emulinker.kaillera.model.KailleraUser;
 import org.emulinker.kaillera.model.event.*;
 import org.emulinker.kaillera.model.exception.GameDataException;
 
+@Singleton
 public class GameDataAction implements V086Action, V086GameEventHandler {
-  private static Log log = LogFactory.getLog(GameDataAction.class);
-  private static final String desc = "GameDataAction";
-  private static GameDataAction singleton = new GameDataAction();
+  private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
-  public static GameDataAction getInstance() {
-    return singleton;
-  }
+  private static final String DESC = "GameDataAction";
 
   private int actionCount = 0;
   private int handledCount = 0;
 
-  private GameDataAction() {}
+  @Inject
+  GameDataAction() {}
 
   @Override
   public int getActionPerformedCount() {
@@ -35,7 +34,7 @@ public class GameDataAction implements V086Action, V086GameEventHandler {
 
   @Override
   public String toString() {
-    return desc;
+    return DESC;
   }
 
   @Override
@@ -48,14 +47,14 @@ public class GameDataAction implements V086Action, V086GameEventHandler {
       clientHandler.getClientGameDataCache().add(data);
       user.addGameData(data);
     } catch (GameDataException e) {
-      log.debug("Game data error: " + e.getMessage());
+      logger.atFine().withCause(e).log("Game data error");
 
       if (e.hasResponse()) {
         try {
           clientHandler.send(
               GameData.create(clientHandler.getNextMessageNumber(), e.getResponse()));
         } catch (MessageFormatException e2) {
-          log.error("Failed to contruct GameData message: " + e2.getMessage(), e2);
+          logger.atSevere().withCause(e2).log("Failed to contruct GameData message");
         }
       }
     }
@@ -72,13 +71,13 @@ public class GameDataAction implements V086Action, V086GameEventHandler {
       try {
         clientHandler.send(GameData.create(clientHandler.getNextMessageNumber(), data));
       } catch (MessageFormatException e) {
-        log.error("Failed to contruct GameData message: " + e.getMessage(), e);
+        logger.atSevere().withCause(e).log("Failed to contruct GameData message");
       }
     } else {
       try {
         clientHandler.send(CachedGameData.create(clientHandler.getNextMessageNumber(), key));
       } catch (MessageFormatException e) {
-        log.error("Failed to contruct CachedGameData message: " + e.getMessage(), e);
+        logger.atSevere().withCause(e).log("Failed to contruct CachedGameData message");
       }
     }
   }

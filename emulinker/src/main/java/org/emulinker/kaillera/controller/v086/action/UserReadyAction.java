@@ -1,25 +1,25 @@
 package org.emulinker.kaillera.controller.v086.action;
 
-import org.apache.commons.logging.*;
+import com.google.common.flogger.FluentLogger;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 import org.emulinker.kaillera.controller.v086.V086Controller;
 import org.emulinker.kaillera.controller.v086.protocol.*;
 import org.emulinker.kaillera.model.event.*;
 import org.emulinker.kaillera.model.exception.UserReadyException;
 
+@Singleton
 public class UserReadyAction implements V086Action, V086GameEventHandler {
-  private static Log log = LogFactory.getLog(UserReadyAction.class);
-  private static final String desc = "UserReadyAction";
-  private static UserReadyAction singleton = new UserReadyAction();
+  private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
-  public static UserReadyAction getInstance() {
-    return singleton;
-  }
+  private static final String DESC = "UserReadyAction";
 
   private int actionCount = 0;
   private int handledCount = 0;
 
-  private UserReadyAction() {}
+  @Inject
+  UserReadyAction() {}
 
   @Override
   public int getActionPerformedCount() {
@@ -33,7 +33,7 @@ public class UserReadyAction implements V086Action, V086GameEventHandler {
 
   @Override
   public String toString() {
-    return desc;
+    return DESC;
   }
 
   @Override
@@ -44,7 +44,7 @@ public class UserReadyAction implements V086Action, V086GameEventHandler {
     try {
       clientHandler.getUser().playerReady();
     } catch (UserReadyException e) {
-      log.debug("Ready signal failed: " + e.getMessage());
+      logger.atFine().withCause(e).log("Ready signal failed");
     }
   }
 
@@ -57,7 +57,7 @@ public class UserReadyAction implements V086Action, V086GameEventHandler {
     try {
       clientHandler.send(AllReady.create(clientHandler.getNextMessageNumber()));
     } catch (MessageFormatException e) {
-      log.error("Failed to contruct AllReady message: " + e.getMessage(), e);
+      logger.atSevere().withCause(e).log("Failed to contruct AllReady message");
     }
   }
 }

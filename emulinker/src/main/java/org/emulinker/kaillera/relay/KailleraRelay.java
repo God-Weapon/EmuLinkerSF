@@ -1,9 +1,9 @@
 package org.emulinker.kaillera.relay;
 
+import com.google.common.flogger.FluentLogger;
 import java.net.InetSocketAddress;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
-import org.apache.commons.logging.*;
 import org.emulinker.config.RuntimeFlags;
 import org.emulinker.kaillera.controller.connectcontroller.protocol.*;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
@@ -11,7 +11,7 @@ import org.emulinker.net.UDPRelay;
 import org.emulinker.util.EmuUtil;
 
 public class KailleraRelay extends UDPRelay {
-  private static Log log = LogFactory.getLog(KailleraRelay.class);
+  private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
   // This config is provided as a global static variable for purposes of speed.
   // We might want to consider something like Dagger for injection in the future.
@@ -43,11 +43,11 @@ public class KailleraRelay extends UDPRelay {
     try {
       inMessage = ConnectMessage.parse(receiveBuffer);
     } catch (MessageFormatException e) {
-      log.warn("Unrecognized message format!", e);
+      logger.atWarning().withCause(e).log("Unrecognized message format!");
       return null;
     }
 
-    log.debug(
+    logger.atFine().log(
         EmuUtil.formatSocketAddress(fromAddress)
             + " -> "
             + EmuUtil.formatSocketAddress(toAddress)
@@ -56,9 +56,9 @@ public class KailleraRelay extends UDPRelay {
 
     if (inMessage instanceof ConnectMessage_HELLO) {
       ConnectMessage_HELLO clientTypeMessage = (ConnectMessage_HELLO) inMessage;
-      log.info("Client version is " + clientTypeMessage.getProtocol());
+      logger.atInfo().log("Client version is " + clientTypeMessage.getProtocol());
     } else {
-      log.warn("Client sent an invalid message: " + inMessage);
+      logger.atWarning().log("Client sent an invalid message: " + inMessage);
       return null;
     }
 
@@ -78,11 +78,11 @@ public class KailleraRelay extends UDPRelay {
     try {
       inMessage = ConnectMessage.parse(receiveBuffer);
     } catch (MessageFormatException e) {
-      log.warn("Unrecognized message format!", e);
+      logger.atWarning().withCause(e).log("Unrecognized message format!");
       return null;
     }
 
-    log.debug(
+    logger.atFine().log(
         EmuUtil.formatSocketAddress(fromAddress)
             + " -> "
             + EmuUtil.formatSocketAddress(toAddress)
@@ -91,20 +91,20 @@ public class KailleraRelay extends UDPRelay {
 
     if (inMessage instanceof ConnectMessage_HELLOD00D) {
       ConnectMessage_HELLOD00D portMsg = (ConnectMessage_HELLOD00D) inMessage;
-      log.info("Starting client relay on port " + (portMsg.getPort() - 1));
+      logger.atInfo().log("Starting client relay on port " + (portMsg.getPort() - 1));
 
       try {
         new V086Relay(
             portMsg.getPort(),
             new InetSocketAddress(getServerSocketAddress().getAddress(), portMsg.getPort()));
       } catch (Exception e) {
-        log.error("Failed to start!", e);
+        logger.atSevere().withCause(e).log("Failed to start!");
         return null;
       }
     } else if (inMessage instanceof ConnectMessage_TOO) {
-      log.warn("Failed to connect: Server is FULL!");
+      logger.atWarning().log("Failed to connect: Server is FULL!");
     } else {
-      log.warn("Server sent an invalid message: " + inMessage);
+      logger.atWarning().log("Server sent an invalid message: " + inMessage);
       return null;
     }
 

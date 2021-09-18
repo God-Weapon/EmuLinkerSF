@@ -1,6 +1,8 @@
 package org.emulinker.kaillera.controller.v086.action;
 
-import org.apache.commons.logging.*;
+import com.google.common.flogger.FluentLogger;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 import org.emulinker.kaillera.controller.v086.V086Controller;
 import org.emulinker.kaillera.controller.v086.protocol.*;
@@ -8,19 +10,17 @@ import org.emulinker.kaillera.model.KailleraGame;
 import org.emulinker.kaillera.model.event.*;
 import org.emulinker.kaillera.model.exception.StartGameException;
 
+@Singleton
 public class StartGameAction implements V086Action, V086GameEventHandler {
-  private static Log log = LogFactory.getLog(StartGameAction.class);
-  private static final String desc = "StartGameAction";
-  private static StartGameAction singleton = new StartGameAction();
+  private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
-  public static StartGameAction getInstance() {
-    return singleton;
-  }
+  private static final String DESC = "StartGameAction";
 
   private int actionCount = 0;
   private int handledCount = 0;
 
-  private StartGameAction() {}
+  @Inject
+  StartGameAction() {}
 
   @Override
   public int getActionPerformedCount() {
@@ -34,7 +34,7 @@ public class StartGameAction implements V086Action, V086GameEventHandler {
 
   @Override
   public String toString() {
-    return desc;
+    return DESC;
   }
 
   @Override
@@ -48,14 +48,14 @@ public class StartGameAction implements V086Action, V086GameEventHandler {
     try {
       clientHandler.getUser().startGame();
     } catch (StartGameException e) {
-      log.debug("Failed to start game: " + e.getMessage());
+      logger.atFine().withCause(e).log("Failed to start game");
 
       try {
         clientHandler.send(
             GameChat_Notification.create(
                 clientHandler.getNextMessageNumber(), "Error", e.getMessage()));
       } catch (MessageFormatException ex) {
-        log.error("Failed to contruct GameChat_Notification message: " + e.getMessage(), e);
+        logger.atSevere().withCause(ex).log("Failed to contruct GameChat_Notification message");
       }
     }
   }
@@ -85,7 +85,7 @@ public class StartGameAction implements V086Action, V086GameEventHandler {
               (byte) playerNumber,
               (byte) game.getNumPlayers()));
     } catch (MessageFormatException e) {
-      log.error("Failed to contruct StartGame_Notification message: " + e.getMessage(), e);
+      logger.atSevere().withCause(e).log("Failed to contruct StartGame_Notification message");
     }
   }
 }

@@ -6,14 +6,14 @@ import java.util.*;
 
 import org.apache.commons.configuration.*;
 import org.apache.commons.configuration.reloading.FileChangedReloadingStrategy;
-import org.apache.commons.logging.*;
+import com.google.common.flogger.FluentLogger;
 
 import org.emulinker.kaillera.model.KailleraUser;
 import org.emulinker.util.EmuLinkerXMLConfig;
 
 public class BasicAccessManager implements AccessManager
 {
-private static Log			log				= LogFactory.getLog(BasicAccessManager.class);
+private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
 private String				accessFileName;
 private XMLConfiguration	config;
@@ -32,7 +32,7 @@ this.config.setReloadingStrategy(new AccessManagerReloader());
 }
 catch (ConfigurationException e)
 {
-log.error("AccessManager failed to load " + accessFileName + ": " + e.getMessage());
+logger.atSevere().withCause(e).log("AccessManager failed to load " + accessFileName);
 return;
 }
 }
@@ -42,15 +42,15 @@ private synchronized void loadAccess()
 if (config == null)
 return;
 
-log.info("BasicAccessManager reloading permissions...");
+logger.atInfo().log("BasicAccessManager reloading permissions...");
 
 bannedNames = config.getList("banned.names.name");
 for (String name : bannedNames)
-log.info("The name \"" + name + "\" will be banned");
+logger.atInfo().log("The name \"" + name + "\" will be banned");
 
 bannedAddresses = config.getList("banned.addresses.address");
 for (String address : bannedAddresses)
-log.info("The address \"" + address + "\" will be banned");
+logger.atInfo().log("The address \"" + address + "\" will be banned");
 
 admins.clear();
 
@@ -71,7 +71,7 @@ List<String> names = config.getList("admins." + adminName + ".names.name");
 List<String> addresses = config.getList("admins." + adminName + ".addresses.address");
 
 Admin admin = new Admin(adminName, names, addresses);
-log.info("Loading admin access: " + admin);
+logger.atInfo().log("Loading admin access: " + admin);
 admins.put(adminName, admin);
 }
 }

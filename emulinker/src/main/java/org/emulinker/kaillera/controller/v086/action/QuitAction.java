@@ -1,6 +1,8 @@
 package org.emulinker.kaillera.controller.v086.action;
 
-import org.apache.commons.logging.*;
+import com.google.common.flogger.FluentLogger;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 import org.emulinker.kaillera.controller.v086.V086Controller;
 import org.emulinker.kaillera.controller.v086.protocol.*;
@@ -8,20 +10,17 @@ import org.emulinker.kaillera.model.KailleraUser;
 import org.emulinker.kaillera.model.event.*;
 import org.emulinker.kaillera.model.exception.ActionException;
 
+@Singleton
 public class QuitAction implements V086Action, V086ServerEventHandler {
-  private static Log log = LogFactory.getLog(QuitAction.class);
-  private static final String desc = "QuitAction";
+  private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
-  private static QuitAction singleton = new QuitAction();
-
-  public static QuitAction getInstance() {
-    return singleton;
-  }
+  private static final String DESC = "QuitAction";
 
   private int actionCount = 0;
   private int handledCount = 0;
 
-  private QuitAction() {}
+  @Inject
+  QuitAction() {}
 
   @Override
   public int getActionPerformedCount() {
@@ -35,7 +34,7 @@ public class QuitAction implements V086Action, V086ServerEventHandler {
 
   @Override
   public String toString() {
-    return desc;
+    return DESC;
   }
 
   @Override
@@ -70,7 +69,7 @@ public class QuitAction implements V086Action, V086ServerEventHandler {
               user.getID(),
               userQuitEvent.getMessage()));
     } catch (MessageFormatException e) {
-      log.error("Failed to contruct Quit_Notification message: " + e.getMessage(), e);
+      logger.atSevere().withCause(e).log("Failed to contruct Quit_Notification message");
     }
   }
 }

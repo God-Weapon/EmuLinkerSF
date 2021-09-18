@@ -1,16 +1,15 @@
 package org.emulinker.net;
 
+import com.google.common.flogger.FluentLogger;
 import java.io.IOException;
 import java.net.*;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
-import org.apache.commons.logging.*;
 import org.emulinker.util.*;
-import org.picocontainer.Startable;
 
-public abstract class UDPServer implements Executable, Startable {
-  private static Log log = LogFactory.getLog(UDPServer.class);
+public abstract class UDPServer implements Executable {
+  private static final FluentLogger logger = FluentLogger.forEnclosingClass();
   /*
   	private static int		artificalPacketLossPercentage = 0;
   	private static int		artificalDelay = 0;
@@ -26,10 +25,10 @@ public abstract class UDPServer implements Executable, Startable {
   		catch(Exception e) {}
 
   		if(artificalPacketLossPercentage > 0)
-  			log.warn("Introducing " + artificalPacketLossPercentage + "% artifical packet loss!");
+  			logger.atWarning().log("Introducing " + artificalPacketLossPercentage + "% artifical packet loss!");
 
   		if(artificalDelay > 0)
-  			log.warn("Introducing " + artificalDelay + "ms artifical delay!");
+  			logger.atWarning().log("Introducing " + artificalDelay + "ms artifical delay!");
   	}
   */
   private int bindPort;
@@ -64,11 +63,10 @@ public abstract class UDPServer implements Executable, Startable {
     return channel.isConnected();
   }
 
-  @Override
   public synchronized void start() {
-    log.debug(toString() + " received start request!");
+    logger.atFine().log(toString() + " received start request!");
     if (isRunning) {
-      log.debug(toString() + " start request ignored: already running!");
+      logger.atFine().log(toString() + " start request ignored: already running!");
       return;
     }
 
@@ -87,7 +85,7 @@ public abstract class UDPServer implements Executable, Startable {
       try {
         channel.close();
       } catch (IOException e) {
-        log.error("Failed to close DatagramChannel: " + e.getMessage());
+        logger.atSevere().withCause(e).log("Failed to close DatagramChannel");
       }
     }
   }
@@ -126,7 +124,7 @@ public abstract class UDPServer implements Executable, Startable {
 
   protected void send(ByteBuffer buffer, InetSocketAddress toSocketAddress) {
     if (!isBound()) {
-      log.warn(
+      logger.atWarning().log(
           "Failed to send to "
               + EmuUtil.formatSocketAddress(toSocketAddress)
               + ": UDPServer is not bound!");
@@ -139,17 +137,17 @@ public abstract class UDPServer implements Executable, Startable {
     }
     */
     try {
-      //			log.debug("send("+EmuUtil.dumpBuffer(buffer, false)+")");
+      //			logger.atFine().log("send("+EmuUtil.dumpBuffer(buffer, false)+")");
       channel.send(buffer, toSocketAddress);
     } catch (Exception e) {
-      log.error("Failed to send on port " + getBindPort() + ": " + e.getMessage(), e);
+      logger.atSevere().withCause(e).log("Failed to send on port " + getBindPort());
     }
   }
 
   @Override
   public void run() {
     isRunning = true;
-    log.debug(toString() + ": thread running...");
+    logger.atFine().log(toString() + ": thread running...");
 
     try {
       while (!stopFlag) {
@@ -181,25 +179,26 @@ public abstract class UDPServer implements Executable, Startable {
           // Cast to avoid issue with java version mismatch:
           // https://stackoverflow.com/a/61267496/2875073
           ((Buffer) buffer).flip();
-          //					log.debug("receive("+EmuUtil.dumpBuffer(buffer, false)+")");
+          //					logger.atFine().log("receive("+EmuUtil.dumpBuffer(buffer, false)+")");
           handleReceived(buffer, fromSocketAddress);
           releaseBuffer(buffer);
         } catch (SocketException e) {
           if (stopFlag) break;
 
-          log.error("Failed to receive on port " + getBindPort() + ": " + e.getMessage());
+          logger.atSevere().withCause(e).log("Failed to receive on port %d", getBindPort());
         } catch (IOException e) {
           if (stopFlag) break;
 
-          log.error("Failed to receive on port " + getBindPort() + ": " + e.getMessage());
+          logger.atSevere().withCause(e).log("Failed to receive on port %d", getBindPort());
         }
       }
     } catch (Throwable e) {
-      log.fatal("UDPServer on port " + getBindPort() + " caught unexpected exception!", e);
+      logger.atSevere().withCause(e).log(
+          "UDPServer on port %d caught unexpected exception!", getBindPort());
       stop();
     } finally {
       isRunning = false;
-      log.debug(toString() + ": thread exiting...");
+      logger.atFine().log(toString() + ": thread exiting...");
     }
   }
 

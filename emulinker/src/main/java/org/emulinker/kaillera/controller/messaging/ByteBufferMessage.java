@@ -2,11 +2,8 @@ package org.emulinker.kaillera.controller.messaging;
 
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
-import org.apache.commons.logging.*;
 
 public abstract class ByteBufferMessage {
-  protected static Log log = LogFactory.getLog(ByteBufferMessage.class);
-
   private ByteBuffer buffer;
 
   public abstract int getLength();

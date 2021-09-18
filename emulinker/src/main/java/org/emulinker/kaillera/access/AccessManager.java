@@ -9,10 +9,7 @@ import java.net.InetAddress;
  * left to the implementation class.<br>
  * <br>
  * Most of the main EmuLinker components are passed a handle to the current AccessManager and make
- * calls to it upon user interactions.<br>
- * <br>
- * AccessManager is a top-level EmuLinker component; it's implementation class is loaded via
- * PicoContainer upon startup.
+ * calls to it upon user interactions.
  *
  * @author Paul Cowan
  * @see www.emulinker.org

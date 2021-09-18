@@ -77,7 +77,8 @@ public class GameDataQueue {
       if (lastData != null) {
         data = lastData;
         lastData = null;
-        //				log.debug("Player " + thisPlayerNumber + ": getData with i=" + lastI + ", j=" +
+        //				logger.atFine().log("Player " + thisPlayerNumber + ": getData with i=" + lastI + ",
+        // j=" +
         // lastJ);
       } else data = new byte[(byteCount * numPlayers)];
 

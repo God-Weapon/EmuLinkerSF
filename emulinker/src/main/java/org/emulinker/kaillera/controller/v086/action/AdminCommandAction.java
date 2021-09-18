@@ -1,8 +1,10 @@
 package org.emulinker.kaillera.controller.v086.action;
 
+import com.google.common.flogger.FluentLogger;
 import java.net.InetAddress;
 import java.util.*;
-import org.apache.commons.logging.*;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.emulinker.kaillera.access.AccessManager;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 import org.emulinker.kaillera.controller.v086.V086Controller;
@@ -12,7 +14,10 @@ import org.emulinker.kaillera.model.impl.*;
 import org.emulinker.release.*;
 import org.emulinker.util.*;
 
+@Singleton
 public class AdminCommandAction implements V086Action {
+  private static final FluentLogger logger = FluentLogger.forEnclosingClass();
+
   public static final String COMMAND_ANNOUNCE = "/announce";
   public static final String COMMAND_ANNOUNCEALL = "/announceall";
   public static final String COMMAND_ANNOUNCEGAME = "/announcegame";
@@ -32,18 +37,12 @@ public class AdminCommandAction implements V086Action {
   public static final String COMMAND_STEALTH = "/stealth";
   public static final String COMMAND_TEMPELEVATED = "/tempelevated";
   public static final String COMMAND_TEMPMODERATOR = "/tempmoderator";
-
-  private static Log log = LogFactory.getLog(AdminCommandAction.class);
-  private static final String desc = "AdminCommandAction";
-  private static AdminCommandAction singleton = new AdminCommandAction();
-
-  public static AdminCommandAction getInstance() {
-    return singleton;
-  }
+  private static final String DESC = "AdminCommandAction";
 
   private int actionCount = 0;
 
-  private AdminCommandAction() {}
+  @Inject
+  AdminCommandAction() {}
 
   @Override
   public int getActionPerformedCount() {
@@ -52,7 +51,7 @@ public class AdminCommandAction implements V086Action {
 
   @Override
   public String toString() {
-    return desc;
+    return DESC;
   }
 
   public boolean isValidCommand(String chat) {
@@ -120,16 +119,13 @@ public class AdminCommandAction implements V086Action {
                   "server",
                   "Admin Command Error: You are not an admin!"));
         } catch (MessageFormatException e) {
-        } //$NON-NLS-1$ //$NON-NLS-2$
+        }
         throw new FatalActionException(
-            "Admin Command Denied: "
-                + user
-                + " does not have Admin access: "
-                + chat); //$NON-NLS-1$ //$NON-NLS-2$
+            "Admin Command Denied: " + user + " does not have Admin access: " + chat);
       }
     }
 
-    log.info(user + ": Admin Command: " + chat);
+    logger.atInfo().log(user + ": Admin Command: " + chat);
 
     try {
       if (chat.startsWith(COMMAND_HELP)) {
@@ -166,19 +162,19 @@ public class AdminCommandAction implements V086Action {
         processTrivia(chat, server, user, clientHandler);
       } else throw new ActionException("Invalid Command: " + chat);
     } catch (ActionException e) {
-      log.info("Admin Command Failed: " + user + ": " + chat); // $NON-NLS-2$
+      logger.atSevere().withCause(e).log("Admin Command Failed: " + user + ": " + chat);
 
       try {
         clientHandler.send(
             InformationMessage.create(
                 clientHandler.getNextMessageNumber(),
                 "server",
-                EmuLang.getString("AdminCommandAction.Failed", e.getMessage()))); // $NON-NLS-2$
+                EmuLang.getString("AdminCommandAction.Failed", e.getMessage())));
       } catch (MessageFormatException e2) {
-        log.error("Failed to contruct InformationMessage message: " + e.getMessage(), e);
+        logger.atSevere().withCause(e2).log("Failed to contruct InformationMessage message");
       }
     } catch (MessageFormatException e) {
-      log.error("Failed to contruct message: " + e.getMessage(), e);
+      logger.atSevere().withCause(e).log("Failed to contruct message");
     }
   }
 
@@ -190,13 +186,13 @@ public class AdminCommandAction implements V086Action {
       throws ActionException, MessageFormatException {
     if (admin.getAccess() == AccessManager.ACCESS_MODERATOR) return;
     // clientHandler.send(InformationMessage.create(clientHandler.getNextMessageNumber(), "server",
-    // EmuLang.getString("AdminCommandAction.AdminCommands"))); //$NON-NLS-1$ //$NON-NLS-2$
+    // EmuLang.getString("AdminCommandAction.AdminCommands")));
     // try { Thread.sleep(20); } catch(Exception e) {}
     clientHandler.send(
         InformationMessage.create(
             clientHandler.getNextMessageNumber(),
             "server",
-            EmuLang.getString("AdminCommandAction.HelpVersion"))); // $NON-NLS-2$
+            EmuLang.getString("AdminCommandAction.HelpVersion")));
     try {
       Thread.sleep(20);
     } catch (Exception e) {
@@ -205,7 +201,7 @@ public class AdminCommandAction implements V086Action {
         InformationMessage.create(
             clientHandler.getNextMessageNumber(),
             "server",
-            EmuLang.getString("AdminCommandAction.HelpKick"))); // $NON-NLS-2$
+            EmuLang.getString("AdminCommandAction.HelpKick")));
     try {
       Thread.sleep(20);
     } catch (Exception e) {
@@ -214,7 +210,7 @@ public class AdminCommandAction implements V086Action {
         InformationMessage.create(
             clientHandler.getNextMessageNumber(),
             "server",
-            EmuLang.getString("AdminCommandAction.HelpSilence"))); // $NON-NLS-2$
+            EmuLang.getString("AdminCommandAction.HelpSilence")));
     try {
       Thread.sleep(20);
     } catch (Exception e) {
@@ -223,7 +219,7 @@ public class AdminCommandAction implements V086Action {
         InformationMessage.create(
             clientHandler.getNextMessageNumber(),
             "server",
-            EmuLang.getString("AdminCommandAction.HelpBan"))); // $NON-NLS-2$
+            EmuLang.getString("AdminCommandAction.HelpBan")));
     try {
       Thread.sleep(20);
     } catch (Exception e) {
@@ -234,7 +230,7 @@ public class AdminCommandAction implements V086Action {
           InformationMessage.create(
               clientHandler.getNextMessageNumber(),
               "server",
-              EmuLang.getString("AdminCommandAction.HelpClear"))); // $NON-NLS-2$
+              EmuLang.getString("AdminCommandAction.HelpClear")));
       try {
         Thread.sleep(20);
       } catch (Exception e) {
@@ -245,7 +241,7 @@ public class AdminCommandAction implements V086Action {
         InformationMessage.create(
             clientHandler.getNextMessageNumber(),
             "server",
-            EmuLang.getString("AdminCommandAction.HelpCloseGame"))); // $NON-NLS-2$
+            EmuLang.getString("AdminCommandAction.HelpCloseGame")));
     try {
       Thread.sleep(20);
     } catch (Exception e) {
@@ -254,7 +250,7 @@ public class AdminCommandAction implements V086Action {
         InformationMessage.create(
             clientHandler.getNextMessageNumber(),
             "server",
-            EmuLang.getString("AdminCommandAction.HelpAnnounce"))); // $NON-NLS-2$
+            EmuLang.getString("AdminCommandAction.HelpAnnounce")));
     try {
       Thread.sleep(20);
     } catch (Exception e) {
@@ -263,7 +259,7 @@ public class AdminCommandAction implements V086Action {
         InformationMessage.create(
             clientHandler.getNextMessageNumber(),
             "server",
-            EmuLang.getString("AdminCommandAction.HelpAnnounceAll"))); // $NON-NLS-2$
+            EmuLang.getString("AdminCommandAction.HelpAnnounceAll")));
     try {
       Thread.sleep(20);
     } catch (Exception e) {
@@ -272,7 +268,7 @@ public class AdminCommandAction implements V086Action {
         InformationMessage.create(
             clientHandler.getNextMessageNumber(),
             "server",
-            EmuLang.getString("AdminCommandAction.HelpAnnounceGame"))); // $NON-NLS-2$
+            EmuLang.getString("AdminCommandAction.HelpAnnounceGame")));
     try {
       Thread.sleep(20);
     } catch (Exception e) {
@@ -281,7 +277,7 @@ public class AdminCommandAction implements V086Action {
         InformationMessage.create(
             clientHandler.getNextMessageNumber(),
             "server",
-            EmuLang.getString("AdminCommandAction.HelpFindUser"))); // $NON-NLS-2$
+            EmuLang.getString("AdminCommandAction.HelpFindUser")));
     try {
       Thread.sleep(20);
     } catch (Exception e) {
@@ -290,7 +286,7 @@ public class AdminCommandAction implements V086Action {
         InformationMessage.create(
             clientHandler.getNextMessageNumber(),
             "server",
-            EmuLang.getString("AdminCommandAction.HelpFindGame"))); // $NON-NLS-2$
+            EmuLang.getString("AdminCommandAction.HelpFindGame")));
     try {
       Thread.sleep(20);
     } catch (Exception e) {
@@ -299,7 +295,7 @@ public class AdminCommandAction implements V086Action {
         InformationMessage.create(
             clientHandler.getNextMessageNumber(),
             "server",
-            "/triviaon to start the trivia bot- /triviapause to pause the bot- /triviaresume to resume the bot after pause- /triviasave to save the bot's scores- /triviatime <#> to change the question delay")); //$NON-NLS-1$ //$NON-NLS-2$
+            "/triviaon to start the trivia bot- /triviapause to pause the bot- /triviaresume to resume the bot after pause- /triviasave to save the bot's scores- /triviatime <#> to change the question delay"));
     try {
       Thread.sleep(20);
     } catch (Exception e) {
@@ -308,7 +304,7 @@ public class AdminCommandAction implements V086Action {
         InformationMessage.create(
             clientHandler.getNextMessageNumber(),
             "server",
-            "/triviaoff to stop the bot- /triviascores to show top 3 scores- /triviawin to show a winner- /triviaupdate <IP Address> <New IP Address> to update ip address")); //$NON-NLS-1$ //$NON-NLS-2$
+            "/triviaoff to stop the bot- /triviascores to show top 3 scores- /triviawin to show a winner- /triviaupdate <IP Address> <New IP Address> to update ip address"));
     try {
       Thread.sleep(20);
     } catch (Exception e) {
@@ -317,7 +313,7 @@ public class AdminCommandAction implements V086Action {
         InformationMessage.create(
             clientHandler.getNextMessageNumber(),
             "server",
-            "/stealthon /stealthoff to join a room invisibly.")); //$NON-NLS-1$ //$NON-NLS-2$
+            "/stealthon /stealthoff to join a room invisibly."));
     try {
       Thread.sleep(20);
     } catch (Exception e) {
@@ -328,7 +324,7 @@ public class AdminCommandAction implements V086Action {
           InformationMessage.create(
               clientHandler.getNextMessageNumber(),
               "server",
-              "/tempelevated <UserID> <min> to give a user temporary elevated access.")); //$NON-NLS-1$ //$NON-NLS-2$
+              "/tempelevated <UserID> <min> to give a user temporary elevated access."));
       try {
         Thread.sleep(20);
       } catch (Exception e) {
@@ -337,7 +333,7 @@ public class AdminCommandAction implements V086Action {
           InformationMessage.create(
               clientHandler.getNextMessageNumber(),
               "server",
-              "/tempmoderator <UserID> <min> to give a user temporary moderator access.")); //$NON-NLS-1$ //$NON-NLS-2$
+              "/tempmoderator <UserID> <min> to give a user temporary moderator access."));
       try {
         Thread.sleep(20);
       } catch (Exception e) {
@@ -346,7 +342,7 @@ public class AdminCommandAction implements V086Action {
           InformationMessage.create(
               clientHandler.getNextMessageNumber(),
               "server",
-              EmuLang.getString("AdminCommandAction.HelpTempAdmin"))); // $NON-NLS-2$
+              EmuLang.getString("AdminCommandAction.HelpTempAdmin")));
       try {
         Thread.sleep(20);
       } catch (Exception e) {
@@ -355,7 +351,7 @@ public class AdminCommandAction implements V086Action {
           InformationMessage.create(
               clientHandler.getNextMessageNumber(),
               "server",
-              "/clear <IP Address> to remove any temp ban, silence, elevated, moderator or admin.")); //$NON-NLS-1$ //$NON-NLS-2$
+              "/clear <IP Address> to remove any temp ban, silence, elevated, moderator or admin."));
       try {
         Thread.sleep(20);
       } catch (Exception e) {
@@ -408,7 +404,7 @@ public class AdminCommandAction implements V086Action {
           InformationMessage.create(
               clientHandler.getNextMessageNumber(),
               "server",
-              EmuLang.getString("AdminCommandAction.NoUsersFound"))); // $NON-NLS-2$
+              EmuLang.getString("AdminCommandAction.NoUsersFound")));
   }
 
   private void processFindGame(
@@ -443,7 +439,7 @@ public class AdminCommandAction implements V086Action {
           InformationMessage.create(
               clientHandler.getNextMessageNumber(),
               "server",
-              EmuLang.getString("AdminCommandAction.NoGamesFound"))); // $NON-NLS-2$
+              EmuLang.getString("AdminCommandAction.NoGamesFound")));
   }
 
   private void processSilence(
@@ -473,13 +469,12 @@ public class AdminCommandAction implements V086Action {
 
       if (access == AccessManager.ACCESS_MODERATOR
           && admin.getAccess() == AccessManager.ACCESS_MODERATOR)
-        throw new ActionException(
-            "You cannot silence a moderator if you're not an admin!"); //$NON-NLS-1$
+        throw new ActionException("You cannot silence a moderator if you're not an admin!");
 
       if (admin.getAccess() == AccessManager.ACCESS_MODERATOR) {
         if (server.getAccessManager().isSilenced(user.getSocketAddress().getAddress()))
           throw new ActionException(
-              "This User has already been Silenced.  Please wait until his time expires."); //$NON-NLS-1$
+              "This User has already been Silenced.  Please wait until his time expires.");
         if (minutes > 15)
           throw new ActionException("Moderators can only silence up to 15 minutes!");
       }
@@ -488,9 +483,7 @@ public class AdminCommandAction implements V086Action {
           .getAccessManager()
           .addSilenced(user.getConnectSocketAddress().getAddress().getHostAddress(), minutes);
       server.announce(
-          EmuLang.getString("AdminCommandAction.Silenced", minutes, user.getName()),
-          false,
-          null); //$NON-NLS-1$ //$NON-NLS-2$
+          EmuLang.getString("AdminCommandAction.Silenced", minutes, user.getName()), false, null);
     } catch (NoSuchElementException e) {
       throw new ActionException(EmuLang.getString("AdminCommandAction.SilenceError"));
     }
@@ -519,8 +512,7 @@ public class AdminCommandAction implements V086Action {
 
       if (access == AccessManager.ACCESS_MODERATOR
           && admin.getAccess() == AccessManager.ACCESS_MODERATOR)
-        throw new ActionException(
-            "You cannot kick a moderator if you're not an admin!"); //$NON-NLS-1$
+        throw new ActionException("You cannot kick a moderator if you're not an admin!");
 
       if (access >= AccessManager.ACCESS_ADMIN
           && admin.getAccess() != AccessManager.ACCESS_SUPERADMIN)
@@ -589,9 +581,7 @@ public class AdminCommandAction implements V086Action {
         throw new ActionException(EmuLang.getString("AdminCommandAction.CanNotBanAdmin"));
 
       server.announce(
-          EmuLang.getString("AdminCommandAction.Banned", minutes, user.getName()),
-          false,
-          null); //$NON-NLS-1$ //$NON-NLS-2$
+          EmuLang.getString("AdminCommandAction.Banned", minutes, user.getName()), false, null);
       user.quit(EmuLang.getString("AdminCommandAction.QuitBanned"));
       server
           .getAccessManager()
@@ -636,9 +626,7 @@ public class AdminCommandAction implements V086Action {
           .getAccessManager()
           .addTempElevated(user.getConnectSocketAddress().getAddress().getHostAddress(), minutes);
       server.announce(
-          "Temp Elevated Granted: " + user.getName() + " for " + minutes + "min",
-          false,
-          null); //$NON-NLS-1$ //$NON-NLS-2$
+          "Temp Elevated Granted: " + user.getName() + " for " + minutes + "min", false, null);
     } catch (NoSuchElementException e) {
       throw new ActionException(EmuLang.getString("Temp Elevated Error."));
     }
@@ -652,8 +640,7 @@ public class AdminCommandAction implements V086Action {
       V086Controller.V086ClientHandler clientHandler)
       throws ActionException, MessageFormatException {
     if (admin.getAccess() != AccessManager.ACCESS_SUPERADMIN) {
-      throw new ActionException(
-          "Only SUPER ADMIN's can give Temp Moderator Status!"); //$NON-NLS-1$
+      throw new ActionException("Only SUPER ADMIN's can give Temp Moderator Status!");
     }
 
     Scanner scanner = new Scanner(message).useDelimiter(" ");
@@ -681,9 +668,7 @@ public class AdminCommandAction implements V086Action {
           .getAccessManager()
           .addTempModerator(user.getConnectSocketAddress().getAddress().getHostAddress(), minutes);
       server.announce(
-          "Temp Moderator Granted: " + user.getName() + " for " + minutes + "min.",
-          false,
-          null); //$NON-NLS-1$ //$NON-NLS-2$
+          "Temp Moderator Granted: " + user.getName() + " for " + minutes + "min.", false, null);
     } catch (NoSuchElementException e) {
       throw new ActionException(EmuLang.getString("Temp Moderator Error."));
     }
@@ -724,7 +709,7 @@ public class AdminCommandAction implements V086Action {
       server.announce(
           EmuLang.getString("AdminCommandAction.TempAdminGranted", minutes, user.getName()),
           false,
-          null); //$NON-NLS-1$ //$NON-NLS-2$
+          null);
     } catch (NoSuchElementException e) {
       throw new ActionException(EmuLang.getString("AdminCommandAction.TempAdminError"));
     }
@@ -743,16 +728,12 @@ public class AdminCommandAction implements V086Action {
       admin.setStealth(true);
       clientHandler.send(
           InformationMessage.create(
-              clientHandler.getNextMessageNumber(),
-              "server",
-              "Stealth Mode is on.")); //$NON-NLS-1$ //$NON-NLS-2$
+              clientHandler.getNextMessageNumber(), "server", "Stealth Mode is on."));
     } else if (message.equals("/stealthoff")) {
       admin.setStealth(false);
       clientHandler.send(
           InformationMessage.create(
-              clientHandler.getNextMessageNumber(),
-              "server",
-              "Stealth Mode is off.")); //$NON-NLS-1$ //$NON-NLS-2$
+              clientHandler.getNextMessageNumber(), "server", "Stealth Mode is off."));
     } else throw new ActionException("Stealth Mode Error: /stealthon /stealthoff");
   }
 
@@ -972,8 +953,7 @@ public class AdminCommandAction implements V086Action {
                   + ": "
                   + releaseInfo.getVersionString()
                   + ": "
-                  + releaseInfo
-                      .getReleaseDate())); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+                  + releaseInfo.getReleaseDate()));
       sleep(20);
       if (admin.getAccess() >= AccessManager.ACCESS_ADMIN) {
         Properties props = System.getProperties();
@@ -981,33 +961,31 @@ public class AdminCommandAction implements V086Action {
             InformationMessage.create(
                 clientHandler.getNextMessageNumber(),
                 "server",
-                "JAVAVER: "
-                    + props.getProperty(
-                        "java.version"))); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                "JAVAVER: " + props.getProperty("java.version")));
         sleep(20);
         clientHandler.send(
             InformationMessage.create(
                 clientHandler.getNextMessageNumber(),
                 "server",
-                "JAVAVEND: " + props.getProperty("java.vendor"))); // $NON-NLS-2$ //$NON-NLS-3$
+                "JAVAVEND: " + props.getProperty("java.vendor")));
         sleep(20);
         clientHandler.send(
             InformationMessage.create(
                 clientHandler.getNextMessageNumber(),
                 "server",
-                "OSNAME: " + props.getProperty("os.name"))); // $NON-NLS-2$ //$NON-NLS-3$
+                "OSNAME: " + props.getProperty("os.name")));
         sleep(20);
         clientHandler.send(
             InformationMessage.create(
                 clientHandler.getNextMessageNumber(),
                 "server",
-                "OSARCH: " + props.getProperty("os.arch"))); // $NON-NLS-2$ //$NON-NLS-3$
+                "OSARCH: " + props.getProperty("os.arch")));
         sleep(20);
         clientHandler.send(
             InformationMessage.create(
                 clientHandler.getNextMessageNumber(),
                 "server",
-                "OSVER: " + props.getProperty("os.version"))); // $NON-NLS-2$ //$NON-NLS-3$
+                "OSVER: " + props.getProperty("os.version")));
         sleep(20);
 
         Runtime runtime = Runtime.getRuntime();
@@ -1015,25 +993,23 @@ public class AdminCommandAction implements V086Action {
             InformationMessage.create(
                 clientHandler.getNextMessageNumber(),
                 "server",
-                "NUMPROCS: " + runtime.availableProcessors())); // $NON-NLS-2$
+                "NUMPROCS: " + runtime.availableProcessors()));
         sleep(20);
         clientHandler.send(
             InformationMessage.create(
                 clientHandler.getNextMessageNumber(),
                 "server",
-                "FREEMEM: " + runtime.freeMemory())); // $NON-NLS-2$
+                "FREEMEM: " + runtime.freeMemory()));
+        sleep(20);
+        clientHandler.send(
+            InformationMessage.create(
+                clientHandler.getNextMessageNumber(), "server", "MAXMEM: " + runtime.maxMemory()));
         sleep(20);
         clientHandler.send(
             InformationMessage.create(
                 clientHandler.getNextMessageNumber(),
                 "server",
-                "MAXMEM: " + runtime.maxMemory())); // $NON-NLS-2$
-        sleep(20);
-        clientHandler.send(
-            InformationMessage.create(
-                clientHandler.getNextMessageNumber(),
-                "server",
-                "TOTMEM: " + runtime.totalMemory())); // $NON-NLS-2$
+                "TOTMEM: " + runtime.totalMemory()));
         sleep(20);
 
         Map<String, String> env = System.getenv();
@@ -1043,26 +1019,22 @@ public class AdminCommandAction implements V086Action {
               InformationMessage.create(
                   clientHandler.getNextMessageNumber(),
                   "server",
-                  "COMPNAME: " + env.get("COMPUTERNAME"))); // $NON-NLS-2$ //$NON-NLS-3$
+                  "COMPNAME: " + env.get("COMPUTERNAME")));
           sleep(20);
           clientHandler.send(
               InformationMessage.create(
-                  clientHandler.getNextMessageNumber(),
-                  "server",
-                  "USER: " + env.get("USERNAME"))); // $NON-NLS-2$ //$NON-NLS-3$
+                  clientHandler.getNextMessageNumber(), "server", "USER: " + env.get("USERNAME")));
           sleep(20);
         } else {
           clientHandler.send(
               InformationMessage.create(
                   clientHandler.getNextMessageNumber(),
                   "server",
-                  "COMPNAME: " + env.get("HOSTNAME"))); // $NON-NLS-2$ //$NON-NLS-3$
+                  "COMPNAME: " + env.get("HOSTNAME")));
           sleep(20);
           clientHandler.send(
               InformationMessage.create(
-                  clientHandler.getNextMessageNumber(),
-                  "server",
-                  "USER: " + env.get("USERNAME"))); // $NON-NLS-2$ //$NON-NLS-3$
+                  clientHandler.getNextMessageNumber(), "server", "USER: " + env.get("USERNAME")));
           sleep(20);
         }
       }

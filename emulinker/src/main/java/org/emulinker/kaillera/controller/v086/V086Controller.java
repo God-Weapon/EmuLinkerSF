@@ -1,12 +1,15 @@
 package org.emulinker.kaillera.controller.v086;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.flogger.FluentLogger;
 import java.net.InetSocketAddress;
 import java.nio.*;
 import java.util.*;
 import java.util.concurrent.*;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.apache.commons.configuration.*;
-import org.apache.commons.logging.*;
 import org.emulinker.kaillera.access.AccessManager;
 import org.emulinker.kaillera.controller.KailleraServerController;
 import org.emulinker.kaillera.controller.messaging.*;
@@ -18,8 +21,9 @@ import org.emulinker.kaillera.model.exception.*;
 import org.emulinker.net.*;
 import org.emulinker.util.*;
 
-public class V086Controller implements KailleraServerController {
-  private static Log log = LogFactory.getLog(V086Controller.class);
+@Singleton
+public final class V086Controller implements KailleraServerController {
+  private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
   private int MAX_BUNDLE_SIZE = 9;
 
@@ -42,12 +46,34 @@ public class V086Controller implements KailleraServerController {
 
   private V086Action[] actions = new V086Action[25];
 
-  public V086Controller(
+  @Inject
+  V086Controller(
       KailleraServer server,
       ThreadPoolExecutor threadPool,
       AccessManager accessManager,
-      Configuration config)
-      throws NoSuchElementException, ConfigurationException {
+      Configuration config,
+      LoginAction loginAction,
+      ACKAction ackAction,
+      ChatAction chatAction,
+      CreateGameAction createGameAction,
+      JoinGameAction joinGameAction,
+      KeepAliveAction keepAliveAction,
+      QuitGameAction quitGameAction,
+      QuitAction quitAction,
+      StartGameAction startGameAction,
+      GameChatAction gameChatAction,
+      GameKickAction gameKickAction,
+      UserReadyAction userReadyAction,
+      CachedGameDataAction cachedGameDataAction,
+      GameDataAction gameDataAction,
+      DropGameAction dropGameAction,
+      CloseGameAction closeGameAction,
+      GameStatusAction gameStatusAction,
+      GameDesynchAction gameDesynchAction,
+      PlayerDesynchAction playerDesynchAction,
+      GameInfoAction gameInfoAction,
+      GameTimeoutAction gameTimeoutAction,
+      InfoMessageAction infoMessageAction) {
     this.threadPool = threadPool;
     this.server = server;
     this.bufferSize = config.getInt("controllers.v086.bufferSize");
@@ -61,66 +87,65 @@ public class V086Controller implements KailleraServerController {
       maxPort = i;
     }
 
-    log.warn(
+    logger.atWarning().log(
         "Listening on UDP ports: "
             + portRangeStart
             + " to "
             + maxPort
             + ".  Make sure these ports are open in your firewall!");
 
-    if (bufferSize <= 0)
-      throw new ConfigurationException("controllers.v086.bufferSize must be > 0");
+    Preconditions.checkArgument(bufferSize > 0, "controllers.v086.bufferSize must be > 0");
 
     // array access should be faster than a hash and we won't have to create
     // a new Integer each time
-    actions[UserInformation.ID] = LoginAction.getInstance();
-    actions[ClientACK.ID] = ACKAction.getInstance();
-    actions[Chat.ID] = ChatAction.getInstance();
-    actions[CreateGame.ID] = CreateGameAction.getInstance();
-    actions[JoinGame.ID] = JoinGameAction.getInstance();
-    actions[KeepAlive.ID] = KeepAliveAction.getInstance();
-    actions[QuitGame.ID] = QuitGameAction.getInstance();
-    actions[Quit.ID] = QuitAction.getInstance();
-    actions[StartGame.ID] = StartGameAction.getInstance();
-    actions[GameChat.ID] = GameChatAction.getInstance();
-    actions[GameKick.ID] = GameKickAction.getInstance();
-    actions[AllReady.ID] = UserReadyAction.getInstance();
-    actions[CachedGameData.ID] = CachedGameDataAction.getInstance();
-    actions[GameData.ID] = GameDataAction.getInstance();
-    actions[PlayerDrop.ID] = DropGameAction.getInstance();
+    actions[UserInformation.ID] = loginAction;
+    actions[ClientACK.ID] = ackAction;
+    actions[Chat.ID] = chatAction;
+    actions[CreateGame.ID] = createGameAction;
+    actions[JoinGame.ID] = joinGameAction;
+    actions[KeepAlive.ID] = keepAliveAction;
+    actions[QuitGame.ID] = quitGameAction;
+    actions[Quit.ID] = quitAction;
+    actions[StartGame.ID] = startGameAction;
+    actions[GameChat.ID] = gameChatAction;
+    actions[GameKick.ID] = gameKickAction;
+    actions[AllReady.ID] = userReadyAction;
+    actions[CachedGameData.ID] = cachedGameDataAction;
+    actions[GameData.ID] = gameDataAction;
+    actions[PlayerDrop.ID] = dropGameAction;
 
     // setup the server event handlers
     serverEventHandlers =
         ImmutableMap.<Class<?>, V086ServerEventHandler>builder()
-            .put(ChatEvent.class, ChatAction.getInstance())
-            .put(GameCreatedEvent.class, CreateGameAction.getInstance())
-            .put(UserJoinedEvent.class, LoginAction.getInstance())
-            .put(GameClosedEvent.class, CloseGameAction.getInstance())
-            .put(UserQuitEvent.class, QuitAction.getInstance())
-            .put(GameStatusChangedEvent.class, GameStatusAction.getInstance())
+            .put(ChatEvent.class, chatAction)
+            .put(GameCreatedEvent.class, createGameAction)
+            .put(UserJoinedEvent.class, loginAction)
+            .put(GameClosedEvent.class, closeGameAction)
+            .put(UserQuitEvent.class, quitAction)
+            .put(GameStatusChangedEvent.class, gameStatusAction)
             .build();
 
     // setup the game event handlers
     gameEventHandlers =
         ImmutableMap.<Class<?>, V086GameEventHandler>builder()
-            .put(UserJoinedGameEvent.class, JoinGameAction.getInstance())
-            .put(UserQuitGameEvent.class, QuitGameAction.getInstance())
-            .put(GameStartedEvent.class, StartGameAction.getInstance())
-            .put(GameChatEvent.class, GameChatAction.getInstance())
-            .put(AllReadyEvent.class, UserReadyAction.getInstance())
-            .put(GameDataEvent.class, GameDataAction.getInstance())
-            .put(UserDroppedGameEvent.class, DropGameAction.getInstance())
-            .put(GameDesynchEvent.class, GameDesynchAction.getInstance())
-            .put(PlayerDesynchEvent.class, PlayerDesynchAction.getInstance())
-            .put(GameInfoEvent.class, GameInfoAction.getInstance())
-            .put(GameTimeoutEvent.class, GameTimeoutAction.getInstance())
+            .put(UserJoinedGameEvent.class, joinGameAction)
+            .put(UserQuitGameEvent.class, quitGameAction)
+            .put(GameStartedEvent.class, startGameAction)
+            .put(GameChatEvent.class, gameChatAction)
+            .put(AllReadyEvent.class, userReadyAction)
+            .put(GameDataEvent.class, gameDataAction)
+            .put(UserDroppedGameEvent.class, dropGameAction)
+            .put(GameDesynchEvent.class, gameDesynchAction)
+            .put(PlayerDesynchEvent.class, playerDesynchAction)
+            .put(GameInfoEvent.class, gameInfoAction)
+            .put(GameTimeoutEvent.class, gameTimeoutAction)
             .build();
 
     // setup the user event handlers
     userEventHandlers =
         ImmutableMap.<Class<?>, V086UserEventHandler>builder()
-            .put(ConnectedEvent.class, ACKAction.getInstance())
-            .put(InfoMessageEvent.class, InfoMessageAction.getInstance())
+            .put(ConnectedEvent.class, ackAction)
+            .put(InfoMessageEvent.class, infoMessageAction)
             .build();
   }
 
@@ -191,18 +216,18 @@ public class V086Controller implements KailleraServerController {
     while (bindAttempts++ < 5) {
       Integer portInteger = portRangeQueue.poll();
       if (portInteger == null) {
-        log.error("No ports are available to bind for: " + user);
+        logger.atSevere().log("No ports are available to bind for: " + user);
       } else {
         int port = portInteger.intValue();
-        log.info("Private port " + port + " allocated to: " + user);
+        logger.atInfo().log("Private port " + port + " allocated to: " + user);
 
         try {
           clientHandler.bind(port);
           boundPort = port;
           break;
         } catch (BindException e) {
-          log.error("Failed to bind to port " + port + " for: " + user + ": " + e.getMessage(), e);
-          log.debug(
+          logger.atSevere().withCause(e).log("Failed to bind to port " + port + " for: " + user);
+          logger.atFine().log(
               toString()
                   + " returning port "
                   + port
@@ -361,7 +386,7 @@ public class V086Controller implements KailleraServerController {
 
     public void start(KailleraUser user) {
       this.user = user;
-      log.debug(
+      logger.atFine().log(
           toString()
               + " thread starting (ThreadPool:"
               + threadPool.getActiveCount()
@@ -381,18 +406,18 @@ public class V086Controller implements KailleraServerController {
       }
       catch (Exception e)
       {
-      log.error("Sleep Interrupted!", e);
+      logger.atSevere().withCause(e).log("Sleep Interrupted!");
       }
       }
 
       if (!isBound())
       {
-      log.error("V086ClientHandler failed to start for client from " + getRemoteInetAddress().getHostAddress());
+      logger.atSevere().log("V086ClientHandler failed to start for client from " + getRemoteInetAddress().getHostAddress());
       return;
       }
       */
 
-      log.debug(
+      logger.atFine().log(
           toString()
               + " thread started (ThreadPool:"
               + threadPool.getActiveCount()
@@ -409,11 +434,11 @@ public class V086Controller implements KailleraServerController {
 
         int port = -1;
         if (isBound()) port = getBindPort();
-        log.debug(this.toString() + " Stopping!");
+        logger.atFine().log(this.toString() + " Stopping!");
         super.stop();
 
         if (port > 0) {
-          log.debug(
+          logger.atFine().log(
               toString()
                   + " returning port "
                   + port
@@ -455,22 +480,25 @@ public class V086Controller implements KailleraServerController {
         // inBundle = V086Bundle.parse(buffer, -1);
       } catch (ParseException e) {
         buffer.rewind();
-        log.warn(toString() + " failed to parse: " + EmuUtil.dumpBuffer(buffer), e);
+        logger.atWarning().withCause(e).log(
+            toString() + " failed to parse: " + EmuUtil.dumpBuffer(buffer));
         return;
       } catch (V086BundleFormatException e) {
         buffer.rewind();
-        log.warn(toString() + " received invalid message bundle: " + EmuUtil.dumpBuffer(buffer), e);
+        logger.atWarning().withCause(e).log(
+            toString() + " received invalid message bundle: " + EmuUtil.dumpBuffer(buffer));
         return;
       } catch (MessageFormatException e) {
         buffer.rewind();
-        log.warn(toString() + " received invalid message: " + EmuUtil.dumpBuffer(buffer), e);
+        logger.atWarning().withCause(e).log(
+            toString() + " received invalid message: " + EmuUtil.dumpBuffer(buffer));
         return;
       }
 
-      // log.debug("-> " + inBundle.getNumMessages());
+      // logger.atFine().log("-> " + inBundle.getNumMessages());
 
       if (inBundle.getNumMessages() == 0) {
-        log.debug(
+        logger.atFine().log(
             toString()
                 + " received bundle of "
                 + inBundle.getNumMessages()
@@ -491,7 +519,7 @@ public class V086Controller implements KailleraServerController {
 
             V086Action action = actions[messages[0].messageId()];
             if (action == null) {
-              log.error("No action defined to handle client message: " + messages[0]);
+              logger.atSevere().log("No action defined to handle client message: " + messages[0]);
             }
 
             action.performAction(messages[0], this);
@@ -511,7 +539,7 @@ public class V086Controller implements KailleraServerController {
                   if (prevMessageNumber == 0xFFFF && lastMessageNumber == 0) {
                     // exception; do nothing
                   } else {
-                    log.warn(
+                    logger.atWarning().log(
                         user
                             + " dropped a packet! ("
                             + prevMessageNumber
@@ -524,18 +552,19 @@ public class V086Controller implements KailleraServerController {
 
                 V086Action action = actions[messages[i].messageId()];
                 if (action == null) {
-                  log.error("No action defined to handle client message: " + messages[i]);
+                  logger.atSevere().log(
+                      "No action defined to handle client message: " + messages[i]);
                   continue;
                 }
 
-                // log.debug(user + " -> " + message);
+                // logger.atFine().log(user + " -> " + message);
                 action.performAction(messages[i], this);
               }
             }
           }
         }
       } catch (FatalActionException e) {
-        log.warn(toString() + " fatal action, closing connection: " + e.getMessage());
+        logger.atWarning().withCause(e).log(toString() + " fatal action, closing connection");
         Thread.yield();
         stop();
       }
@@ -546,7 +575,7 @@ public class V086Controller implements KailleraServerController {
       if (event instanceof GameEvent) {
         V086GameEventHandler eventHandler = gameEventHandlers.get(event.getClass());
         if (eventHandler == null) {
-          log.error(
+          logger.atSevere().log(
               toString() + " found no GameEventHandler registered to handle game event: " + event);
           return;
         }
@@ -555,7 +584,7 @@ public class V086Controller implements KailleraServerController {
       } else if (event instanceof ServerEvent) {
         V086ServerEventHandler eventHandler = serverEventHandlers.get(event.getClass());
         if (eventHandler == null) {
-          log.error(
+          logger.atSevere().log(
               toString()
                   + " found no ServerEventHandler registered to handle server event: "
                   + event);
@@ -566,7 +595,7 @@ public class V086Controller implements KailleraServerController {
       } else if (event instanceof UserEvent) {
         V086UserEventHandler eventHandler = userEventHandlers.get(event.getClass());
         if (eventHandler == null) {
-          log.error(
+          logger.atSevere().log(
               toString() + " found no UserEventHandler registered to handle user event: " + event);
           return;
         }
@@ -584,11 +613,11 @@ public class V086Controller implements KailleraServerController {
           int numToSend = (3 * timeoutCounter);
           if (numToSend > MAX_BUNDLE_SIZE) numToSend = MAX_BUNDLE_SIZE;
 
-          log.debug(this + ": resending last " + numToSend + " messages");
+          logger.atFine().log(this + ": resending last " + numToSend + " messages");
           send(null, numToSend);
           lastResend = System.currentTimeMillis();
         } else {
-          log.debug("Skipping resend...");
+          logger.atFine().log("Skipping resend...");
         }
       }
     }
@@ -606,7 +635,7 @@ public class V086Controller implements KailleraServerController {
         numToSend = lastMessageBuffer.fill(outMessages, numToSend);
         // System.out.println("Server -> " + numToSend);
         V086Bundle outBundle = new V086Bundle(outMessages, numToSend);
-        //				log.debug("<- " + outBundle);
+        //				logger.atFine().log("<- " + outBundle);
         outBundle.writeTo(outBuffer);
         // Cast to avoid issue with java version mismatch:
         // https://stackoverflow.com/a/61267496/2875073

@@ -1,23 +1,23 @@
 package org.emulinker.kaillera.controller.v086.action;
 
-import org.apache.commons.logging.*;
+import com.google.common.flogger.FluentLogger;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 import org.emulinker.kaillera.controller.v086.V086Controller;
 import org.emulinker.kaillera.controller.v086.protocol.InformationMessage;
 import org.emulinker.kaillera.model.event.*;
 
+@Singleton
 public class InfoMessageAction implements V086UserEventHandler {
-  private static Log log = LogFactory.getLog(InfoMessageAction.class);
-  private static final String desc = "InfoMessageAction";
-  private static InfoMessageAction singleton = new InfoMessageAction();
+  private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
-  public static InfoMessageAction getInstance() {
-    return singleton;
-  }
+  private static final String DESC = "InfoMessageAction";
 
   private int handledCount = 0;
 
-  private InfoMessageAction() {}
+  @Inject
+  InfoMessageAction() {}
 
   @Override
   public int getHandledEventCount() {
@@ -26,7 +26,7 @@ public class InfoMessageAction implements V086UserEventHandler {
 
   @Override
   public String toString() {
-    return desc;
+    return DESC;
   }
 
   @Override
@@ -40,7 +40,7 @@ public class InfoMessageAction implements V086UserEventHandler {
           InformationMessage.create(
               clientHandler.getNextMessageNumber(), "server", infoEvent.getMessage()));
     } catch (MessageFormatException e) {
-      log.error("Failed to contruct InformationMessage message: " + e.getMessage(), e);
+      logger.atSevere().withCause(e).log("Failed to contruct InformationMessage message");
     }
   }
 }

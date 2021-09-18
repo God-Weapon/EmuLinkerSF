@@ -1,10 +1,13 @@
 package org.emulinker.kaillera.model.impl;
 
-import java.util.*;
-import java.util.regex.*;
+import javax.inject.Inject;
 import org.emulinker.kaillera.model.*;
 
-public class AutoFireDetectorFactoryImpl implements AutoFireDetectorFactory {
+public final class AutoFireDetectorFactoryImpl implements AutoFireDetectorFactory {
+
+  @Inject
+  AutoFireDetectorFactoryImpl() {}
+
   @Override
   public AutoFireDetector getInstance(KailleraGame game, int defaultSensitivity) {
     return new AutoFireScanner2(game, defaultSensitivity);

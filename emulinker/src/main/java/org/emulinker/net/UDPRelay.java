@@ -1,16 +1,15 @@
 package org.emulinker.net;
 
+import com.google.common.flogger.FluentLogger;
 import java.net.*;
 import java.nio.*;
 import java.nio.channels.*;
 import java.util.*;
 import java.util.concurrent.*;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.emulinker.util.*;
 
 public abstract class UDPRelay implements Runnable {
-  protected static Log log = LogFactory.getLog(UDPRelay.class);
+  private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
   protected static ExecutorService threadPool = Executors.newCachedThreadPool();
 
@@ -29,7 +28,7 @@ public abstract class UDPRelay implements Runnable {
     listenChannel = DatagramChannel.open();
     listenChannel.socket().bind(new InetSocketAddress(InetAddress.getLocalHost(), this.listenPort));
 
-    log.info("Bound to port " + listenPort);
+    logger.atInfo().log("Bound to port " + listenPort);
 
     threadPool.execute(this);
   }
@@ -54,7 +53,7 @@ public abstract class UDPRelay implements Runnable {
 
   @Override
   public void run() {
-    log.info("Main port " + listenPort + " thread running...");
+    logger.atInfo().log("Main port " + listenPort + " thread running...");
 
     try {
       while (true) {
@@ -66,10 +65,9 @@ public abstract class UDPRelay implements Runnable {
           try {
             clientHandler = new ClientHandler(clientAddress);
           } catch (Exception e) {
-            log.error(
+            logger.atSevere().withCause(e).log(
                 "Failed to start new ClientHandler for "
-                    + EmuUtil.formatSocketAddress(clientAddress),
-                e);
+                    + EmuUtil.formatSocketAddress(clientAddress));
             continue;
           }
 
@@ -83,7 +81,7 @@ public abstract class UDPRelay implements Runnable {
         clientHandler.send(buffer);
       }
     } catch (Exception e) {
-      log.error("Main port " + listenPort + " thread caught exception: " + e.getMessage(), e);
+      logger.atSevere().withCause(e).log("Main port " + listenPort + " thread caught exception");
     } finally {
       try {
         listenChannel.close();
@@ -93,7 +91,7 @@ public abstract class UDPRelay implements Runnable {
       threadPool.shutdownNow();
     }
 
-    log.info("Main port " + listenPort + " thread exiting...");
+    logger.atInfo().log("Main port " + listenPort + " thread exiting...");
   }
 
   protected class ClientHandler implements Runnable {
@@ -104,7 +102,7 @@ public abstract class UDPRelay implements Runnable {
       this.clientSocketAddress = clientSocketAddress;
       clientChannel = DatagramChannel.open();
       clientChannel.socket().bind(null);
-      log.info(
+      logger.atInfo().log(
           "ClientHandler for "
               + EmuUtil.formatSocketAddress(clientSocketAddress)
               + " bound to port "
@@ -112,7 +110,7 @@ public abstract class UDPRelay implements Runnable {
     }
 
     protected void send(ByteBuffer buffer) throws Exception {
-      //			log.info(EmuUtil.formatSocketAddress(clientSocketAddress) + " -> \t" +
+      //			logger.atInfo().log(EmuUtil.formatSocketAddress(clientSocketAddress) + " -> \t" +
       // EmuUtil.dumpBuffer(buffer));
       ByteBuffer newBuffer =
           processClientToServer(buffer, clientSocketAddress, serverSocketAddress);
@@ -121,7 +119,7 @@ public abstract class UDPRelay implements Runnable {
 
     @Override
     public void run() {
-      log.info(
+      logger.atInfo().log(
           "ClientHandler thread for "
               + EmuUtil.formatSocketAddress(clientSocketAddress)
               + " runnning...");
@@ -137,17 +135,16 @@ public abstract class UDPRelay implements Runnable {
           // https://stackoverflow.com/a/61267496/2875073
           ((Buffer) buffer).flip();
 
-          //					log.info(EmuUtil.formatSocketAddress(clientSocketAddress) + " <- \t" +
+          //					logger.atInfo().log(EmuUtil.formatSocketAddress(clientSocketAddress) + " <- \t" +
           // EmuUtil.dumpBuffer(buffer));
           ByteBuffer newBuffer = processServerToClient(buffer, receiveAddress, clientSocketAddress);
           listenChannel.send(newBuffer, clientSocketAddress);
         }
       } catch (Exception e) {
-        log.info(
+        logger.atInfo().withCause(e).log(
             "ClientHandler thread for "
                 + EmuUtil.formatSocketAddress(clientSocketAddress)
-                + " caught exception: "
-                + e.getMessage(),
+                + " caught exception",
             e);
       } finally {
         try {
@@ -158,7 +155,7 @@ public abstract class UDPRelay implements Runnable {
         clients.remove(clientSocketAddress);
       }
 
-      log.info(
+      logger.atInfo().log(
           "ClientHandler thread for "
               + EmuUtil.formatSocketAddress(clientSocketAddress)
               + " exiting...");

@@ -1,16 +1,16 @@
 package org.emulinker.net;
 
+import com.google.common.flogger.FluentLogger;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.util.*;
-import org.apache.commons.logging.*;
 import org.emulinker.util.EmuUtil;
 
 public abstract class UDPRelay2 {
-  private static Log log = LogFactory.getLog(UDPRelay2.class);
+  private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
   public static final int DEFAULT_BUFFER_SIZE = 4096;
   private static int threadCounter = 0;
@@ -71,13 +71,13 @@ public abstract class UDPRelay2 {
       relayThreads.put(serverSocketAddress, new RelayThread(listenPort, serverSocketAddress));
       started = true;
     } else {
-      log.warn("Already started");
+      logger.atWarning().log("Already started");
     }
   }
 
   public synchronized void stop() {
     if (started) {
-      log.debug("Stopping...");
+      logger.atFine().log("Stopping...");
 
       stopFlag = true;
 
@@ -88,7 +88,7 @@ public abstract class UDPRelay2 {
 
       started = false;
     } else {
-      log.warn("Not running");
+      logger.atWarning().log("Not running");
     }
   }
 
@@ -117,13 +117,13 @@ public abstract class UDPRelay2 {
           channel = DatagramChannel.open();
           channel.socket().bind(new InetSocketAddress(port));
           channels.put(port, channel);
-          log.debug(
+          logger.atFine().log(
               "Created new DatagramChannel bound to specific port "
                   + channel.socket().getLocalPort()
                   + " that will forward to "
                   + EmuUtil.formatSocketAddress(forwardAddress));
         } else {
-          log.debug(
+          logger.atFine().log(
               "Using previously created DatagramChannel bound to port "
                   + channel.socket().getLocalPort()
                   + " that will forward to "
@@ -132,7 +132,7 @@ public abstract class UDPRelay2 {
       } else {
         channel = DatagramChannel.open();
         channel.socket().bind(null);
-        log.debug(
+        logger.atFine().log(
             "Creating new DatagramChannel bound to arbitrary port "
                 + channel.socket().getLocalPort()
                 + " that will forward to "
@@ -155,7 +155,7 @@ public abstract class UDPRelay2 {
         try {
           Thread.sleep(100);
         } catch (Exception e) {
-          log.error("Sleep Interrupted!", e);
+          logger.atSevere().withCause(e).log("Sleep Interrupted!");
         }
       }
     }
@@ -178,7 +178,7 @@ public abstract class UDPRelay2 {
     }
 
     public void send(ByteBuffer buffer, InetSocketAddress target) throws IOException {
-      // log.debug("Port " + channel.socket().getLocalPort() + " sending
+      // logger.atFine().log("Port " + channel.socket().getLocalPort() + " sending
       // to " + EmuUtil.formatSocketAddress(target) + ": " +
       // EmuUtil.dumpBuffer(buffer));
       channel.send(buffer, target);
@@ -194,7 +194,7 @@ public abstract class UDPRelay2 {
 
     @Override
     public void run() {
-      log.debug(name + " Running");
+      logger.atFine().log(name + " Running");
 
       try {
         ByteBuffer receiveBuffer = ByteBuffer.allocate(DEFAULT_BUFFER_SIZE);
@@ -216,23 +216,23 @@ public abstract class UDPRelay2 {
           ByteBuffer sendBuffer = null;
 
           if (fromAddress.equals(getServerSocketAddress())) {
-            // log.debug("Server at " +
+            // logger.atFine().log("Server at " +
             // EmuUtil.formatSocketAddress(fromAddress) + " sent " +
             // receiveBuffer.limit() + " bytes to relay port " +
             // channel.socket().getLocalPort() + " which it will
             // forward to " +
             // EmuUtil.formatSocketAddress(getForwardAddress()));
-            // log.debug("Buffer Dump: " +
+            // logger.atFine().log("Buffer Dump: " +
             // EmuUtil.dumpBuffer(receiveBuffer));
             sendBuffer = processServerToClient(receiveBuffer, fromAddress, getForwardAddress());
           } else {
-            // log.debug("Client at " +
+            // logger.atFine().log("Client at " +
             // EmuUtil.formatSocketAddress(fromAddress) + " sent " +
             // receiveBuffer.limit() + " bytes to relay port " +
             // channel.socket().getLocalPort() + " which it will
             // forward to " +
             // EmuUtil.formatSocketAddress(getForwardAddress()));
-            // log.debug("Buffer Dump: " +
+            // logger.atFine().log("Buffer Dump: " +
             // EmuUtil.dumpBuffer(receiveBuffer));
             sendBuffer = processClientToServer(receiveBuffer, fromAddress, getForwardAddress());
           }
@@ -241,7 +241,7 @@ public abstract class UDPRelay2 {
 
           RelayThread responseThread = relayThreads.get(fromAddress);
           if (responseThread == null) {
-            log.debug(
+            logger.atFine().log(
                 "No RelayThread is registered to forward to "
                     + EmuUtil.formatSocketAddress(fromAddress)
                     + "... creating new RelayThread");
@@ -252,17 +252,17 @@ public abstract class UDPRelay2 {
           responseThread.send(sendBuffer, getForwardAddress());
         }
       } catch (IOException e) {
-        log.warn(name + " caught IOException", e);
+        logger.atWarning().withCause(e).log(name + " caught IOException");
         if (exception != null) exception = e;
       } catch (Exception e) {
-        log.fatal(name + " caught unexpected exception", e);
+        logger.atSevere().withCause(e).log(name + " caught unexpected exception");
         if (exception != null) exception = e;
       } finally {
         UDPRelay2.this.stop();
         running = false;
       }
 
-      log.debug(name + " Exiting");
+      logger.atFine().log(name + " Exiting");
     }
   }
 }

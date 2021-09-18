@@ -1,22 +1,22 @@
 package org.emulinker.kaillera.controller.v086.action;
 
-import org.apache.commons.logging.*;
+import com.google.common.flogger.FluentLogger;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.emulinker.kaillera.controller.v086.V086Controller;
 import org.emulinker.kaillera.model.KailleraUser;
 import org.emulinker.kaillera.model.event.*;
 
+@Singleton
 public class GameTimeoutAction implements V086GameEventHandler {
-  private static Log log = LogFactory.getLog(GameTimeoutAction.class);
-  private static final String desc = "GameTimeoutAction";
-  private static GameTimeoutAction singleton = new GameTimeoutAction();
+  private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
-  public static GameTimeoutAction getInstance() {
-    return singleton;
-  }
+  private static final String DESC = "GameTimeoutAction";
 
   private int handledCount = 0;
 
-  private GameTimeoutAction() {}
+  @Inject
+  GameTimeoutAction() {}
 
   @Override
   public int getHandledEventCount() {
@@ -25,7 +25,7 @@ public class GameTimeoutAction implements V086GameEventHandler {
 
   @Override
   public String toString() {
-    return desc;
+    return DESC;
   }
 
   @Override
@@ -37,7 +37,7 @@ public class GameTimeoutAction implements V086GameEventHandler {
     KailleraUser user = clientHandler.getUser();
 
     if (player.equals(user)) {
-      log.debug(
+      logger.atFine().log(
           user
               + " received timeout event "
               + timeoutEvent.getTimeoutNumber()
@@ -46,7 +46,7 @@ public class GameTimeoutAction implements V086GameEventHandler {
               + ": resending messages...");
       clientHandler.resend(timeoutEvent.getTimeoutNumber());
     } else {
-      log.debug(
+      logger.atFine().log(
           user
               + " received timeout event "
               + timeoutEvent.getTimeoutNumber()

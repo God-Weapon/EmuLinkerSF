@@ -8,9 +8,8 @@ import org.emulinker.kaillera.model.exception.*;
 import org.emulinker.kaillera.model.impl.KailleraUserImpl;
 import org.emulinker.kaillera.model.impl.Trivia;
 import org.emulinker.release.*;
-import org.picocontainer.Startable;
 
-public interface KailleraServer extends Startable {
+public interface KailleraServer {
   public ReleaseInfo getReleaseInfo();
 
   public int getNumUsers();
@@ -60,4 +59,8 @@ public interface KailleraServer extends Startable {
 
   public void quit(KailleraUser user, String message)
       throws QuitException, DropGameException, QuitGameException, CloseGameException;
+
+  public abstract void start();
+
+  public abstract void stop();
 }

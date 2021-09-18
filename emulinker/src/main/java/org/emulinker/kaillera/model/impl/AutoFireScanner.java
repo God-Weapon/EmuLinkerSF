@@ -8,8 +8,8 @@ import java.util.concurrent.*;
 
 import java.io.*;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import com.google.common.flogger.FluentLogger;
+import com.google.common.flogger.FluentLogger;
 import org.emulinker.kaillera.model.KailleraGame;
 import org.emulinker.kaillera.model.KailleraUser;
 import org.emulinker.kaillera.model.*;
@@ -17,7 +17,7 @@ import org.emulinker.util.*;
 
 public class AutoFireScanner implements AutoFireDetector
 {
-	private static Log	log							= LogFactory.getLog(AutoFireScanner.class);
+	private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
 	private static int MIN_CHAR = 65;
 	private static int MAX_CHAR = 90;
@@ -41,7 +41,7 @@ public class AutoFireScanner implements AutoFireDetector
 	{
 		ScanningJob job = jobs.remove(user.getID());
 		if(job == null)
-			log.error("AutoFireScanner stop failed: User not found: " + user);
+			logger.atSevere().log("AutoFireScanner stop failed: User not found: " + user);
 	}
 
 	public void addData(KailleraUser user, byte[] data, int bytesPerAction)
@@ -49,7 +49,7 @@ public class AutoFireScanner implements AutoFireDetector
 		ScanningJob job = jobs.get(user.getID());
 		if(job == null)
 		{
-			log.error("AutoFireScanner addData failed: User not found: " + user);
+			logger.atSevere().log("AutoFireScanner addData failed: User not found: " + user);
 			return;
 		}
 
@@ -261,8 +261,8 @@ public class AutoFireScanner implements AutoFireDetector
 				// positive detection!
 				KailleraGameImpl gameImpl = (KailleraGameImpl) game;
 				gameImpl.announce("Autofire Detected: Delay " + delay + ": " + user.getName());
-				log.info("Autofire Detected: Delay: " + delay + ": " + game + ": " + user + ": " + sig + ": " + sb.toString());
-				log.info("AUTOUSERDUMP\t" + EmuUtil.DATE_FORMAT.format(gameImpl.getStartDate()) + "\t" + delay + "\t" + game.getID() + "\t" + game.getRomName() + "\t" + user.getName() + "\t" + user.getSocketAddress().getAddress().getHostAddress());
+				logger.atInfo().log("Autofire Detected: Delay: " + delay + ": " + game + ": " + user + ": " + sig + ": " + sb.toString());
+				logger.atInfo().log("AUTOUSERDUMP\t" + EmuUtil.DATE_FORMAT.format(gameImpl.getStartDate()) + "\t" + delay + "\t" + game.getID() + "\t" + game.getRomName() + "\t" + user.getName() + "\t" + user.getSocketAddress().getAddress().getHostAddress());
 				return true;
 			}
 

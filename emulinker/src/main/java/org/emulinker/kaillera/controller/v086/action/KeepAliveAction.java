@@ -1,19 +1,18 @@
 package org.emulinker.kaillera.controller.v086.action;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.emulinker.kaillera.controller.v086.V086Controller;
 import org.emulinker.kaillera.controller.v086.protocol.*;
 
+@Singleton
 public class KeepAliveAction implements V086Action {
-  private static final String desc = "KeepAliveAction";
-  private static KeepAliveAction singleton = new KeepAliveAction();
-
-  public static KeepAliveAction getInstance() {
-    return singleton;
-  }
+  private static final String DESC = "KeepAliveAction";
 
   private int actionCount = 0;
 
-  private KeepAliveAction() {}
+  @Inject
+  KeepAliveAction() {}
 
   @Override
   public int getActionPerformedCount() {
@@ -22,7 +21,7 @@ public class KeepAliveAction implements V086Action {
 
   @Override
   public String toString() {
-    return desc;
+    return DESC;
   }
 
   @Override

@@ -1,9 +1,9 @@
 package org.emulinker.kaillera.master.client;
 
+import com.google.common.flogger.FluentLogger;
 import java.util.Properties;
 import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.logging.*;
 import org.emulinker.kaillera.controller.connectcontroller.ConnectController;
 import org.emulinker.kaillera.master.PublicServerInformation;
 import org.emulinker.kaillera.model.KailleraGame;
@@ -11,7 +11,8 @@ import org.emulinker.kaillera.model.KailleraServer;
 import org.emulinker.release.ReleaseInfo;
 
 public class EmuLinkerMasterUpdateTask implements MasterListUpdateTask {
-  private static Log log = LogFactory.getLog(EmuLinkerMasterUpdateTask.class);
+  private static final FluentLogger logger = FluentLogger.forEnclosingClass();
+
   private static final String url = "http://master.emulinker.org/touch_list.php";
 
   private PublicServerInformation publicInfo;
@@ -76,13 +77,13 @@ public class EmuLinkerMasterUpdateTask implements MasterListUpdateTask {
     try {
       int statusCode = httpClient.executeMethod(meth);
       if (statusCode != HttpStatus.SC_OK)
-        log.error("Failed to touch EmuLinker Master: " + meth.getStatusLine());
+        logger.atSevere().log("Failed to touch EmuLinker Master: " + meth.getStatusLine());
       else {
         props.load(meth.getResponseBodyAsStream());
-        log.info("Touching EmuLinker Master done");
+        logger.atInfo().log("Touching EmuLinker Master done");
       }
     } catch (Exception e) {
-      log.error("Failed to touch EmuLinker Master: " + e.getMessage());
+      logger.atSevere().withCause(e).log("Failed to touch EmuLinker Master");
     } finally {
       if (meth != null) {
         try {
@@ -106,7 +107,7 @@ public class EmuLinkerMasterUpdateTask implements MasterListUpdateTask {
     //     sb.append(notes);
     //     sb.append(")");
     //   }
-    //   log.warn(sb.toString());
+    //   logger.atWarning().log(sb.toString());
     // }
   }
 }

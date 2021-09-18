@@ -1,7 +1,7 @@
 package org.emulinker.kaillera.release;
 
+import javax.inject.Inject;
 import org.emulinker.release.ReleaseInfo;
-import org.emulinker.util.EmuUtil;
 
 /**
  * Provides release and build information for the EmuLinker project. This class also formats a
@@ -19,7 +19,8 @@ public final class KailleraServerReleaseInfo implements ReleaseInfo {
       "Usage of this sofware is subject to the terms found in the included license";
   private final String website = "https://github.com/hopskipnfall/EmuLinkerSF-Netosuma";
 
-  public KailleraServerReleaseInfo() {}
+  @Inject
+  KailleraServerReleaseInfo() {}
 
   @Override
   public final String getProductName() {
@@ -79,19 +80,12 @@ public final class KailleraServerReleaseInfo implements ReleaseInfo {
    */
   @Override
   public String getWelcome() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(
-        "// "
-            + getProductName()
-            + " version "
-            + getVersionString()
-            + " ("
-            + getReleaseDate()
-            + ") ");
-    sb.append(EmuUtil.LB);
-    sb.append("// " + getLicenseInfo());
-    sb.append(EmuUtil.LB);
-    sb.append("// For the most up-to-date information please visit: " + getWebsiteString());
-    return sb.toString();
+    return String.format(
+        "// %s version %s (%s) \n// %s\n// For the most up-to-date information please visit: %s",
+        getProductName(),
+        getVersionString(),
+        getReleaseDate(),
+        getLicenseInfo(),
+        getWebsiteString());
   }
 }

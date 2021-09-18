@@ -1,16 +1,16 @@
 package org.emulinker.kaillera.master.client;
 
+import com.google.common.flogger.FluentLogger;
 import java.util.*;
 import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.logging.*;
 import org.emulinker.kaillera.controller.connectcontroller.ConnectController;
 import org.emulinker.kaillera.master.*;
 import org.emulinker.kaillera.model.*;
 import org.emulinker.release.ReleaseInfo;
 
 public class KailleraMasterUpdateTask implements MasterListUpdateTask {
-  private static Log log = LogFactory.getLog(KailleraMasterUpdateTask.class);
+  private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
   private PublicServerInformation publicInfo;
   private ConnectController connectController;
@@ -88,10 +88,10 @@ public class KailleraMasterUpdateTask implements MasterListUpdateTask {
     try {
       int statusCode = httpClient.executeMethod(kailleraTouch);
       if (statusCode != HttpStatus.SC_OK)
-        log.error("Failed to touch Kaillera Master: " + kailleraTouch.getStatusLine());
-      else log.info("Touching Kaillera Master done");
+        logger.atSevere().log("Failed to touch Kaillera Master: " + kailleraTouch.getStatusLine());
+      else logger.atInfo().log("Touching Kaillera Master done");
     } catch (Exception e) {
-      log.error("Failed to touch Kaillera Master: " + e.getMessage());
+      logger.atSevere().withCause(e).log("Failed to touch Kaillera Master");
     } finally {
       if (kailleraTouch != null) {
         try {

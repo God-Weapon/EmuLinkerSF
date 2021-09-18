@@ -1,7 +1,9 @@
 package org.emulinker.kaillera.controller.v086.action;
 
+import com.google.common.flogger.FluentLogger;
 import java.util.*;
-import org.apache.commons.logging.*;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 import org.emulinker.kaillera.controller.v086.V086Controller;
 import org.emulinker.kaillera.controller.v086.protocol.*;
@@ -10,19 +12,17 @@ import org.emulinker.kaillera.model.event.*;
 import org.emulinker.kaillera.model.exception.JoinGameException;
 import org.emulinker.util.EmuLang;
 
+@Singleton
 public class JoinGameAction implements V086Action, V086GameEventHandler {
-  private static Log log = LogFactory.getLog(JoinGameAction.class);
-  private static final String desc = "JoinGameAction";
-  private static JoinGameAction singleton = new JoinGameAction();
+  private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
-  public static JoinGameAction getInstance() {
-    return singleton;
-  }
+  private static final String DESC = "JoinGameAction";
 
   private int actionCount = 0;
   private int handledCount = 0;
 
-  private JoinGameAction() {}
+  @Inject
+  JoinGameAction() {}
 
   @Override
   public int getActionPerformedCount() {
@@ -36,7 +36,7 @@ public class JoinGameAction implements V086Action, V086GameEventHandler {
 
   @Override
   public String toString() {
-    return desc;
+    return DESC;
   }
 
   @Override
@@ -52,6 +52,7 @@ public class JoinGameAction implements V086Action, V086GameEventHandler {
     try {
       clientHandler.getUser().joinGame(joinGameRequest.gameId());
     } catch (JoinGameException e) {
+      logger.atSevere().withCause(e).log("Failed to join game.");
       try {
         clientHandler.send(
             InformationMessage.create(
@@ -64,7 +65,7 @@ public class JoinGameAction implements V086Action, V086GameEventHandler {
                 clientHandler.getUser().getName(),
                 clientHandler.getUser().getID()));
       } catch (MessageFormatException e2) {
-        log.error("Failed to contruct new Message", e);
+        logger.atSevere().withCause(e2).log("Failed to contruct new Message");
       }
     }
   }
@@ -109,7 +110,7 @@ public class JoinGameAction implements V086Action, V086GameEventHandler {
                 user.getID(),
                 user.getConnectionType()));
     } catch (MessageFormatException e) {
-      log.error("Failed to contruct JoinGame_Notification message: " + e.getMessage(), e);
+      logger.atSevere().withCause(e).log("Failed to contruct JoinGame_Notification message");
     }
   }
 }

@@ -1,6 +1,8 @@
 package org.emulinker.kaillera.controller.v086.action;
 
-import org.apache.commons.logging.*;
+import com.google.common.flogger.FluentLogger;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 import org.emulinker.kaillera.controller.v086.V086Controller;
 import org.emulinker.kaillera.controller.v086.protocol.*;
@@ -8,19 +10,17 @@ import org.emulinker.kaillera.model.*;
 import org.emulinker.kaillera.model.event.*;
 import org.emulinker.kaillera.model.exception.DropGameException;
 
+@Singleton
 public class DropGameAction implements V086Action, V086GameEventHandler {
-  private static Log log = LogFactory.getLog(DropGameAction.class);
-  private static final String desc = "DropGameAction";
-  private static DropGameAction singleton = new DropGameAction();
+  private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
-  public static DropGameAction getInstance() {
-    return singleton;
-  }
+  private static final String DESC = "DropGameAction";
 
   private int actionCount = 0;
   private int handledCount = 0;
 
-  private DropGameAction() {}
+  @Inject
+  DropGameAction() {}
 
   @Override
   public int getActionPerformedCount() {
@@ -34,7 +34,7 @@ public class DropGameAction implements V086Action, V086GameEventHandler {
 
   @Override
   public String toString() {
-    return desc;
+    return DESC;
   }
 
   @Override
@@ -48,7 +48,7 @@ public class DropGameAction implements V086Action, V086GameEventHandler {
     try {
       clientHandler.getUser().dropGame();
     } catch (DropGameException e) {
-      log.debug("Failed to drop game: " + e.getMessage());
+      logger.atFine().withCause(e).log("Failed to drop game");
     }
   }
 
@@ -68,7 +68,7 @@ public class DropGameAction implements V086Action, V086GameEventHandler {
             PlayerDrop_Notification.create(
                 clientHandler.getNextMessageNumber(), user.getName(), (byte) playerNumber));
     } catch (MessageFormatException e) {
-      log.error("Failed to contruct PlayerDrop_Notification message: " + e.getMessage(), e);
+      logger.atSevere().withCause(e).log("Failed to contruct PlayerDrop_Notification message");
     }
   }
 }

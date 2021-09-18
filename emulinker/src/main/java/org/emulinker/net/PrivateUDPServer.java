@@ -1,12 +1,12 @@
 package org.emulinker.net;
 
+import com.google.common.flogger.FluentLogger;
 import java.net.*;
 import java.nio.ByteBuffer;
-import org.apache.commons.logging.*;
 import org.emulinker.util.*;
 
 public abstract class PrivateUDPServer extends UDPServer {
-  private static Log log = LogFactory.getLog(PrivateUDPServer.class);
+  private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
   private InetAddress remoteAddress;
   private InetSocketAddress remoteSocketAddress;
@@ -28,7 +28,7 @@ public abstract class PrivateUDPServer extends UDPServer {
   protected void handleReceived(ByteBuffer buffer, InetSocketAddress inboundSocketAddress) {
     if (remoteSocketAddress == null) remoteSocketAddress = inboundSocketAddress;
     else if (!inboundSocketAddress.equals(remoteSocketAddress)) {
-      log.warn(
+      logger.atWarning().log(
           "Rejecting packet received from wrong address: "
               + EmuUtil.formatSocketAddress(inboundSocketAddress)
               + " != "

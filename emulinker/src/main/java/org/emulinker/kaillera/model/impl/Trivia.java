@@ -180,7 +180,7 @@ public class Trivia implements Runnable {
     } catch (Exception e) {
       exitThread = true;
       server.announce("<Trivia> " + "Error loading SupraTrivia Questions/Scores!", false, null);
-      // throw new RuntimeException("Error loading SupraTriva Questions! " + e.getMessage());
+      // throw new RuntimeException("Error loading SupraTriva Questions! ", e);
     }
   }
 

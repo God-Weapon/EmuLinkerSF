@@ -1,6 +1,8 @@
 package org.emulinker.kaillera.controller.v086.action;
 
-import org.apache.commons.logging.*;
+import com.google.common.flogger.FluentLogger;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 import org.emulinker.kaillera.controller.v086.V086Controller;
 import org.emulinker.kaillera.controller.v086.protocol.*;
@@ -8,19 +10,17 @@ import org.emulinker.kaillera.model.KailleraUser;
 import org.emulinker.kaillera.model.event.*;
 import org.emulinker.kaillera.model.exception.*;
 
+@Singleton
 public class QuitGameAction implements V086Action, V086GameEventHandler {
-  private static Log log = LogFactory.getLog(QuitGameAction.class);
-  private static final String desc = "QuitGameAction";
-  private static QuitGameAction singleton = new QuitGameAction();
+  private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
-  public static QuitGameAction getInstance() {
-    return singleton;
-  }
+  private static final String DESC = "QuitGameAction";
 
   private int actionCount = 0;
   private int handledCount = 0;
 
-  private QuitGameAction() {}
+  @Inject
+  QuitGameAction() {}
 
   @Override
   public int getActionPerformedCount() {
@@ -34,7 +34,7 @@ public class QuitGameAction implements V086Action, V086GameEventHandler {
 
   @Override
   public String toString() {
-    return desc;
+    return DESC;
   }
 
   @Override
@@ -47,18 +47,14 @@ public class QuitGameAction implements V086Action, V086GameEventHandler {
 
     try {
       clientHandler.getUser().quitGame();
-    } catch (DropGameException e) {
-      log.debug("Failed to drop game: " + e.getMessage());
-    } catch (QuitGameException e) {
-      log.debug("Failed to quit game: " + e.getMessage());
-    } catch (CloseGameException e) {
-      log.debug("Failed to close game: " + e.getMessage());
+    } catch (DropGameException | QuitGameException | CloseGameException e) {
+      logger.atSevere().withCause(e).log("Action failed");
     }
 
     try {
       Thread.sleep(100);
     } catch (InterruptedException e) {
-      log.error("Sleep Interrupted!", e);
+      logger.atSevere().withCause(e).log("Sleep Interrupted!");
     }
   }
 
@@ -84,7 +80,7 @@ public class QuitGameAction implements V086Action, V086GameEventHandler {
                   clientHandler.getNextMessageNumber(), user.getName(), user.getID()));
       }
     } catch (MessageFormatException e) {
-      log.error("Failed to contruct QuitGame_Notification message: " + e.getMessage(), e);
+      logger.atSevere().withCause(e).log("Failed to contruct QuitGame_Notification message");
     }
   }
 }

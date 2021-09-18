@@ -1,13 +1,13 @@
 package org.emulinker.util;
 
+import com.google.common.flogger.FluentLogger;
 import java.util.concurrent.*;
-import org.apache.commons.logging.*;
 
 // This is a very specialized structure designed for queueing ints during gameplay
 // Adapted from http://www.smotricz.com/kabutz/Issue027.html
 
 public final class CircularBlockingByteQueue {
-  private static Log log = LogFactory.getLog(CircularBlockingByteQueue.class);
+  private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
   // array holds the elements
   private byte[] array;
@@ -64,7 +64,7 @@ public final class CircularBlockingByteQueue {
   }
 
   public void put(byte data) {
-    //		log.debug(this + " put("+data+")");
+    //		logger.atFine().log(this + " put("+data+")");
     synchronized (lock) {
       if (size == array.length) grow();
 
@@ -74,12 +74,12 @@ public final class CircularBlockingByteQueue {
       size++;
     }
 
-    //		log.debug("semaphore.release()");
+    //		logger.atFine().log("semaphore.release()");
     semaphore.release();
   }
 
   public byte remove(int index) {
-    //		log.debug(this + " remove("+index+")");
+    //		logger.atFine().log(this + " remove("+index+")");
     int pos = convert(index);
 
     try {
@@ -111,10 +111,11 @@ public final class CircularBlockingByteQueue {
   }
 
   public void grow() {
-    //		log.debug(this + " grow()");
+    //		logger.atFine().log(this + " grow()");
     int oldCapacity = array.length;
     int newCapacity = (oldCapacity * 3) / 2 + 1;
-    log.debug("CircularBlockingByteQueue growing from " + oldCapacity + " to " + newCapacity);
+    logger.atFine().log(
+        "CircularBlockingByteQueue growing from " + oldCapacity + " to " + newCapacity);
     byte newData[] = new byte[newCapacity];
     toArray(newData);
     tail = size;
@@ -123,13 +124,13 @@ public final class CircularBlockingByteQueue {
   }
 
   public byte[] toArray() {
-    //		log.debug(this + " toArray()");
+    //		logger.atFine().log(this + " toArray()");
 
     return toArray(new byte[size]);
   }
 
   public byte[] toArray(byte a[]) {
-    //		log.debug(this + " toArray("+Arrays.toString(a)+")");
+    //		logger.atFine().log(this + " toArray("+Arrays.toString(a)+")");
 
     if (size == 0) return a;
 
