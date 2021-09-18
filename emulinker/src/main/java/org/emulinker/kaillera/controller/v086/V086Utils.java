@@ -2,7 +2,7 @@ package org.emulinker.kaillera.controller.v086;
 
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
-import org.emulinker.kaillera.relay.KailleraRelay;
+import org.emulinker.kaillera.pico.AppModule;
 
 /** Util methods mostly for dealing ByteBuffers. */
 public final class V086Utils {
@@ -60,6 +60,6 @@ public final class V086Utils {
 
   /** Gets the number of bytes to represent the string in the charset defined in emulinker.config */
   public static int getNumBytes(String s) {
-    return s.getBytes(KailleraRelay.config.charset()).length;
+    return s.getBytes(AppModule.charsetDoNotUse).length;
   }
 }

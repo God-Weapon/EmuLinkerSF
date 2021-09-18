@@ -9,7 +9,7 @@ import org.emulinker.kaillera.controller.messaging.*;
 import org.emulinker.kaillera.controller.v086.V086Utils;
 import org.emulinker.kaillera.model.KailleraGame;
 import org.emulinker.kaillera.model.KailleraUser;
-import org.emulinker.kaillera.relay.KailleraRelay;
+import org.emulinker.kaillera.pico.AppModule;
 import org.emulinker.util.*;
 
 @AutoValue
@@ -99,7 +99,7 @@ public abstract class ServerStatus extends V086Message {
     for (int j = 0; j < numUsers; j++) {
       if (buffer.remaining() < 9) throw new ParseException("Failed byte count validation!");
 
-      String userName = EmuUtil.readString(buffer, 0x00, KailleraRelay.config.charset());
+      String userName = EmuUtil.readString(buffer, 0x00, AppModule.charsetDoNotUse);
 
       if (buffer.remaining() < 8) throw new ParseException("Failed byte count validation!");
 
@@ -115,21 +115,21 @@ public abstract class ServerStatus extends V086Message {
     for (int j = 0; j < numGames; j++) {
       if (buffer.remaining() < 13) throw new ParseException("Failed byte count validation!");
 
-      String romName = EmuUtil.readString(buffer, 0x00, KailleraRelay.config.charset());
+      String romName = EmuUtil.readString(buffer, 0x00, AppModule.charsetDoNotUse);
 
       if (buffer.remaining() < 10) throw new ParseException("Failed byte count validation!");
 
       int gameID = buffer.getInt();
 
-      String clientType = EmuUtil.readString(buffer, 0x00, KailleraRelay.config.charset());
+      String clientType = EmuUtil.readString(buffer, 0x00, AppModule.charsetDoNotUse);
 
       if (buffer.remaining() < 5) throw new ParseException("Failed byte count validation!");
 
-      String userName = EmuUtil.readString(buffer, 0x00, KailleraRelay.config.charset());
+      String userName = EmuUtil.readString(buffer, 0x00, AppModule.charsetDoNotUse);
 
       if (buffer.remaining() < 3) throw new ParseException("Failed byte count validation!");
 
-      String players = EmuUtil.readString(buffer, 0x00, KailleraRelay.config.charset());
+      String players = EmuUtil.readString(buffer, 0x00, AppModule.charsetDoNotUse);
 
       if (buffer.remaining() < 1) throw new ParseException("Failed byte count validation!");
 
@@ -200,7 +200,7 @@ public abstract class ServerStatus extends V086Message {
     }
 
     public void writeTo(ByteBuffer buffer) {
-      EmuUtil.writeString(buffer, username(), 0x00, KailleraRelay.config.charset());
+      EmuUtil.writeString(buffer, username(), 0x00, AppModule.charsetDoNotUse);
       UnsignedUtil.putUnsignedInt(buffer, ping());
       buffer.put(status());
       UnsignedUtil.putUnsignedShort(buffer, userId());
@@ -278,11 +278,11 @@ public abstract class ServerStatus extends V086Message {
     }
 
     public void writeTo(ByteBuffer buffer) {
-      EmuUtil.writeString(buffer, romName(), 0x00, KailleraRelay.config.charset());
+      EmuUtil.writeString(buffer, romName(), 0x00, AppModule.charsetDoNotUse);
       buffer.putInt(gameId());
-      EmuUtil.writeString(buffer, clientType(), 0x00, KailleraRelay.config.charset());
-      EmuUtil.writeString(buffer, username(), 0x00, KailleraRelay.config.charset());
-      EmuUtil.writeString(buffer, players(), 0x00, KailleraRelay.config.charset());
+      EmuUtil.writeString(buffer, clientType(), 0x00, AppModule.charsetDoNotUse);
+      EmuUtil.writeString(buffer, username(), 0x00, AppModule.charsetDoNotUse);
+      EmuUtil.writeString(buffer, players(), 0x00, AppModule.charsetDoNotUse);
       buffer.put(status());
     }
   }

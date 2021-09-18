@@ -10,7 +10,7 @@ import java.util.*;
 import java.util.concurrent.*;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import org.emulinker.kaillera.relay.KailleraRelay;
+import org.emulinker.config.RuntimeFlags;
 import org.emulinker.util.WildcardStringPattern;
 
 @Singleton
@@ -22,26 +22,29 @@ public final class AccessManager2 implements AccessManager, Runnable {
 
   private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
-  private ThreadPoolExecutor threadPool;
+  private final ThreadPoolExecutor threadPool;
+  private final RuntimeFlags flags;
+
   private boolean isRunning = false;
   private boolean stopFlag = false;
 
   private File accessFile;
   private long lastLoadModifiedTime = -1;
 
-  private List<UserAccess> userList = new CopyOnWriteArrayList<UserAccess>();
-  private List<GameAccess> gameList = new CopyOnWriteArrayList<GameAccess>();
-  private List<EmulatorAccess> emulatorList = new CopyOnWriteArrayList<EmulatorAccess>();
-  private List<AddressAccess> addressList = new CopyOnWriteArrayList<AddressAccess>();
-  private List<TempBan> tempBanList = new CopyOnWriteArrayList<TempBan>();
-  private List<TempAdmin> tempAdminList = new CopyOnWriteArrayList<TempAdmin>();
-  private List<TempModerator> tempModeratorList = new CopyOnWriteArrayList<TempModerator>();
-  private List<TempElevated> tempElevatedList = new CopyOnWriteArrayList<TempElevated>();
-  private List<Silence> silenceList = new CopyOnWriteArrayList<Silence>();
+  private final List<UserAccess> userList = new CopyOnWriteArrayList<UserAccess>();
+  private final List<GameAccess> gameList = new CopyOnWriteArrayList<GameAccess>();
+  private final List<EmulatorAccess> emulatorList = new CopyOnWriteArrayList<EmulatorAccess>();
+  private final List<AddressAccess> addressList = new CopyOnWriteArrayList<AddressAccess>();
+  private final List<TempBan> tempBanList = new CopyOnWriteArrayList<TempBan>();
+  private final List<TempAdmin> tempAdminList = new CopyOnWriteArrayList<TempAdmin>();
+  private final List<TempModerator> tempModeratorList = new CopyOnWriteArrayList<TempModerator>();
+  private final List<TempElevated> tempElevatedList = new CopyOnWriteArrayList<TempElevated>();
+  private final List<Silence> silenceList = new CopyOnWriteArrayList<Silence>();
 
   @Inject
-  AccessManager2(ThreadPoolExecutor threadPool) {
+  AccessManager2(ThreadPoolExecutor threadPool, RuntimeFlags flags) {
     this.threadPool = threadPool;
+    this.flags = flags;
 
     URL url = AccessManager2.class.getResource("/access.cfg");
     checkArgument(url != null, "Resource not found: /access.conf");
@@ -175,7 +178,7 @@ public final class AccessManager2 implements AccessManager, Runnable {
 
     try {
       FileInputStream file = new FileInputStream(this.accessFile);
-      Reader temp = new InputStreamReader(file, KailleraRelay.config.charset());
+      Reader temp = new InputStreamReader(file, flags.charset());
       BufferedReader reader = new BufferedReader(temp);
       String line = null;
       while ((line = reader.readLine()) != null) {

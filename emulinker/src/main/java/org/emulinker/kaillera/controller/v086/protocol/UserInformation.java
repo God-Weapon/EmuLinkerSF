@@ -4,7 +4,7 @@ import com.google.auto.value.AutoValue;
 import java.nio.ByteBuffer;
 import org.emulinker.kaillera.controller.messaging.*;
 import org.emulinker.kaillera.model.KailleraUser;
-import org.emulinker.kaillera.relay.KailleraRelay;
+import org.emulinker.kaillera.pico.AppModule;
 import org.emulinker.util.EmuUtil;
 
 @AutoValue
@@ -52,8 +52,8 @@ public abstract class UserInformation extends V086Message {
 
   @Override
   public void writeBodyTo(ByteBuffer buffer) {
-    EmuUtil.writeString(buffer, username(), 0x00, KailleraRelay.config.charset());
-    EmuUtil.writeString(buffer, clientType(), 0x00, KailleraRelay.config.charset());
+    EmuUtil.writeString(buffer, username(), 0x00, AppModule.charsetDoNotUse);
+    EmuUtil.writeString(buffer, clientType(), 0x00, AppModule.charsetDoNotUse);
     buffer.put(connectionType());
   }
 
@@ -61,11 +61,11 @@ public abstract class UserInformation extends V086Message {
       throws ParseException, MessageFormatException {
     if (buffer.remaining() < 5) throw new ParseException("Failed byte count validation!");
 
-    String userName = EmuUtil.readString(buffer, 0x00, KailleraRelay.config.charset());
+    String userName = EmuUtil.readString(buffer, 0x00, AppModule.charsetDoNotUse);
 
     if (buffer.remaining() < 3) throw new ParseException("Failed byte count validation!");
 
-    String clientType = EmuUtil.readString(buffer, 0x00, KailleraRelay.config.charset());
+    String clientType = EmuUtil.readString(buffer, 0x00, AppModule.charsetDoNotUse);
 
     if (buffer.remaining() < 1) throw new ParseException("Failed byte count validation!");
 

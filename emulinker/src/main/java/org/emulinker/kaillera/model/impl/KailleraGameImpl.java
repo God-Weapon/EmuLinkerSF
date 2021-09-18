@@ -71,11 +71,8 @@ public final class KailleraGameImpl implements KailleraGame {
     this.desynchTimeouts = 120; // desynchTimeouts;
 
     toString =
-        "Game"
-            + id
-            + "("
-            + (romName.length() > 15 ? (romName.substring(0, 15) + "...") : romName)
-            + ")";
+        String.format(
+            "Game%d(%s)", id, romName.length() > 15 ? (romName.substring(0, 15) + "...") : romName);
     startDate = new Date();
 
     statsCollector = server.getStatsCollector();

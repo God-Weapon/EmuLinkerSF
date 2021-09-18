@@ -1,33 +1,27 @@
 package org.emulinker.kaillera.master;
 
-import org.apache.commons.configuration.Configuration;
+import org.emulinker.config.RuntimeFlags;
 
 public class PublicServerInformation {
-  private String serverName;
-  private String serverLocation;
-  private String serverWebsite;
-  private String serverAddress;
+  private final RuntimeFlags flags;
 
-  public PublicServerInformation(Configuration config) {
-    serverName = config.getString("masterList.serverName", "Emulinker Server");
-    serverLocation = config.getString("masterList.serverLocation", "Unknown");
-    serverWebsite = config.getString("masterList.serverWebsite", "");
-    serverAddress = config.getString("masterList.serverConnectAddress", "");
+  public PublicServerInformation(RuntimeFlags flags) {
+    this.flags = flags;
   }
 
   public String getServerName() {
-    return serverName;
+    return flags.serverName();
   }
 
   public String getLocation() {
-    return serverLocation;
+    return flags.serverLocation();
   }
 
   public String getWebsite() {
-    return serverWebsite;
+    return flags.serverWebsite();
   }
 
   public String getConnectAddress() {
-    return serverAddress;
+    return flags.serverAddress();
   }
 }

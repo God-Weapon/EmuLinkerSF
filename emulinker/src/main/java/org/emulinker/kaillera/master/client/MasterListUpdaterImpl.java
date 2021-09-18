@@ -4,7 +4,7 @@ import com.google.common.flogger.FluentLogger;
 import java.util.concurrent.ThreadPoolExecutor;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import org.apache.commons.configuration.Configuration;
+import org.emulinker.config.RuntimeFlags;
 import org.emulinker.kaillera.controller.connectcontroller.ConnectController;
 import org.emulinker.kaillera.master.*;
 import org.emulinker.kaillera.master.StatsCollector;
@@ -21,39 +21,40 @@ public class MasterListUpdaterImpl implements MasterListUpdater, Executable {
 
   private PublicServerInformation publicInfo;
 
-  private boolean touchKaillera = false;
-  private boolean touchEmulinker = false;
-
   private EmuLinkerMasterUpdateTask emulinkerMasterTask;
   private KailleraMasterUpdateTask kailleraMasterTask;
 
   private boolean stopFlag = false;
   private boolean isRunning = false;
 
+  private final RuntimeFlags flags;
+
   @Inject
   MasterListUpdaterImpl(
-      Configuration config,
+      RuntimeFlags flags,
       ThreadPoolExecutor threadPool,
       ConnectController connectController,
       KailleraServer kailleraServer,
       StatsCollector statsCollector,
       ReleaseInfo releaseInfo) {
+    this.flags = flags;
     this.threadPool = threadPool;
     this.statsCollector = statsCollector;
 
-    touchKaillera = config.getBoolean("masterList.touchKaillera", false);
-    touchEmulinker = config.getBoolean("masterList.touchEmulinker", false);
+    if (flags.touchKaillera() || flags.touchEmulinker()) {
+      publicInfo = new PublicServerInformation(flags);
+    }
 
-    if (touchKaillera || touchEmulinker) publicInfo = new PublicServerInformation(config);
-
-    if (touchKaillera)
+    if (flags.touchKaillera()) {
       kailleraMasterTask =
           new KailleraMasterUpdateTask(
               publicInfo, connectController, kailleraServer, statsCollector, releaseInfo);
+    }
 
-    if (touchEmulinker)
+    if (flags.touchEmulinker()) {
       emulinkerMasterTask =
           new EmuLinkerMasterUpdateTask(publicInfo, connectController, kailleraServer, releaseInfo);
+    }
   }
 
   @Override
@@ -64,9 +65,9 @@ public class MasterListUpdaterImpl implements MasterListUpdater, Executable {
   @Override
   public synchronized String toString() {
     return "MasterListUpdaterImpl[touchKaillera="
-        + touchKaillera
+        + flags.touchKaillera()
         + " touchEmulinker="
-        + touchEmulinker
+        + flags.touchEmulinker()
         + "]";
   }
 

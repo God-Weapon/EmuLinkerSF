@@ -3,7 +3,7 @@ package org.emulinker.kaillera.controller.v086.protocol;
 import com.google.common.base.Strings;
 import java.nio.ByteBuffer;
 import org.emulinker.kaillera.controller.messaging.*;
-import org.emulinker.kaillera.relay.KailleraRelay;
+import org.emulinker.kaillera.pico.AppModule;
 import org.emulinker.util.*;
 
 public abstract class CreateGame extends V086Message {
@@ -26,9 +26,9 @@ public abstract class CreateGame extends V086Message {
 
   @Override
   public void writeBodyTo(ByteBuffer buffer) {
-    EmuUtil.writeString(buffer, username(), 0x00, KailleraRelay.config.charset());
-    EmuUtil.writeString(buffer, romName(), 0x00, KailleraRelay.config.charset());
-    EmuUtil.writeString(buffer, clientType(), 0x00, KailleraRelay.config.charset());
+    EmuUtil.writeString(buffer, username(), 0x00, AppModule.charsetDoNotUse);
+    EmuUtil.writeString(buffer, romName(), 0x00, AppModule.charsetDoNotUse);
+    EmuUtil.writeString(buffer, clientType(), 0x00, AppModule.charsetDoNotUse);
     UnsignedUtil.putUnsignedShort(buffer, gameId());
     UnsignedUtil.putUnsignedShort(buffer, val1());
   }
@@ -37,15 +37,15 @@ public abstract class CreateGame extends V086Message {
       throws ParseException, MessageFormatException {
     if (buffer.remaining() < 8) throw new ParseException("Failed byte count validation!");
 
-    String userName = EmuUtil.readString(buffer, 0x00, KailleraRelay.config.charset());
+    String userName = EmuUtil.readString(buffer, 0x00, AppModule.charsetDoNotUse);
 
     if (buffer.remaining() < 6) throw new ParseException("Failed byte count validation!");
 
-    String romName = EmuUtil.readString(buffer, 0x00, KailleraRelay.config.charset());
+    String romName = EmuUtil.readString(buffer, 0x00, AppModule.charsetDoNotUse);
 
     if (buffer.remaining() < 5) throw new ParseException("Failed byte count validation!");
 
-    String clientType = EmuUtil.readString(buffer, 0x00, KailleraRelay.config.charset());
+    String clientType = EmuUtil.readString(buffer, 0x00, AppModule.charsetDoNotUse);
 
     if (buffer.remaining() < 4) throw new ParseException("Failed byte count validation!");
 

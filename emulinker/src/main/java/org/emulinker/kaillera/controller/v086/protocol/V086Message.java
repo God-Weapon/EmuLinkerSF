@@ -4,7 +4,7 @@ import com.google.common.flogger.FluentLogger;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import org.emulinker.kaillera.controller.messaging.*;
-import org.emulinker.kaillera.relay.KailleraRelay;
+import org.emulinker.kaillera.pico.AppModule;
 import org.emulinker.util.*;
 
 public abstract class V086Message extends ByteBufferMessage {
@@ -33,7 +33,7 @@ public abstract class V086Message extends ByteBufferMessage {
 
   /** Gets the number of bytes to represent the string in the charset defined in emulinker.config */
   protected int getNumBytes(String s) {
-    return s.getBytes(KailleraRelay.config.charset()).length;
+    return s.getBytes(AppModule.charsetDoNotUse).length;
   }
 
   public abstract int getBodyLength();
