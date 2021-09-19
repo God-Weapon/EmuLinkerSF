@@ -4,13 +4,13 @@ import com.google.common.flogger.FluentLogger;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
-import org.emulinker.kaillera.controller.v086.V086Controller;
+import org.emulinker.kaillera.controller.v086.V086Controller.V086ClientHandler;
 import org.emulinker.kaillera.controller.v086.protocol.GameChat_Notification;
 import org.emulinker.kaillera.model.event.*;
 import org.emulinker.util.EmuLang;
 
 @Singleton
-public class PlayerDesynchAction implements V086GameEventHandler {
+public class PlayerDesynchAction implements V086GameEventHandler<PlayerDesynchEvent> {
   private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
   private static final String DESC = PlayerDesynchAction.class.getSimpleName();
@@ -31,10 +31,8 @@ public class PlayerDesynchAction implements V086GameEventHandler {
   }
 
   @Override
-  public void handleEvent(GameEvent event, V086Controller.V086ClientHandler clientHandler) {
+  public void handleEvent(PlayerDesynchEvent desynchEvent, V086ClientHandler clientHandler) {
     handledCount++;
-
-    PlayerDesynchEvent desynchEvent = (PlayerDesynchEvent) event;
 
     try {
       clientHandler.send(

@@ -8,7 +8,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import org.emulinker.kaillera.access.AccessManager;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
-import org.emulinker.kaillera.controller.v086.V086Controller;
+import org.emulinker.kaillera.controller.v086.V086Controller.V086ClientHandler;
 import org.emulinker.kaillera.controller.v086.protocol.*;
 import org.emulinker.kaillera.model.event.*;
 import org.emulinker.kaillera.model.exception.ActionException;
@@ -16,7 +16,8 @@ import org.emulinker.kaillera.model.exception.GameChatException;
 import org.emulinker.kaillera.model.impl.KailleraUserImpl;
 
 @Singleton
-public class GameChatAction implements V086Action, V086GameEventHandler {
+public class GameChatAction
+    implements V086Action<GameChat_Request>, V086GameEventHandler<GameChatEvent> {
   private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
   public static final String ADMIN_COMMAND_ESCAPE_STRING = "/";
@@ -49,18 +50,15 @@ public class GameChatAction implements V086Action, V086GameEventHandler {
   }
 
   @Override
-  public void performAction(V086Message message, V086Controller.V086ClientHandler clientHandler)
+  public void performAction(GameChat_Request message, V086ClientHandler clientHandler)
       throws FatalActionException {
-    if (!(message instanceof GameChat_Request))
-      throw new FatalActionException("Received incorrect instance of GameChat: " + message);
-
     if (clientHandler.getUser() == null) {
       throw new FatalActionException("User does not exist: GameChatAction " + message);
     }
 
     if (clientHandler.getUser().getGame() == null) return;
 
-    if (((GameChat) message).message().startsWith(ADMIN_COMMAND_ESCAPE_STRING)) {
+    if (message.message().startsWith(ADMIN_COMMAND_ESCAPE_STRING)) {
       // if(clientHandler.getUser().getAccess() >= AccessManager.ACCESS_ADMIN ||
       // clientHandler.getUser().equals(clientHandler.getUser().getGame().getOwner())){
       try {
@@ -87,7 +85,7 @@ public class GameChatAction implements V086Action, V086GameEventHandler {
     }
   }
 
-  private void checkCommands(V086Message message, V086Controller.V086ClientHandler clientHandler)
+  private void checkCommands(V086Message message, V086ClientHandler clientHandler)
       throws FatalActionException {
     boolean doCommand = true;
 
@@ -604,10 +602,8 @@ public class GameChatAction implements V086Action, V086GameEventHandler {
   }
 
   @Override
-  public void handleEvent(GameEvent event, V086Controller.V086ClientHandler clientHandler) {
+  public void handleEvent(GameChatEvent gameChatEvent, V086ClientHandler clientHandler) {
     handledCount++;
-
-    GameChatEvent gameChatEvent = (GameChatEvent) event;
 
     try {
       if (clientHandler

@@ -8,7 +8,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import org.emulinker.kaillera.access.AccessManager;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
-import org.emulinker.kaillera.controller.v086.V086Controller;
+import org.emulinker.kaillera.controller.v086.V086Controller.V086ClientHandler;
 import org.emulinker.kaillera.controller.v086.protocol.*;
 import org.emulinker.kaillera.model.event.*;
 import org.emulinker.kaillera.model.exception.ActionException;
@@ -17,7 +17,7 @@ import org.emulinker.release.ReleaseInfo;
 import org.emulinker.util.EmuLang;
 
 @Singleton
-public class ChatAction implements V086Action, V086ServerEventHandler {
+public class ChatAction implements V086Action<Chat_Request>, V086ServerEventHandler<ChatEvent> {
   private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
   public static final String ADMIN_COMMAND_ESCAPE_STRING = "/";
@@ -49,15 +49,8 @@ public class ChatAction implements V086Action, V086ServerEventHandler {
   }
 
   @Override
-  public void performAction(V086Message message, V086Controller.V086ClientHandler clientHandler)
+  public void performAction(Chat_Request chatMessage, V086ClientHandler clientHandler)
       throws FatalActionException {
-
-    if (!(message instanceof Chat_Request)) {
-      throw new FatalActionException("Received incorrect instance of Chat: " + message);
-    }
-
-    Chat_Request chatMessage = (Chat_Request) message;
-
     if (chatMessage.message().startsWith(ADMIN_COMMAND_ESCAPE_STRING)) {
       if (clientHandler.getUser().getAccess() > AccessManager.ACCESS_ELEVATED) {
         try {
@@ -94,8 +87,7 @@ public class ChatAction implements V086Action, V086ServerEventHandler {
     }
   }
 
-  private void checkCommands(
-      Chat_Request chatMessage, V086Controller.V086ClientHandler clientHandler)
+  private void checkCommands(Chat_Request chatMessage, V086ClientHandler clientHandler)
       throws FatalActionException {
     boolean doCommand = true;
     KailleraUserImpl userN = (KailleraUserImpl) clientHandler.getUser();
@@ -821,10 +813,8 @@ public class ChatAction implements V086Action, V086ServerEventHandler {
   }
 
   @Override
-  public void handleEvent(ServerEvent event, V086Controller.V086ClientHandler clientHandler) {
+  public void handleEvent(ChatEvent chatEvent, V086ClientHandler clientHandler) {
     handledCount++;
-
-    ChatEvent chatEvent = (ChatEvent) event;
 
     try {
       if (clientHandler

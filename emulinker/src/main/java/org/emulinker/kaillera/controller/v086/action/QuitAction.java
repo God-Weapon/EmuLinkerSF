@@ -4,14 +4,14 @@ import com.google.common.flogger.FluentLogger;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
-import org.emulinker.kaillera.controller.v086.V086Controller;
+import org.emulinker.kaillera.controller.v086.V086Controller.V086ClientHandler;
 import org.emulinker.kaillera.controller.v086.protocol.*;
 import org.emulinker.kaillera.model.KailleraUser;
 import org.emulinker.kaillera.model.event.*;
 import org.emulinker.kaillera.model.exception.ActionException;
 
 @Singleton
-public class QuitAction implements V086Action, V086ServerEventHandler {
+public class QuitAction implements V086Action<Quit_Request>, V086ServerEventHandler<UserQuitEvent> {
   private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
   private static final String DESC = "QuitAction";
@@ -38,14 +38,9 @@ public class QuitAction implements V086Action, V086ServerEventHandler {
   }
 
   @Override
-  public void performAction(V086Message message, V086Controller.V086ClientHandler clientHandler)
+  public void performAction(Quit_Request quitRequest, V086ClientHandler clientHandler)
       throws FatalActionException {
-    if (!(message instanceof Quit_Request))
-      throw new FatalActionException("Received incorrect instance of Quit: " + message);
-
     actionCount++;
-
-    Quit_Request quitRequest = (Quit_Request) message;
 
     try {
       clientHandler.getUser().quit(quitRequest.message());
@@ -55,10 +50,8 @@ public class QuitAction implements V086Action, V086ServerEventHandler {
   }
 
   @Override
-  public void handleEvent(ServerEvent event, V086Controller.V086ClientHandler clientHandler) {
+  public void handleEvent(UserQuitEvent userQuitEvent, V086ClientHandler clientHandler) {
     handledCount++;
-
-    UserQuitEvent userQuitEvent = (UserQuitEvent) event;
 
     try {
       KailleraUser user = userQuitEvent.getUser();

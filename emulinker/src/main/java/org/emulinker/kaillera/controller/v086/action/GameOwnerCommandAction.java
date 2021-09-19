@@ -6,7 +6,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import org.emulinker.kaillera.access.AccessManager;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
-import org.emulinker.kaillera.controller.v086.V086Controller;
+import org.emulinker.kaillera.controller.v086.V086Controller.V086ClientHandler;
 import org.emulinker.kaillera.controller.v086.protocol.*;
 import org.emulinker.kaillera.model.*;
 import org.emulinker.kaillera.model.exception.ActionException;
@@ -14,7 +14,7 @@ import org.emulinker.kaillera.model.impl.*;
 import org.emulinker.util.EmuLang;
 
 @Singleton
-public class GameOwnerCommandAction implements V086Action {
+public class GameOwnerCommandAction implements V086Action<GameChat> {
   private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
   public static final String COMMAND_HELP = "/help";
@@ -89,9 +89,8 @@ public class GameOwnerCommandAction implements V086Action {
   }
 
   @Override
-  public void performAction(V086Message message, V086Controller.V086ClientHandler clientHandler)
+  public void performAction(GameChat chatMessage, V086ClientHandler clientHandler)
       throws FatalActionException {
-    GameChat chatMessage = (GameChat) message;
     String chat = chatMessage.message();
 
     KailleraUserImpl user = (KailleraUserImpl) clientHandler.getUser();
@@ -161,7 +160,7 @@ public class GameOwnerCommandAction implements V086Action {
       String message,
       KailleraGameImpl game,
       KailleraUserImpl admin,
-      V086Controller.V086ClientHandler clientHandler)
+      V086ClientHandler clientHandler)
       throws ActionException, MessageFormatException {
     if (!admin.equals(game.getOwner()) && admin.getAccess() < AccessManager.ACCESS_SUPERADMIN)
       return;
@@ -251,7 +250,7 @@ public class GameOwnerCommandAction implements V086Action {
       String message,
       KailleraGameImpl game,
       KailleraUserImpl admin,
-      V086Controller.V086ClientHandler clientHandler)
+      V086ClientHandler clientHandler)
       throws ActionException, MessageFormatException {
     if (game.getStatus() != KailleraGame.STATUS_WAITING) {
       game.announce(EmuLang.getString("GameOwnerCommandAction.AutoFireChangeDeniedInGame"), admin);
@@ -289,7 +288,7 @@ public class GameOwnerCommandAction implements V086Action {
       String message,
       KailleraGameImpl game,
       KailleraUserImpl admin,
-      V086Controller.V086ClientHandler clientHandler)
+      V086ClientHandler clientHandler)
       throws ActionException, MessageFormatException {
     String emu = game.getOwner().getClientType();
 
@@ -307,7 +306,7 @@ public class GameOwnerCommandAction implements V086Action {
       String message,
       KailleraGameImpl game,
       KailleraUserImpl admin,
-      V086Controller.V086ClientHandler clientHandler)
+      V086ClientHandler clientHandler)
       throws ActionException, MessageFormatException {
     String conn = KailleraUser.CONNECTION_TYPE_NAMES[game.getOwner().getConnectionType()];
 
@@ -324,7 +323,7 @@ public class GameOwnerCommandAction implements V086Action {
       String message,
       KailleraGameImpl game,
       KailleraUserImpl admin,
-      V086Controller.V086ClientHandler clientHandler)
+      V086ClientHandler clientHandler)
       throws ActionException, MessageFormatException {
     admin.getGame().announce(game.getNumPlayers() + " in the room!", admin);
   }
@@ -333,7 +332,7 @@ public class GameOwnerCommandAction implements V086Action {
       String message,
       KailleraGameImpl game,
       KailleraUserImpl admin,
-      V086Controller.V086ClientHandler clientHandler)
+      V086ClientHandler clientHandler)
       throws ActionException, MessageFormatException {
     if (game.getStatus() != KailleraGame.STATUS_PLAYING)
       game.announce("Lagstat is only available during gameplay!", admin);
@@ -361,7 +360,7 @@ public class GameOwnerCommandAction implements V086Action {
       String message,
       KailleraGameImpl game,
       KailleraUserImpl admin,
-      V086Controller.V086ClientHandler clientHandler)
+      V086ClientHandler clientHandler)
       throws ActionException, MessageFormatException {
     if (message.equals("/samedelay true")) {
       game.setSameDelay(true);
@@ -380,7 +379,7 @@ public class GameOwnerCommandAction implements V086Action {
       String message,
       KailleraGameImpl game,
       KailleraUserImpl admin,
-      V086Controller.V086ClientHandler clientHandler)
+      V086ClientHandler clientHandler)
       throws ActionException, MessageFormatException {
     Scanner scanner = new Scanner(message).useDelimiter(" ");
 
@@ -435,7 +434,7 @@ public class GameOwnerCommandAction implements V086Action {
       String message,
       KailleraGameImpl game,
       KailleraUserImpl admin,
-      V086Controller.V086ClientHandler clientHandler)
+      V086ClientHandler clientHandler)
       throws ActionException, MessageFormatException {
     Scanner scanner = new Scanner(message).useDelimiter(" ");
 
@@ -485,7 +484,7 @@ public class GameOwnerCommandAction implements V086Action {
       String message,
       KailleraGameImpl game,
       KailleraUserImpl admin,
-      V086Controller.V086ClientHandler clientHandler)
+      V086ClientHandler clientHandler)
       throws ActionException, MessageFormatException {
     Scanner scanner = new Scanner(message).useDelimiter(" ");
     try {
@@ -507,7 +506,7 @@ public class GameOwnerCommandAction implements V086Action {
       String message,
       KailleraGameImpl game,
       KailleraUserImpl admin,
-      V086Controller.V086ClientHandler clientHandler)
+      V086ClientHandler clientHandler)
       throws ActionException, MessageFormatException {
     /*if(game.getStatus() != KailleraGame.STATUS_PLAYING){
     	game.announce("Failed: wap Players can only be used during gameplay!", admin);
@@ -573,7 +572,7 @@ public class GameOwnerCommandAction implements V086Action {
       String message,
       KailleraGameImpl game,
       KailleraUserImpl admin,
-      V086Controller.V086ClientHandler clientHandler)
+      V086ClientHandler clientHandler)
       throws ActionException, MessageFormatException {
     game.start(admin);
   }
@@ -582,7 +581,7 @@ public class GameOwnerCommandAction implements V086Action {
       String message,
       KailleraGameImpl game,
       KailleraUserImpl admin,
-      V086Controller.V086ClientHandler clientHandler)
+      V086ClientHandler clientHandler)
       throws ActionException, MessageFormatException {
     Scanner scanner = new Scanner(message).useDelimiter(" ");
     try {
@@ -617,7 +616,7 @@ public class GameOwnerCommandAction implements V086Action {
       String message,
       KailleraGameImpl game,
       KailleraUserImpl admin,
-      V086Controller.V086ClientHandler clientHandler)
+      V086ClientHandler clientHandler)
       throws ActionException, MessageFormatException {
 
     if ((System.currentTimeMillis() - lastMaxUserChange) <= 3000) {
@@ -648,7 +647,7 @@ public class GameOwnerCommandAction implements V086Action {
       String message,
       KailleraGameImpl game,
       KailleraUserImpl admin,
-      V086Controller.V086ClientHandler clientHandler)
+      V086ClientHandler clientHandler)
       throws ActionException, MessageFormatException {
     Scanner scanner = new Scanner(message).useDelimiter(" ");
     try {

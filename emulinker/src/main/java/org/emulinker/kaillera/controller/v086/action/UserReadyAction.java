@@ -4,13 +4,13 @@ import com.google.common.flogger.FluentLogger;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
-import org.emulinker.kaillera.controller.v086.V086Controller;
+import org.emulinker.kaillera.controller.v086.V086Controller.V086ClientHandler;
 import org.emulinker.kaillera.controller.v086.protocol.*;
 import org.emulinker.kaillera.model.event.*;
 import org.emulinker.kaillera.model.exception.UserReadyException;
 
 @Singleton
-public class UserReadyAction implements V086Action, V086GameEventHandler {
+public class UserReadyAction implements V086Action<AllReady>, V086GameEventHandler<GameEvent> {
   private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
   private static final String DESC = "UserReadyAction";
@@ -37,7 +37,7 @@ public class UserReadyAction implements V086Action, V086GameEventHandler {
   }
 
   @Override
-  public void performAction(V086Message message, V086Controller.V086ClientHandler clientHandler)
+  public void performAction(AllReady message, V086ClientHandler clientHandler)
       throws FatalActionException {
     actionCount++;
 
@@ -49,7 +49,7 @@ public class UserReadyAction implements V086Action, V086GameEventHandler {
   }
 
   @Override
-  public void handleEvent(GameEvent event, V086Controller.V086ClientHandler clientHandler) {
+  public void handleEvent(GameEvent event, V086ClientHandler clientHandler) {
     handledCount++;
 
     clientHandler.resetGameDataCache();

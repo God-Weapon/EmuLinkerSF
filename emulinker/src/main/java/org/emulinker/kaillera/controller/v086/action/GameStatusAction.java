@@ -4,14 +4,14 @@ import com.google.common.flogger.FluentLogger;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
-import org.emulinker.kaillera.controller.v086.V086Controller;
+import org.emulinker.kaillera.controller.v086.V086Controller.V086ClientHandler;
 import org.emulinker.kaillera.controller.v086.protocol.GameStatus;
 import org.emulinker.kaillera.model.KailleraGame;
 import org.emulinker.kaillera.model.KailleraUser;
 import org.emulinker.kaillera.model.event.*;
 
 @Singleton
-public class GameStatusAction implements V086ServerEventHandler {
+public class GameStatusAction implements V086ServerEventHandler<GameStatusChangedEvent> {
   private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
   private static final String DESC = "GameStatusAction";
@@ -32,10 +32,9 @@ public class GameStatusAction implements V086ServerEventHandler {
   }
 
   @Override
-  public void handleEvent(ServerEvent event, V086Controller.V086ClientHandler clientHandler) {
+  public void handleEvent(
+      GameStatusChangedEvent statusChangeEvent, V086ClientHandler clientHandler) {
     handledCount++;
-
-    GameStatusChangedEvent statusChangeEvent = (GameStatusChangedEvent) event;
 
     try {
       KailleraGame game = statusChangeEvent.getGame();

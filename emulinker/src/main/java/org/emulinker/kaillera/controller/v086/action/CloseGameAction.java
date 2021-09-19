@@ -4,12 +4,12 @@ import com.google.common.flogger.FluentLogger;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
-import org.emulinker.kaillera.controller.v086.V086Controller;
+import org.emulinker.kaillera.controller.v086.V086Controller.V086ClientHandler;
 import org.emulinker.kaillera.controller.v086.protocol.CloseGame;
 import org.emulinker.kaillera.model.event.*;
 
 @Singleton
-public class CloseGameAction implements V086ServerEventHandler {
+public class CloseGameAction implements V086ServerEventHandler<GameClosedEvent> {
   private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
   private static final String DESC = "CloseGameAction";
@@ -30,10 +30,8 @@ public class CloseGameAction implements V086ServerEventHandler {
   }
 
   @Override
-  public void handleEvent(ServerEvent event, V086Controller.V086ClientHandler clientHandler) {
+  public void handleEvent(GameClosedEvent gameClosedEvent, V086ClientHandler clientHandler) {
     handledCount++;
-
-    GameClosedEvent gameClosedEvent = (GameClosedEvent) event;
 
     try {
       clientHandler.send(

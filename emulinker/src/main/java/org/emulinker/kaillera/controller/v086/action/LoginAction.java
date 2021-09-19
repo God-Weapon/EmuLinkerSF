@@ -5,14 +5,15 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import org.emulinker.kaillera.access.AccessManager;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
-import org.emulinker.kaillera.controller.v086.V086Controller;
+import org.emulinker.kaillera.controller.v086.V086Controller.V086ClientHandler;
 import org.emulinker.kaillera.controller.v086.protocol.*;
 import org.emulinker.kaillera.model.*;
 import org.emulinker.kaillera.model.event.*;
 import org.emulinker.kaillera.model.impl.*;
 
 @Singleton
-public class LoginAction implements V086Action, V086ServerEventHandler {
+public class LoginAction
+    implements V086Action<UserInformation>, V086ServerEventHandler<UserJoinedEvent> {
   private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
   private static final String DESC = "LoginAction";
@@ -39,11 +40,10 @@ public class LoginAction implements V086Action, V086ServerEventHandler {
   }
 
   @Override
-  public void performAction(V086Message message, V086Controller.V086ClientHandler clientHandler)
+  public void performAction(UserInformation userInfo, V086ClientHandler clientHandler)
       throws FatalActionException {
     actionCount++;
 
-    UserInformation userInfo = (UserInformation) message;
     KailleraUser user = clientHandler.getUser();
     user.setName(userInfo.username());
     user.setClientType(userInfo.clientType());
@@ -60,10 +60,8 @@ public class LoginAction implements V086Action, V086ServerEventHandler {
   }
 
   @Override
-  public void handleEvent(ServerEvent event, V086Controller.V086ClientHandler clientHandler) {
+  public void handleEvent(UserJoinedEvent userJoinedEvent, V086ClientHandler clientHandler) {
     handledCount++;
-
-    UserJoinedEvent userJoinedEvent = (UserJoinedEvent) event;
 
     try {
       KailleraUserImpl user = (KailleraUserImpl) userJoinedEvent.getUser();

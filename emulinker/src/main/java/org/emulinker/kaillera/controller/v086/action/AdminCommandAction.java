@@ -7,7 +7,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import org.emulinker.kaillera.access.AccessManager;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
-import org.emulinker.kaillera.controller.v086.V086Controller;
+import org.emulinker.kaillera.controller.v086.V086Controller.V086ClientHandler;
 import org.emulinker.kaillera.controller.v086.protocol.*;
 import org.emulinker.kaillera.model.exception.ActionException;
 import org.emulinker.kaillera.model.impl.*;
@@ -15,7 +15,7 @@ import org.emulinker.release.*;
 import org.emulinker.util.*;
 
 @Singleton
-public class AdminCommandAction implements V086Action {
+public class AdminCommandAction implements V086Action<Chat> {
   private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
   public static final String COMMAND_ANNOUNCE = "/announce";
@@ -92,9 +92,8 @@ public class AdminCommandAction implements V086Action {
   }
 
   @Override
-  public void performAction(V086Message message, V086Controller.V086ClientHandler clientHandler)
+  public void performAction(Chat chatMessage, V086ClientHandler clientHandler)
       throws FatalActionException {
-    Chat chatMessage = (Chat) message;
     String chat = chatMessage.message();
     KailleraServerImpl server = (KailleraServerImpl) clientHandler.getController().getServer();
     AccessManager accessManager = server.getAccessManager();
@@ -182,7 +181,7 @@ public class AdminCommandAction implements V086Action {
       String message,
       KailleraServerImpl server,
       KailleraUserImpl admin,
-      V086Controller.V086ClientHandler clientHandler)
+      V086ClientHandler clientHandler)
       throws ActionException, MessageFormatException {
     if (admin.getAccess() == AccessManager.ACCESS_MODERATOR) return;
     // clientHandler.send(InformationMessage.create(clientHandler.getNextMessageNumber(), "server",
@@ -363,7 +362,7 @@ public class AdminCommandAction implements V086Action {
       String message,
       KailleraServerImpl server,
       KailleraUserImpl admin,
-      V086Controller.V086ClientHandler clientHandler)
+      V086ClientHandler clientHandler)
       throws ActionException, MessageFormatException {
     int space = message.indexOf(' ');
     if (space < 0) throw new ActionException(EmuLang.getString("AdminCommandAction.FindUserError"));
@@ -411,7 +410,7 @@ public class AdminCommandAction implements V086Action {
       String message,
       KailleraServerImpl server,
       KailleraUserImpl admin,
-      V086Controller.V086ClientHandler clientHandler)
+      V086ClientHandler clientHandler)
       throws ActionException, MessageFormatException {
     int space = message.indexOf(' ');
     if (space < 0) throw new ActionException(EmuLang.getString("AdminCommandAction.FindGameError"));
@@ -446,7 +445,7 @@ public class AdminCommandAction implements V086Action {
       String message,
       KailleraServerImpl server,
       KailleraUserImpl admin,
-      V086Controller.V086ClientHandler clientHandler)
+      V086ClientHandler clientHandler)
       throws ActionException, MessageFormatException {
     Scanner scanner = new Scanner(message).useDelimiter(" ");
 
@@ -493,7 +492,7 @@ public class AdminCommandAction implements V086Action {
       String message,
       KailleraServerImpl server,
       KailleraUserImpl admin,
-      V086Controller.V086ClientHandler clientHandler)
+      V086ClientHandler clientHandler)
       throws ActionException, MessageFormatException {
     Scanner scanner = new Scanner(message).useDelimiter(" ");
 
@@ -528,7 +527,7 @@ public class AdminCommandAction implements V086Action {
       String message,
       KailleraServerImpl server,
       KailleraUserImpl admin,
-      V086Controller.V086ClientHandler clientHandler)
+      V086ClientHandler clientHandler)
       throws ActionException, MessageFormatException {
     Scanner scanner = new Scanner(message).useDelimiter(" ");
 
@@ -559,7 +558,7 @@ public class AdminCommandAction implements V086Action {
       String message,
       KailleraServerImpl server,
       KailleraUserImpl admin,
-      V086Controller.V086ClientHandler clientHandler)
+      V086ClientHandler clientHandler)
       throws ActionException, MessageFormatException {
     Scanner scanner = new Scanner(message).useDelimiter(" ");
 
@@ -595,7 +594,7 @@ public class AdminCommandAction implements V086Action {
       String message,
       KailleraServerImpl server,
       KailleraUserImpl admin,
-      V086Controller.V086ClientHandler clientHandler)
+      V086ClientHandler clientHandler)
       throws ActionException, MessageFormatException {
     if (admin.getAccess() != AccessManager.ACCESS_SUPERADMIN) {
       throw new ActionException("Only SUPER ADMIN's can give Temp Elevated Status!");
@@ -637,7 +636,7 @@ public class AdminCommandAction implements V086Action {
       String message,
       KailleraServerImpl server,
       KailleraUserImpl admin,
-      V086Controller.V086ClientHandler clientHandler)
+      V086ClientHandler clientHandler)
       throws ActionException, MessageFormatException {
     if (admin.getAccess() != AccessManager.ACCESS_SUPERADMIN) {
       throw new ActionException("Only SUPER ADMIN's can give Temp Moderator Status!");
@@ -678,7 +677,7 @@ public class AdminCommandAction implements V086Action {
       String message,
       KailleraServerImpl server,
       KailleraUserImpl admin,
-      V086Controller.V086ClientHandler clientHandler)
+      V086ClientHandler clientHandler)
       throws ActionException, MessageFormatException {
     if (admin.getAccess() != AccessManager.ACCESS_SUPERADMIN) {
       throw new ActionException("Only SUPER ADMIN's can give Temp Admin Status!");
@@ -719,7 +718,7 @@ public class AdminCommandAction implements V086Action {
       String message,
       KailleraServerImpl server,
       KailleraUserImpl admin,
-      V086Controller.V086ClientHandler clientHandler)
+      V086ClientHandler clientHandler)
       throws ActionException, MessageFormatException {
     if (admin.getGame() != null)
       throw new ActionException("Can't use /stealth while in a gameroom.");
@@ -741,7 +740,7 @@ public class AdminCommandAction implements V086Action {
       String message,
       KailleraServerImpl server,
       KailleraUserImpl admin,
-      V086Controller.V086ClientHandler clientHandler)
+      V086ClientHandler clientHandler)
       throws ActionException, MessageFormatException {
     if (message.equals("/triviareset")) {
       if (server.getSwitchTrivia()) {
@@ -855,7 +854,7 @@ public class AdminCommandAction implements V086Action {
       String message,
       KailleraServerImpl server,
       KailleraUserImpl admin,
-      V086Controller.V086ClientHandler clientHandler)
+      V086ClientHandler clientHandler)
       throws ActionException, MessageFormatException {
     int space = message.indexOf(' ');
     if (space < 0) throw new ActionException(EmuLang.getString("AdminCommandAction.AnnounceError"));
@@ -878,7 +877,7 @@ public class AdminCommandAction implements V086Action {
       String message,
       KailleraServerImpl server,
       KailleraUserImpl admin,
-      V086Controller.V086ClientHandler clientHandler)
+      V086ClientHandler clientHandler)
       throws ActionException, MessageFormatException {
     Scanner scanner = new Scanner(message).useDelimiter(" ");
 
@@ -906,7 +905,7 @@ public class AdminCommandAction implements V086Action {
       String message,
       KailleraServerImpl server,
       KailleraUserImpl admin,
-      V086Controller.V086ClientHandler clientHandler)
+      V086ClientHandler clientHandler)
       throws ActionException, MessageFormatException {
     int space = message.indexOf(' ');
     if (space < 0) throw new ActionException(EmuLang.getString("AdminCommandAction.ClearError"));
@@ -940,7 +939,7 @@ public class AdminCommandAction implements V086Action {
       String message,
       KailleraServerImpl server,
       KailleraUserImpl admin,
-      V086Controller.V086ClientHandler clientHandler)
+      V086ClientHandler clientHandler)
       throws ActionException, MessageFormatException {
     try {
       ReleaseInfo releaseInfo = server.getReleaseInfo();

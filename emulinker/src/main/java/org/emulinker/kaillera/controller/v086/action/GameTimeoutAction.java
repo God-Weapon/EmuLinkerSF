@@ -3,12 +3,12 @@ package org.emulinker.kaillera.controller.v086.action;
 import com.google.common.flogger.FluentLogger;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import org.emulinker.kaillera.controller.v086.V086Controller;
+import org.emulinker.kaillera.controller.v086.V086Controller.V086ClientHandler;
 import org.emulinker.kaillera.model.KailleraUser;
 import org.emulinker.kaillera.model.event.*;
 
 @Singleton
-public class GameTimeoutAction implements V086GameEventHandler {
+public class GameTimeoutAction implements V086GameEventHandler<GameTimeoutEvent> {
   private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
   private static final String DESC = "GameTimeoutAction";
@@ -29,10 +29,9 @@ public class GameTimeoutAction implements V086GameEventHandler {
   }
 
   @Override
-  public void handleEvent(GameEvent event, V086Controller.V086ClientHandler clientHandler) {
+  public void handleEvent(GameTimeoutEvent timeoutEvent, V086ClientHandler clientHandler) {
     handledCount++;
 
-    GameTimeoutEvent timeoutEvent = (GameTimeoutEvent) event;
     KailleraUser player = timeoutEvent.getUser();
     KailleraUser user = clientHandler.getUser();
 

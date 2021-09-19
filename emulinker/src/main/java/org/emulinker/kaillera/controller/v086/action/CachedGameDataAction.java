@@ -4,13 +4,13 @@ import com.google.common.flogger.FluentLogger;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
-import org.emulinker.kaillera.controller.v086.V086Controller;
+import org.emulinker.kaillera.controller.v086.V086Controller.V086ClientHandler;
 import org.emulinker.kaillera.controller.v086.protocol.*;
 import org.emulinker.kaillera.model.KailleraUser;
 import org.emulinker.kaillera.model.exception.GameDataException;
 
 @Singleton
-public class CachedGameDataAction implements V086Action {
+public class CachedGameDataAction implements V086Action<CachedGameData> {
   private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
   private static final String DESC = "CachedGameDataAction";
@@ -31,13 +31,12 @@ public class CachedGameDataAction implements V086Action {
   }
 
   @Override
-  public void performAction(V086Message message, V086Controller.V086ClientHandler clientHandler)
+  public void performAction(CachedGameData cachedGameData, V086ClientHandler clientHandler)
       throws FatalActionException {
     try {
       KailleraUser user = clientHandler.getUser();
 
-      int key = ((CachedGameData) message).key();
-      byte[] data = clientHandler.getClientGameDataCache().get(key);
+      byte[] data = clientHandler.getClientGameDataCache().get(cachedGameData.key());
 
       if (data == null) {
         logger.atFine().log("Game Cache Error: null data");
@@ -59,7 +58,7 @@ public class CachedGameDataAction implements V086Action {
     } catch (IndexOutOfBoundsException e) {
       logger.atSevere().withCause(e).log(
           "Game data error!  The client cached key "
-              + ((CachedGameData) message).key()
+              + cachedGameData.key()
               + " was not found in the cache!");
 
       // This may not always be the best thing to do...

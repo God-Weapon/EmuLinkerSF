@@ -5,7 +5,7 @@ import java.util.*;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
-import org.emulinker.kaillera.controller.v086.V086Controller;
+import org.emulinker.kaillera.controller.v086.V086Controller.V086ClientHandler;
 import org.emulinker.kaillera.controller.v086.protocol.*;
 import org.emulinker.kaillera.model.*;
 import org.emulinker.kaillera.model.event.*;
@@ -13,7 +13,8 @@ import org.emulinker.kaillera.model.exception.JoinGameException;
 import org.emulinker.util.EmuLang;
 
 @Singleton
-public class JoinGameAction implements V086Action, V086GameEventHandler {
+public class JoinGameAction
+    implements V086Action<JoinGame_Request>, V086GameEventHandler<UserJoinedGameEvent> {
   private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
   private static final String DESC = "JoinGameAction";
@@ -40,14 +41,9 @@ public class JoinGameAction implements V086Action, V086GameEventHandler {
   }
 
   @Override
-  public void performAction(V086Message message, V086Controller.V086ClientHandler clientHandler)
+  public void performAction(JoinGame_Request joinGameRequest, V086ClientHandler clientHandler)
       throws FatalActionException {
-    if (!(message instanceof JoinGame_Request))
-      throw new FatalActionException("Received incorrect instance of JoinGame: " + message);
-
     actionCount++;
-
-    JoinGame_Request joinGameRequest = (JoinGame_Request) message;
 
     try {
       clientHandler.getUser().joinGame(joinGameRequest.gameId());
@@ -71,10 +67,9 @@ public class JoinGameAction implements V086Action, V086GameEventHandler {
   }
 
   @Override
-  public void handleEvent(GameEvent event, V086Controller.V086ClientHandler clientHandler) {
+  public void handleEvent(UserJoinedGameEvent userJoinedEvent, V086ClientHandler clientHandler) {
     handledCount++;
 
-    UserJoinedGameEvent userJoinedEvent = (UserJoinedGameEvent) event;
     KailleraUser thisUser = clientHandler.getUser();
 
     try {

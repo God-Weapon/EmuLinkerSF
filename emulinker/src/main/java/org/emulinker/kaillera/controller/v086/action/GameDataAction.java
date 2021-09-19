@@ -4,14 +4,14 @@ import com.google.common.flogger.FluentLogger;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
-import org.emulinker.kaillera.controller.v086.V086Controller;
+import org.emulinker.kaillera.controller.v086.V086Controller.V086ClientHandler;
 import org.emulinker.kaillera.controller.v086.protocol.*;
 import org.emulinker.kaillera.model.KailleraUser;
 import org.emulinker.kaillera.model.event.*;
 import org.emulinker.kaillera.model.exception.GameDataException;
 
 @Singleton
-public class GameDataAction implements V086Action, V086GameEventHandler {
+public class GameDataAction implements V086Action<GameData>, V086GameEventHandler<GameDataEvent> {
   private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
   private static final String DESC = "GameDataAction";
@@ -38,11 +38,11 @@ public class GameDataAction implements V086Action, V086GameEventHandler {
   }
 
   @Override
-  public void performAction(V086Message message, V086Controller.V086ClientHandler clientHandler)
+  public void performAction(GameData message, V086ClientHandler clientHandler)
       throws FatalActionException {
     try {
       KailleraUser user = clientHandler.getUser();
-      byte[] data = ((GameData) message).gameData();
+      byte[] data = message.gameData();
 
       clientHandler.getClientGameDataCache().add(data);
       user.addGameData(data);
@@ -61,8 +61,8 @@ public class GameDataAction implements V086Action, V086GameEventHandler {
   }
 
   @Override
-  public void handleEvent(GameEvent event, V086Controller.V086ClientHandler clientHandler) {
-    byte[] data = ((GameDataEvent) event).getData();
+  public void handleEvent(GameDataEvent event, V086ClientHandler clientHandler) {
+    byte[] data = event.getData();
     int key = clientHandler.getServerGameDataCache().indexOf(data);
 
     if (key < 0) {

@@ -4,12 +4,12 @@ import com.google.common.flogger.FluentLogger;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
-import org.emulinker.kaillera.controller.v086.V086Controller;
+import org.emulinker.kaillera.controller.v086.V086Controller.V086ClientHandler;
 import org.emulinker.kaillera.controller.v086.protocol.*;
 import org.emulinker.kaillera.model.exception.GameKickException;
 
 @Singleton
-public class GameKickAction implements V086Action {
+public class GameKickAction implements V086Action<GameKick> {
   private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
   private static final String DESC = "GameKickAction";
@@ -30,11 +30,9 @@ public class GameKickAction implements V086Action {
   }
 
   @Override
-  public void performAction(V086Message message, V086Controller.V086ClientHandler clientHandler)
+  public void performAction(GameKick kickRequest, V086ClientHandler clientHandler)
       throws FatalActionException {
     actionCount++;
-
-    GameKick kickRequest = (GameKick) message;
 
     try {
       clientHandler.getUser().gameKick(kickRequest.userId());

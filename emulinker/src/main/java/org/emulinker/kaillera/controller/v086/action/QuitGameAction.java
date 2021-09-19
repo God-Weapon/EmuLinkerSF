@@ -4,14 +4,15 @@ import com.google.common.flogger.FluentLogger;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
-import org.emulinker.kaillera.controller.v086.V086Controller;
+import org.emulinker.kaillera.controller.v086.V086Controller.V086ClientHandler;
 import org.emulinker.kaillera.controller.v086.protocol.*;
 import org.emulinker.kaillera.model.KailleraUser;
 import org.emulinker.kaillera.model.event.*;
 import org.emulinker.kaillera.model.exception.*;
 
 @Singleton
-public class QuitGameAction implements V086Action, V086GameEventHandler {
+public class QuitGameAction
+    implements V086Action<QuitGame_Request>, V086GameEventHandler<UserQuitGameEvent> {
   private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
   private static final String DESC = "QuitGameAction";
@@ -38,11 +39,8 @@ public class QuitGameAction implements V086Action, V086GameEventHandler {
   }
 
   @Override
-  public void performAction(V086Message message, V086Controller.V086ClientHandler clientHandler)
+  public void performAction(QuitGame_Request message, V086ClientHandler clientHandler)
       throws FatalActionException {
-    if (!(message instanceof QuitGame_Request))
-      throw new FatalActionException("Received incorrect instance of QuitGame: " + message);
-
     actionCount++;
 
     try {
@@ -59,10 +57,8 @@ public class QuitGameAction implements V086Action, V086GameEventHandler {
   }
 
   @Override
-  public void handleEvent(GameEvent event, V086Controller.V086ClientHandler clientHandler) {
+  public void handleEvent(UserQuitGameEvent userQuitEvent, V086ClientHandler clientHandler) {
     handledCount++;
-
-    UserQuitGameEvent userQuitEvent = (UserQuitGameEvent) event;
     KailleraUser thisUser = clientHandler.getUser();
 
     try {

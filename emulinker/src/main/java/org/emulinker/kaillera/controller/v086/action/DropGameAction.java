@@ -4,14 +4,15 @@ import com.google.common.flogger.FluentLogger;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
-import org.emulinker.kaillera.controller.v086.V086Controller;
+import org.emulinker.kaillera.controller.v086.V086Controller.V086ClientHandler;
 import org.emulinker.kaillera.controller.v086.protocol.*;
 import org.emulinker.kaillera.model.*;
 import org.emulinker.kaillera.model.event.*;
 import org.emulinker.kaillera.model.exception.DropGameException;
 
 @Singleton
-public class DropGameAction implements V086Action, V086GameEventHandler {
+public class DropGameAction
+    implements V086Action<PlayerDrop_Request>, V086GameEventHandler<UserDroppedGameEvent> {
   private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
   private static final String DESC = "DropGameAction";
@@ -38,11 +39,8 @@ public class DropGameAction implements V086Action, V086GameEventHandler {
   }
 
   @Override
-  public void performAction(V086Message message, V086Controller.V086ClientHandler clientHandler)
+  public void performAction(PlayerDrop_Request message, V086ClientHandler clientHandler)
       throws FatalActionException {
-    if (!(message instanceof PlayerDrop_Request))
-      throw new FatalActionException("Received incorrect instance of PlayerDrop: " + message);
-
     actionCount++;
 
     try {
@@ -53,10 +51,8 @@ public class DropGameAction implements V086Action, V086GameEventHandler {
   }
 
   @Override
-  public void handleEvent(GameEvent event, V086Controller.V086ClientHandler clientHandler) {
+  public void handleEvent(UserDroppedGameEvent userDroppedEvent, V086ClientHandler clientHandler) {
     handledCount++;
-
-    UserDroppedGameEvent userDroppedEvent = (UserDroppedGameEvent) event;
 
     try {
       KailleraUser user = userDroppedEvent.getUser();

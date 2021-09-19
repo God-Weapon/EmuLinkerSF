@@ -5,14 +5,14 @@ import java.util.*;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
-import org.emulinker.kaillera.controller.v086.V086Controller;
+import org.emulinker.kaillera.controller.v086.V086Controller.V086ClientHandler;
 import org.emulinker.kaillera.controller.v086.protocol.*;
 import org.emulinker.kaillera.model.*;
 import org.emulinker.kaillera.model.event.*;
 import org.emulinker.kaillera.model.exception.LoginException;
 
 @Singleton
-public class ACKAction implements V086Action, V086UserEventHandler {
+public class ACKAction implements V086Action<ClientACK>, V086UserEventHandler<UserEvent> {
   private static final FluentLogger logger = FluentLogger.forEnclosingClass();
   private static final String DESC = "ACKAction";
   private static int numAcksForSpeedTest = 3;
@@ -39,7 +39,7 @@ public class ACKAction implements V086Action, V086UserEventHandler {
   }
 
   @Override
-  public void performAction(V086Message message, V086Controller.V086ClientHandler clientHandler)
+  public void performAction(ClientACK message, V086ClientHandler clientHandler)
       throws FatalActionException {
     actionCount++;
 
@@ -84,7 +84,7 @@ public class ACKAction implements V086Action, V086UserEventHandler {
   }
 
   @Override
-  public void handleEvent(UserEvent event, V086Controller.V086ClientHandler clientHandler) {
+  public void handleEvent(UserEvent event, V086ClientHandler clientHandler) {
     handledCount++;
 
     ConnectedEvent connectedEvent = (ConnectedEvent) event;
@@ -195,7 +195,7 @@ public class ACKAction implements V086Action, V086UserEventHandler {
   }
 
   private void sendServerStatus(
-      V086Controller.V086ClientHandler clientHandler,
+      V086ClientHandler clientHandler,
       List<ServerStatus.User> users,
       List<ServerStatus.Game> games,
       int counter) {
