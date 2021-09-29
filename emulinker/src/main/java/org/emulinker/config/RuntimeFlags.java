@@ -26,6 +26,8 @@ public abstract class RuntimeFlags {
 
   public abstract ImmutableList<String> connectionTypes();
 
+  public abstract int coreThreadPoolSize();
+
   public abstract int chatFloodTime();
 
   public abstract int createGameFloodTime();
@@ -79,6 +81,7 @@ public abstract class RuntimeFlags {
         .setCharset(Charset.forName(config.getString("emulinker.charset")))
         .setChatFloodTime(config.getInt("server.chatFloodTime"))
         .setConnectionTypes(config.getList("server.allowedConnectionTypes"))
+        .setCoreThreadPoolSize(config.getInt("server.coreThreadpoolSize", 10))
         .setCreateGameFloodTime(config.getInt("server.createGameFloodTime"))
         .setGameAutoFireSensitivity(config.getInt("game.defaultAutoFireSensitivity"))
         .setGameBufferSize(config.getInt("game.bufferSize"))
@@ -143,6 +146,8 @@ public abstract class RuntimeFlags {
     public abstract Builder setChatFloodTime(int chatFloodTime);
 
     public abstract Builder setConnectionTypes(List<String> connectionTypes);
+
+    public abstract Builder setCoreThreadPoolSize(int coreThreadPoolSize);
 
     public abstract Builder setCreateGameFloodTime(int createGameFloodTime);
 

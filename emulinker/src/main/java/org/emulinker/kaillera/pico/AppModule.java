@@ -1,10 +1,13 @@
 package org.emulinker.kaillera.pico;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+
 import dagger.Binds;
 import dagger.Module;
 import dagger.Provides;
 import dagger.multibindings.IntoSet;
 import java.nio.charset.Charset;
+import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
@@ -23,7 +26,6 @@ import org.emulinker.kaillera.model.impl.AutoFireDetectorFactoryImpl;
 import org.emulinker.kaillera.model.impl.KailleraServerImpl;
 import org.emulinker.kaillera.release.KailleraServerReleaseInfo;
 import org.emulinker.release.ReleaseInfo;
-import org.emulinker.util.EmuLinkerExecutor;
 import org.emulinker.util.EmuLinkerPropertiesConfig;
 
 @Module
@@ -49,8 +51,15 @@ public abstract class AppModule {
     return flags;
   }
 
-  @Binds
-  public abstract ThreadPoolExecutor bindThreadPoolExecutor(EmuLinkerExecutor emuLinkerExecutor);
+  @Provides
+  public static ThreadPoolExecutor provideThreadPoolExecutor(RuntimeFlags flags) {
+    return new ThreadPoolExecutor(
+        flags.coreThreadPoolSize(),
+        Integer.MAX_VALUE,
+        60L,
+        SECONDS,
+        new SynchronousQueue<Runnable>());
+  }
 
   @Binds
   public abstract ReleaseInfo bindKailleraServerReleaseInfo(
