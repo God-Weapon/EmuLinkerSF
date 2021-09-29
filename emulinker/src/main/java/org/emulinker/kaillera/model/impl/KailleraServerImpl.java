@@ -22,11 +22,6 @@ import org.emulinker.util.*;
 public final class KailleraServerImpl implements KailleraServer, Executable {
   private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
-  protected int gameBufferSize;
-  protected int gameTimeoutMillis;
-  protected int gameDesynchTimeouts;
-  protected int gameAutoFireSensitivity;
-
   protected boolean[] allowedConnectionTypes = new boolean[7];
 
   protected final ImmutableList<String> loginMessages;
@@ -287,7 +282,7 @@ public final class KailleraServerImpl implements KailleraServer, Executable {
   }
 
   protected AutoFireDetector getAutoFireDetector(KailleraGame game) {
-    return autoFireDetectorFactory.getInstance(game, gameAutoFireSensitivity);
+    return autoFireDetectorFactory.getInstance(game, flags.gameAutoFireSensitivity());
   }
 
   @Override
@@ -832,9 +827,9 @@ public final class KailleraServerImpl implements KailleraServer, Executable {
             romName,
             (KailleraUserImpl) user,
             this,
-            gameBufferSize,
-            gameTimeoutMillis,
-            gameDesynchTimeouts);
+            flags.gameBufferSize(),
+            flags.gameTimeoutMillis(),
+            flags.gameDesynchTimeouts());
     games.put(gameID, game);
 
     addEvent(new GameCreatedEvent(this, game));
