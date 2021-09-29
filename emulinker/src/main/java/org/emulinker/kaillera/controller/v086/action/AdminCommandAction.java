@@ -952,7 +952,7 @@ public class AdminCommandAction implements V086Action<Chat> {
                   + ": "
                   + releaseInfo.getVersionString()
                   + ": "
-                  + releaseInfo.getReleaseDate()));
+                  + EmuUtil.toSimpleUtcDatetime(releaseInfo.getBuildDate())));
       sleep(20);
       if (admin.getAccess() >= AccessManager.ACCESS_ADMIN) {
         Properties props = System.getProperties();

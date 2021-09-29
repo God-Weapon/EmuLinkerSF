@@ -1,26 +1,45 @@
 package org.emulinker.kaillera.release;
 
+import com.google.common.flogger.FluentLogger;
+import java.io.IOException;
+import java.time.Instant;
+import java.util.Properties;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.emulinker.release.ReleaseInfo;
+import org.emulinker.util.EmuUtil;
 
 /**
  * Provides release and build information for the EmuLinker project. This class also formats a
  * welcome message for printing at server startup.
  */
+@Singleton
 public final class KailleraServerReleaseInfo implements ReleaseInfo {
-  private final String productName = "EmuLinkerSF-Netosuma (Beta)";
+  private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
-  private final int majorVersion = 0;
-  private final int minorVersion = 1;
-  private final int buildNumber = 3;
-
-  private final String releaseDate = "2021-09-16";
-  private final String licenseInfo =
+  private static final String licenseInfo =
       "Usage of this sofware is subject to the terms found in the included license";
-  private final String website = "https://github.com/hopskipnfall/EmuLinkerSF-Netosuma";
+
+  private final String productName;
+  private final String version;
+  private final Instant buildTimestamp;
+  private final String website;
 
   @Inject
-  KailleraServerReleaseInfo() {}
+  KailleraServerReleaseInfo() {
+    Properties properties = new Properties();
+    try {
+      properties.load(
+          this.getClass().getClassLoader().getResourceAsStream("kailleraserver.properties"));
+    } catch (IOException e) {
+      logger.atSevere().withCause(e).log("Failed to read kailleraserver.properties file");
+      throw new IllegalStateException(e);
+    }
+    this.productName = properties.getProperty("project.name");
+    this.website = properties.getProperty("project.url");
+    this.version = properties.getProperty("project.version");
+    this.buildTimestamp = Instant.parse(properties.getProperty("project.buildDate"));
+  }
 
   @Override
   public final String getProductName() {
@@ -28,18 +47,8 @@ public final class KailleraServerReleaseInfo implements ReleaseInfo {
   }
 
   @Override
-  public final int getMajorVersion() {
-    return majorVersion;
-  }
-
-  @Override
-  public final int getMinorVersion() {
-    return minorVersion;
-  }
-
-  @Override
-  public final String getReleaseDate() {
-    return releaseDate;
+  public final Instant getBuildDate() {
+    return buildTimestamp;
   }
 
   @Override
@@ -52,12 +61,6 @@ public final class KailleraServerReleaseInfo implements ReleaseInfo {
     return website;
   }
 
-  @Override
-  public final int getBuildNumber() {
-    // TODO: modify this to pull from an Ant build version file
-    return buildNumber;
-  }
-
   /**
    * Returns the version number for the EmuLinker server in the form
    *
@@ -65,13 +68,7 @@ public final class KailleraServerReleaseInfo implements ReleaseInfo {
    */
   @Override
   public final String getVersionString() {
-    StringBuilder sb = new StringBuilder();
-    // sb.append(getMajorVersion());
-    // sb.append(".");
-    sb.append(getMinorVersion());
-    sb.append(".");
-    sb.append(getBuildNumber());
-    return sb.toString();
+    return version;
   }
 
   /**
@@ -84,7 +81,7 @@ public final class KailleraServerReleaseInfo implements ReleaseInfo {
         "// %s version %s (%s) \n// %s\n// For the most up-to-date information please visit: %s",
         getProductName(),
         getVersionString(),
-        getReleaseDate(),
+        EmuUtil.toSimpleUtcDatetime(getBuildDate()),
         getLicenseInfo(),
         getWebsiteString());
   }

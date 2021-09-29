@@ -2,6 +2,8 @@ package org.emulinker.kaillera.pico;
 
 import com.google.common.flogger.FluentLogger;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
 public class PicoStarter {
   public static final FluentLogger logger = FluentLogger.forEnclosingClass();
@@ -21,7 +23,11 @@ public class PicoStarter {
 
     logger.atInfo().log("EmuLinker server Starting...");
     logger.atInfo().log(component.getReleaseInfo().getWelcome());
-    logger.atInfo().log("EmuLinker server is running @ " + Instant.now());
+    logger.atInfo().log(
+        "EmuLinker server is running @ "
+            + DateTimeFormatter.ISO_ZONED_DATE_TIME
+                .withZone(ZoneId.systemDefault())
+                .format(Instant.now()));
 
     component.getAccessManager().start();
     component.getKailleraServerController().start();

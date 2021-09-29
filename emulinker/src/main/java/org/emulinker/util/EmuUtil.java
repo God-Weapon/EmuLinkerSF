@@ -7,6 +7,9 @@ import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.text.*;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.Properties;
 
 public class EmuUtil {
@@ -237,5 +240,9 @@ public class EmuUtil {
       throw new InstantiationException(
           "Problem constructing new " + className + ": " + e.getMessage());
     }
+  }
+
+  public static String toSimpleUtcDatetime(Instant instant) {
+    return DateTimeFormatter.RFC_1123_DATE_TIME.withZone(ZoneOffset.UTC).format(instant);
   }
 }

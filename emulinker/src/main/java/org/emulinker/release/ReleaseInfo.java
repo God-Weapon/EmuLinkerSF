@@ -1,5 +1,7 @@
 package org.emulinker.release;
 
+import java.time.Instant;
+
 /**
  * Provides release information about the project.
  *
@@ -10,17 +12,8 @@ public interface ReleaseInfo {
   /** @return The name of this software. */
   public String getProductName();
 
-  /** @return Major version number */
-  public int getMajorVersion();
-
-  /** @return Minor version number */
-  public int getMinorVersion();
-
-  /** @return Build number */
-  public int getBuildNumber();
-
   /** @return The release date of this software */
-  public String getReleaseDate();
+  public Instant getBuildDate();
 
   /** @return A string containing the full version information */
   public String getVersionString();

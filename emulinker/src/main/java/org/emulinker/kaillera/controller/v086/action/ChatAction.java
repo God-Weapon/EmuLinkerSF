@@ -15,6 +15,7 @@ import org.emulinker.kaillera.model.exception.ActionException;
 import org.emulinker.kaillera.model.impl.KailleraUserImpl;
 import org.emulinker.release.ReleaseInfo;
 import org.emulinker.util.EmuLang;
+import org.emulinker.util.EmuUtil;
 
 @Singleton
 public class ChatAction implements V086Action<Chat_Request>, V086ServerEventHandler<ChatEvent> {
@@ -124,7 +125,7 @@ public class ChatAction implements V086Action<Chat_Request>, V086ServerEventHand
                       + ": "
                       + releaseInfo.getVersionString()
                       + ": "
-                      + releaseInfo.getReleaseDate()));
+                      + EmuUtil.toSimpleUtcDatetime(releaseInfo.getBuildDate())));
         } catch (Exception e) {
         }
       } else if (chatMessage.message().equals("/myip")) {
