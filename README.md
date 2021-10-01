@@ -21,14 +21,14 @@ EmuLinkerSF-Netosuma is maintained by [鵺 (nue)](https://twitter.com/nuenuessb)
 
 From the emulinker/ directory, the following commands are supported:
 
-| Command              | Description                                                                                             |
-| -------------------- | ------------------------------------------------------------------------------------------------------- |
-| `mvn compile`        | Compile the code. Running this command also patches [ErrorProne](https://errorprone.info/) suggestions. |
-| `mvn spotless:apply` | Run the formatter.                                                                                      |
-| `mvn spotless:check` | Run the linter.                                                                                         |
-| `mvn test`           | Run tests.                                                                                              |
-| `mvn package`        | Build the jar.                                                                                          |
-| `mvn exec:java`      | Run the server locally.                                                                                 |
+| Command               | Description                                                                                             |
+| --------------------  | ------------------------------------------------------------------------------------------------------- |
+| `mvn compile`         | Compile the code. Running this command also patches [ErrorProne](https://errorprone.info/) suggestions. |
+| `mvn spotless:apply`  | Run the formatter.                                                                                      |
+| `mvn spotless:check`  | Run the linter.                                                                                         |
+| `mvn test`            | Run tests.                                                                                              |
+| `mvn assembly:single` | Build the jar.                                                                                          |
+| `mvn exec:java`       | Run the server locally.                                                                                 |
 
 Note: You will need to have Maven installed.
 

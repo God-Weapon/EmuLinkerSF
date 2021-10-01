@@ -38,6 +38,7 @@ public abstract class AppModule {
   public static Charset charsetDoNotUse = null;
 
   @Provides
+  @Singleton
   public static Configuration provideConfiguration() {
     try {
       return new EmuLinkerPropertiesConfig();
@@ -47,6 +48,7 @@ public abstract class AppModule {
   }
 
   @Provides
+  @Singleton
   public static RuntimeFlags provideRuntimeFlags(Configuration configuration) {
     RuntimeFlags flags = RuntimeFlags.loadFromApacheConfiguration(configuration);
     AppModule.charsetDoNotUse = flags.charset();

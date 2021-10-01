@@ -73,7 +73,6 @@ public final class ConnectController extends UDPServer {
       throw new IllegalStateException(e);
     }
 
-    System.out.println("Ready to accept connections on port " + port);
     logger.atInfo().log("Ready to accept connections on port " + port);
   }
 
