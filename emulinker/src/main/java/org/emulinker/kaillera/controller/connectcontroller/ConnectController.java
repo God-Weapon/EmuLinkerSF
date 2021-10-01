@@ -2,6 +2,7 @@ package org.emulinker.kaillera.controller.connectcontroller;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.codahale.metrics.MetricRegistry;
 import com.google.common.flogger.FluentLogger;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -46,8 +47,9 @@ public final class ConnectController extends UDPServer {
       ThreadPoolExecutor threadPool,
       Set<KailleraServerController> kailleraServerControllers,
       AccessManager accessManager,
-      Configuration config) {
-    super(/* shutdownOnExit= */ true);
+      Configuration config,
+      MetricRegistry metrics) {
+    super(/* shutdownOnExit= */ true, metrics);
 
     this.threadPool = threadPool;
     this.accessManager = accessManager;

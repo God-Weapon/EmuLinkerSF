@@ -2,7 +2,7 @@ package org.emulinker.kaillera.controller.v086.action;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import org.emulinker.kaillera.controller.v086.V086Controller.V086ClientHandler;
+import org.emulinker.kaillera.controller.v086.V086ClientHandler;
 import org.emulinker.kaillera.controller.v086.protocol.*;
 
 @Singleton

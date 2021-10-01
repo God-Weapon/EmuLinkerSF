@@ -1,6 +1,9 @@
 package org.emulinker.kaillera.relay;
 
 import com.google.common.flogger.FluentLogger;
+import dagger.assisted.Assisted;
+import dagger.assisted.AssistedFactory;
+import dagger.assisted.AssistedInject;
 import java.net.InetSocketAddress;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
@@ -9,13 +12,19 @@ import org.emulinker.kaillera.controller.v086.protocol.*;
 import org.emulinker.net.UDPRelay;
 import org.emulinker.util.EmuUtil;
 
-public class V086Relay extends UDPRelay {
+public final class V086Relay extends UDPRelay {
   private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
   private int lastServerMessageNumber = -1;
   private int lastClientMessageNumber = -1;
 
-  public V086Relay(int listenPort, InetSocketAddress serverSocketAddress) throws Exception {
+  @AssistedFactory
+  public interface Factory {
+    V086Relay create(int listenPort, InetSocketAddress serverSocketAddress);
+  }
+
+  @AssistedInject
+  V086Relay(@Assisted int listenPort, @Assisted InetSocketAddress serverSocketAddress) {
     super(listenPort, serverSocketAddress);
   }
 

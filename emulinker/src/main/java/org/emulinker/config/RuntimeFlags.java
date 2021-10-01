@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableList;
 import java.nio.charset.Charset;
+import java.time.Duration;
 import java.util.List;
 import javax.inject.Singleton;
 import org.apache.commons.configuration.Configuration;
@@ -18,11 +19,15 @@ public abstract class RuntimeFlags {
 
   public abstract boolean allowSinglePlayer();
 
+  public abstract boolean metricsEnabled();
+
   public abstract boolean touchEmulinker();
 
   public abstract boolean touchKaillera();
 
   public abstract Charset charset();
+
+  public abstract Duration metricsLoggingFrequency();
 
   public abstract ImmutableList<String> connectionTypes();
 
@@ -70,6 +75,8 @@ public abstract class RuntimeFlags {
 
   public abstract String serverWebsite();
 
+  public abstract int v086BufferSize();
+
   public static Builder builder() {
     return new AutoValue_RuntimeFlags.Builder();
   }
@@ -81,8 +88,12 @@ public abstract class RuntimeFlags {
         .setCharset(Charset.forName(config.getString("emulinker.charset")))
         .setChatFloodTime(config.getInt("server.chatFloodTime"))
         .setConnectionTypes(config.getList("server.allowedConnectionTypes"))
-        .setCoreThreadPoolSize(config.getInt("server.coreThreadpoolSize", 10))
+        // TODO(nue): Experiment with Runtime.getRuntime().availableProcessors().
+        .setCoreThreadPoolSize(config.getInt("server.coreThreadpoolSize", 5))
         .setCreateGameFloodTime(config.getInt("server.createGameFloodTime"))
+        .setMetricsEnabled(config.getBoolean("metrics.enabled", false))
+        .setMetricsLoggingFrequency(
+            Duration.ofSeconds(config.getInt("metrics.loggingFrequencySeconds", 30)))
         .setGameAutoFireSensitivity(config.getInt("game.defaultAutoFireSensitivity"))
         .setGameBufferSize(config.getInt("game.bufferSize"))
         .setGameDesynchTimeouts(config.getInt("game.desynchTimeouts"))
@@ -104,6 +115,7 @@ public abstract class RuntimeFlags {
         .setServerWebsite(config.getString("masterList.serverWebsite", ""))
         .setTouchEmulinker(config.getBoolean("masterList.touchEmulinker", false))
         .setTouchKaillera(config.getBoolean("masterList.touchKaillera", false))
+        .setV086BufferSize(config.getInt("controllers.v086.bufferSize", 4096))
         .build();
   }
 
@@ -151,6 +163,10 @@ public abstract class RuntimeFlags {
 
     public abstract Builder setCreateGameFloodTime(int createGameFloodTime);
 
+    public abstract Builder setMetricsEnabled(boolean enableMetrics);
+
+    public abstract Builder setMetricsLoggingFrequency(Duration metricsLoggingFrequency);
+
     public abstract Builder setGameAutoFireSensitivity(int gameAutoFireSensitivity);
 
     public abstract Builder setGameBufferSize(int gameBufferSize);
@@ -192,6 +208,8 @@ public abstract class RuntimeFlags {
     public abstract Builder setServerName(String serverName);
 
     public abstract Builder setServerWebsite(String serverWebsite);
+
+    public abstract Builder setV086BufferSize(int v086BufferSize);
 
     protected abstract RuntimeFlags innerBuild();
 

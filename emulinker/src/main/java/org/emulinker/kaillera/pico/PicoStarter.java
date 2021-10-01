@@ -1,9 +1,19 @@
 package org.emulinker.kaillera.pico;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
+
+import com.codahale.metrics.CsvReporter;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.jvm.MemoryUsageGaugeSet;
+import com.codahale.metrics.jvm.ThreadStatesGaugeSet;
 import com.google.common.flogger.FluentLogger;
+import java.io.File;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Locale;
+import org.emulinker.config.RuntimeFlags;
 
 public class PicoStarter {
   public static final FluentLogger logger = FluentLogger.forEnclosingClass();
@@ -34,5 +44,22 @@ public class PicoStarter {
     component.getServer().start();
     component.getKailleraServer().start();
     component.getMasterListUpdaterImpl().start();
+
+    MetricRegistry metrics = component.getMetricRegistry();
+    metrics.registerAll(new ThreadStatesGaugeSet());
+    metrics.registerAll(new MemoryUsageGaugeSet());
+
+    RuntimeFlags flags = component.getRuntimeFlags();
+    if (flags.metricsEnabled()) {
+      File metricsDir = new File("./metrics/");
+      metricsDir.mkdirs();
+      CsvReporter reporter =
+          CsvReporter.forRegistry(metrics)
+              .formatFor(Locale.US)
+              .convertRatesTo(SECONDS)
+              .convertDurationsTo(MILLISECONDS)
+              .build(metricsDir);
+      reporter.start(flags.metricsLoggingFrequency().toSeconds(), SECONDS);
+    }
   }
 }

@@ -8,7 +8,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import org.emulinker.kaillera.access.AccessManager;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
-import org.emulinker.kaillera.controller.v086.V086Controller.V086ClientHandler;
+import org.emulinker.kaillera.controller.v086.V086ClientHandler;
 import org.emulinker.kaillera.controller.v086.protocol.*;
 import org.emulinker.kaillera.model.event.*;
 import org.emulinker.kaillera.model.exception.ActionException;

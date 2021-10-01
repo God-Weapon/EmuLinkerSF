@@ -1,6 +1,10 @@
 package org.emulinker.kaillera.relay;
 
+import com.codahale.metrics.MetricRegistry;
 import com.google.common.flogger.FluentLogger;
+import dagger.assisted.Assisted;
+import dagger.assisted.AssistedFactory;
+import dagger.assisted.AssistedInject;
 import java.net.InetSocketAddress;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
@@ -9,19 +13,37 @@ import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 import org.emulinker.net.UDPRelay;
 import org.emulinker.util.EmuUtil;
 
-public class KailleraRelay extends UDPRelay {
+/** @deprecated This doesn't seem to be used anywhere! Maybe we can get rid of it. */
+@Deprecated(forRemoval = true)
+final class KailleraRelay extends UDPRelay {
   private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
-  public static void main(String args[]) throws Exception {
-    int localPort = Integer.parseInt(args[0]);
-    String serverIP = args[1];
-    int serverPort = Integer.parseInt(args[2]);
+  private final V086Relay.Factory v086RelayFactory;
 
-    new KailleraRelay(localPort, new InetSocketAddress(serverIP, serverPort));
+  // TODO(nue): Can we just remove this?
+  // public static void main(String args[]) throws Exception {
+  //   int localPort = Integer.parseInt(args[0]);
+  //   String serverIP = args[1];
+  //   int serverPort = Integer.parseInt(args[2]);
+
+  //   new KailleraRelay(localPort, new InetSocketAddress(serverIP, serverPort), new
+  // MetricRegistry());
+  // }
+
+  @AssistedFactory
+  public interface Factory {
+    KailleraRelay create(int listenPort, InetSocketAddress serverSocketAddress);
   }
 
-  public KailleraRelay(int listenPort, InetSocketAddress serverSocketAddress) throws Exception {
+  @AssistedInject
+  KailleraRelay(
+      @Assisted int listenPort,
+      @Assisted InetSocketAddress serverSocketAddress,
+      MetricRegistry metrics,
+      V086Relay.Factory v086RelayFactory) {
     super(listenPort, serverSocketAddress);
+
+    this.v086RelayFactory = v086RelayFactory;
   }
 
   @Override
@@ -59,7 +81,8 @@ public class KailleraRelay extends UDPRelay {
     ByteBuffer sendBuffer = ByteBuffer.allocate(receiveBuffer.limit());
     receiveBuffer.rewind();
     sendBuffer.put(receiveBuffer);
-    // Cast to avoid issue with java version mismatch: https://stackoverflow.com/a/61267496/2875073
+    // Cast to avoid issue with java version mismatch:
+    // https://stackoverflow.com/a/61267496/2875073
     ((Buffer) sendBuffer).flip();
     return sendBuffer;
   }
@@ -88,7 +111,7 @@ public class KailleraRelay extends UDPRelay {
       logger.atInfo().log("Starting client relay on port " + (portMsg.getPort() - 1));
 
       try {
-        new V086Relay(
+        v086RelayFactory.create(
             portMsg.getPort(),
             new InetSocketAddress(getServerSocketAddress().getAddress(), portMsg.getPort()));
       } catch (Exception e) {
@@ -105,7 +128,8 @@ public class KailleraRelay extends UDPRelay {
     ByteBuffer sendBuffer = ByteBuffer.allocate(receiveBuffer.limit());
     receiveBuffer.rewind();
     sendBuffer.put(receiveBuffer);
-    // Cast to avoid issue with java version mismatch: https://stackoverflow.com/a/61267496/2875073
+    // Cast to avoid issue with java version mismatch:
+    // https://stackoverflow.com/a/61267496/2875073
     ((Buffer) sendBuffer).flip();
     return sendBuffer;
   }

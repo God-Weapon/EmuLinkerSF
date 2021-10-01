@@ -1,5 +1,7 @@
 package org.emulinker.kaillera.model.impl;
 
+import com.codahale.metrics.Gauge;
+import com.codahale.metrics.MetricRegistry;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.flogger.FluentLogger;
@@ -57,7 +59,8 @@ public final class KailleraServerImpl implements KailleraServer, Executable {
       RuntimeFlags flags,
       StatsCollector statsCollector,
       ReleaseInfo releaseInfo,
-      AutoFireDetectorFactory autoFireDetectorFactory) {
+      AutoFireDetectorFactory autoFireDetectorFactory,
+      MetricRegistry metrics) {
     this.flags = flags;
     this.threadPool = threadPool;
     this.accessManager = accessManager;
@@ -84,6 +87,54 @@ public final class KailleraServerImpl implements KailleraServer, Executable {
     if (flags.touchKaillera()) {
       this.statsCollector = statsCollector;
     }
+
+    metrics.register(
+        MetricRegistry.name(this.getClass(), "users", "idle"),
+        new Gauge<Integer>() {
+          @Override
+          public Integer getValue() {
+            return (int)
+                users.values().stream()
+                    .filter(user -> user.getStatus() == KailleraUser.STATUS_IDLE)
+                    .count();
+          }
+        });
+
+    metrics.register(
+        MetricRegistry.name(this.getClass(), "users", "playing"),
+        new Gauge<Integer>() {
+          @Override
+          public Integer getValue() {
+            return (int)
+                users.values().stream()
+                    .filter(user -> user.getStatus() == KailleraUser.STATUS_PLAYING)
+                    .count();
+          }
+        });
+
+    metrics.register(
+        MetricRegistry.name(this.getClass(), "games", "waiting"),
+        new Gauge<Integer>() {
+          @Override
+          public Integer getValue() {
+            return (int)
+                games.values().stream()
+                    .filter(game -> game.getStatus() == KailleraGame.STATUS_WAITING)
+                    .count();
+          }
+        });
+
+    metrics.register(
+        MetricRegistry.name(this.getClass(), "games", "playing"),
+        new Gauge<Integer>() {
+          @Override
+          public Integer getValue() {
+            return (int)
+                games.values().stream()
+                    .filter(game -> game.getStatus() == KailleraGame.STATUS_PLAYING)
+                    .count();
+          }
+        });
   }
 
   @Override

@@ -4,47 +4,47 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.flogger.FluentLogger;
 import java.net.InetSocketAddress;
-import java.nio.*;
 import java.util.*;
 import java.util.concurrent.*;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import org.apache.commons.configuration.*;
+import org.emulinker.config.RuntimeFlags;
 import org.emulinker.kaillera.access.AccessManager;
 import org.emulinker.kaillera.controller.KailleraServerController;
-import org.emulinker.kaillera.controller.messaging.*;
 import org.emulinker.kaillera.controller.v086.action.*;
 import org.emulinker.kaillera.controller.v086.protocol.*;
 import org.emulinker.kaillera.model.*;
 import org.emulinker.kaillera.model.event.*;
 import org.emulinker.kaillera.model.exception.*;
 import org.emulinker.net.*;
-import org.emulinker.util.*;
 
 @Singleton
 public final class V086Controller implements KailleraServerController {
-  private static final FluentLogger logger = FluentLogger.forEnclosingClass();
+  static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
-  private int MAX_BUNDLE_SIZE = 9;
+  static final int MAX_BUNDLE_SIZE = 9;
 
-  private int bufferSize = 4096;
   private boolean isRunning = false;
 
-  private ThreadPoolExecutor threadPool;
-  private KailleraServer server;
+  ThreadPoolExecutor threadPool;
+  KailleraServer server;
   private String[] clientTypes;
-  private Map<Integer, V086ClientHandler> clientHandlers =
+  Map<Integer, V086ClientHandler> clientHandlers =
       new ConcurrentHashMap<Integer, V086ClientHandler>();
 
   private int portRangeStart;
   private int extraPorts;
-  private Queue<Integer> portRangeQueue = new ConcurrentLinkedQueue<Integer>();
+  Queue<Integer> portRangeQueue = new ConcurrentLinkedQueue<Integer>();
 
-  private final ImmutableMap<Class<?>, V086ServerEventHandler> serverEventHandlers;
-  private final ImmutableMap<Class<?>, V086GameEventHandler> gameEventHandlers;
-  private final ImmutableMap<Class<?>, V086UserEventHandler> userEventHandlers;
+  final ImmutableMap<Class<?>, V086ServerEventHandler> serverEventHandlers;
+  final ImmutableMap<Class<?>, V086GameEventHandler> gameEventHandlers;
+  final ImmutableMap<Class<?>, V086UserEventHandler> userEventHandlers;
 
-  private V086Action[] actions = new V086Action[25];
+  V086Action[] actions = new V086Action[25];
+
+  private final V086ClientHandler.Factory v086ClientHandlerFactory;
+  private final RuntimeFlags flags;
 
   @Inject
   V086Controller(
@@ -73,10 +73,13 @@ public final class V086Controller implements KailleraServerController {
       PlayerDesynchAction playerDesynchAction,
       GameInfoAction gameInfoAction,
       GameTimeoutAction gameTimeoutAction,
-      InfoMessageAction infoMessageAction) {
+      InfoMessageAction infoMessageAction,
+      V086ClientHandler.Factory v086ClientHandlerFactory,
+      RuntimeFlags flags) {
+    this.v086ClientHandlerFactory = v086ClientHandlerFactory;
+    this.flags = flags;
     this.threadPool = threadPool;
     this.server = server;
-    this.bufferSize = config.getInt("controllers.v086.bufferSize");
     this.clientTypes = config.getStringArray("controllers.v086.clientTypes.clientType");
 
     this.portRangeStart = config.getInt("controllers.v086.portRangeStart");
@@ -94,7 +97,8 @@ public final class V086Controller implements KailleraServerController {
             + maxPort
             + ".  Make sure these ports are open in your firewall!");
 
-    Preconditions.checkArgument(bufferSize > 0, "controllers.v086.bufferSize must be > 0");
+    Preconditions.checkArgument(
+        flags.v086BufferSize() > 0, "controllers.v086.bufferSize must be > 0");
 
     // array access should be faster than a hash and we won't have to create
     // a new Integer each time
@@ -171,7 +175,7 @@ public final class V086Controller implements KailleraServerController {
 
   @Override
   public int getBufferSize() {
-    return bufferSize;
+    return flags.v086BufferSize();
   }
 
   public final ImmutableMap<Class<?>, V086ServerEventHandler> getServerEventHandlers() {
@@ -208,7 +212,7 @@ public final class V086Controller implements KailleraServerController {
       throws ServerFullException, NewConnectionException {
     if (!isRunning) throw new NewConnectionException("Controller is not running");
 
-    V086ClientHandler clientHandler = new V086ClientHandler(clientSocketAddress);
+    V086ClientHandler clientHandler = v086ClientHandlerFactory.create(clientSocketAddress, this);
     KailleraUser user = server.newConnection(clientSocketAddress, protocol, clientHandler);
 
     int boundPort = -1;
@@ -266,383 +270,5 @@ public final class V086Controller implements KailleraServerController {
     for (V086ClientHandler clientHandler : clientHandlers.values()) clientHandler.stop();
 
     clientHandlers.clear();
-  }
-
-  public class V086ClientHandler extends PrivateUDPServer implements KailleraEventListener {
-    private KailleraUser user;
-    private int messageNumberCounter = 0;
-    private int prevMessageNumber = -1;
-    private int lastMessageNumber = -1;
-    private GameDataCache clientCache = null;
-    private GameDataCache serverCache = null;
-
-    // private LinkedList<V086Message>	lastMessages			= new LinkedList<V086Message>();
-    private LastMessageBuffer lastMessageBuffer = new LastMessageBuffer(MAX_BUNDLE_SIZE);
-
-    private V086Message[] outMessages = new V086Message[MAX_BUNDLE_SIZE];
-
-    private ByteBuffer inBuffer = ByteBuffer.allocateDirect(bufferSize);
-    private ByteBuffer outBuffer = ByteBuffer.allocateDirect(bufferSize);
-
-    private Object inSynch = new Object();
-    private Object outSynch = new Object();
-
-    private long testStart;
-    private long lastMeasurement;
-    private int measurementCount = 0;
-    private int bestTime = Integer.MAX_VALUE;
-
-    private int clientRetryCount = 0;
-    private long lastResend = 0;
-
-    private V086ClientHandler(InetSocketAddress remoteSocketAddress) {
-      super(false, remoteSocketAddress.getAddress());
-
-      inBuffer.order(ByteOrder.LITTLE_ENDIAN);
-      outBuffer.order(ByteOrder.LITTLE_ENDIAN);
-
-      resetGameDataCache();
-    }
-
-    @Override
-    public String toString() {
-      if (getBindPort() > 0) return "V086Controller(" + getBindPort() + ")";
-      else return "V086Controller(unbound)";
-    }
-
-    public V086Controller getController() {
-      return V086Controller.this;
-    }
-
-    public KailleraUser getUser() {
-      return user;
-    }
-
-    public synchronized int getNextMessageNumber() {
-      if (messageNumberCounter > 0xFFFF) messageNumberCounter = 0;
-
-      return messageNumberCounter++;
-    }
-
-    /*
-    public List<V086Message> getLastMessage()
-    {
-    return lastMessages;
-    }
-    */
-
-    public int getPrevMessageNumber() {
-      return prevMessageNumber;
-    }
-
-    public int getLastMessageNumber() {
-      return lastMessageNumber;
-    }
-
-    public GameDataCache getClientGameDataCache() {
-      return clientCache;
-    }
-
-    public GameDataCache getServerGameDataCache() {
-      return serverCache;
-    }
-
-    public void resetGameDataCache() {
-      clientCache = new ClientGameDataCache(256);
-      /*SF MOD - Button Ghosting Patch
-      serverCache = new ServerGameDataCache(256);
-      */
-      serverCache = new ClientGameDataCache(256);
-    }
-
-    public void startSpeedTest() {
-      testStart = lastMeasurement = System.currentTimeMillis();
-      measurementCount = 0;
-    }
-
-    public void addSpeedMeasurement() {
-      int et = (int) (System.currentTimeMillis() - lastMeasurement);
-      if (et < bestTime) bestTime = et;
-      measurementCount++;
-      lastMeasurement = System.currentTimeMillis();
-    }
-
-    public int getSpeedMeasurementCount() {
-      return measurementCount;
-    }
-
-    public int getBestNetworkSpeed() {
-      return bestTime;
-    }
-
-    public int getAverageNetworkSpeed() {
-      return (int) ((lastMeasurement - testStart) / measurementCount);
-    }
-
-    @Override
-    public void bind(int port) throws BindException {
-      super.bind(port);
-    }
-
-    public void start(KailleraUser user) {
-      this.user = user;
-      logger.atFine().log(
-          toString()
-              + " thread starting (ThreadPool:"
-              + threadPool.getActiveCount()
-              + "/"
-              + threadPool.getPoolSize()
-              + ")");
-      threadPool.execute(this);
-      Thread.yield();
-
-      /*
-      long s = System.currentTimeMillis();
-      while (!isBound() && (System.currentTimeMillis() - s) < 1000)
-      {
-      try
-      {
-      Thread.sleep(100);
-      }
-      catch (Exception e)
-      {
-      logger.atSevere().withCause(e).log("Sleep Interrupted!");
-      }
-      }
-
-      if (!isBound())
-      {
-      logger.atSevere().log("V086ClientHandler failed to start for client from " + getRemoteInetAddress().getHostAddress());
-      return;
-      }
-      */
-
-      logger.atFine().log(
-          toString()
-              + " thread started (ThreadPool:"
-              + threadPool.getActiveCount()
-              + "/"
-              + threadPool.getPoolSize()
-              + ")");
-      clientHandlers.put(user.getID(), this);
-    }
-
-    @Override
-    public void stop() {
-      synchronized (this) {
-        if (getStopFlag()) return;
-
-        int port = -1;
-        if (isBound()) port = getBindPort();
-        logger.atFine().log(this.toString() + " Stopping!");
-        super.stop();
-
-        if (port > 0) {
-          logger.atFine().log(
-              toString()
-                  + " returning port "
-                  + port
-                  + " to available port queue: "
-                  + (portRangeQueue.size() + 1)
-                  + " available");
-          portRangeQueue.add(port);
-        }
-      }
-
-      if (user != null) {
-        clientHandlers.remove(user.getID());
-        user.stop();
-        user = null;
-      }
-    }
-
-    @Override
-    protected ByteBuffer getBuffer() {
-      // return ByteBufferMessage.getBuffer(bufferSize);
-      // Cast to avoid issue with java version mismatch:
-      // https://stackoverflow.com/a/61267496/2875073
-      ((Buffer) inBuffer).clear();
-      return inBuffer;
-    }
-
-    @Override
-    protected void releaseBuffer(ByteBuffer buffer) {
-      // ByteBufferMessage.releaseBuffer(buffer);
-      // buffer.clear();
-    }
-
-    @Override
-    protected void handleReceived(ByteBuffer buffer) {
-      V086Bundle inBundle = null;
-
-      try {
-        inBundle = V086Bundle.parse(buffer, lastMessageNumber);
-        // inBundle = V086Bundle.parse(buffer, -1);
-      } catch (ParseException e) {
-        buffer.rewind();
-        logger.atWarning().withCause(e).log(
-            toString() + " failed to parse: " + EmuUtil.dumpBuffer(buffer));
-        return;
-      } catch (V086BundleFormatException e) {
-        buffer.rewind();
-        logger.atWarning().withCause(e).log(
-            toString() + " received invalid message bundle: " + EmuUtil.dumpBuffer(buffer));
-        return;
-      } catch (MessageFormatException e) {
-        buffer.rewind();
-        logger.atWarning().withCause(e).log(
-            toString() + " received invalid message: " + EmuUtil.dumpBuffer(buffer));
-        return;
-      }
-
-      // logger.atFine().log("-> " + inBundle.getNumMessages());
-
-      if (inBundle.getNumMessages() == 0) {
-        logger.atFine().log(
-            toString()
-                + " received bundle of "
-                + inBundle.getNumMessages()
-                + " messages from "
-                + user);
-        clientRetryCount++;
-        resend(clientRetryCount);
-        return;
-      } else {
-        clientRetryCount = 0;
-      }
-
-      try {
-        synchronized (inSynch) {
-          V086Message[] messages = inBundle.getMessages();
-          if (inBundle.getNumMessages() == 1) {
-            lastMessageNumber = messages[0].messageNumber();
-
-            V086Action action = actions[messages[0].messageId()];
-            if (action == null) {
-              logger.atSevere().log("No action defined to handle client message: " + messages[0]);
-            }
-
-            action.performAction(messages[0], this);
-          } else {
-            // read the bundle from back to front to process the oldest messages first
-            for (int i = (inBundle.getNumMessages() - 1); i >= 0; i--) {
-              /**
-               * already extracts messages with higher numbers when parsing, it does not need to be
-               * checked and this causes an error if messageNumber is 0 and lastMessageNumber is
-               * 0xFFFF if (messages[i].getNumber() > lastMessageNumber)
-               */
-              {
-                prevMessageNumber = lastMessageNumber;
-                lastMessageNumber = messages[i].messageNumber();
-
-                if ((prevMessageNumber + 1) != lastMessageNumber) {
-                  if (prevMessageNumber == 0xFFFF && lastMessageNumber == 0) {
-                    // exception; do nothing
-                  } else {
-                    logger.atWarning().log(
-                        user
-                            + " dropped a packet! ("
-                            + prevMessageNumber
-                            + " to "
-                            + lastMessageNumber
-                            + ")");
-                    user.droppedPacket();
-                  }
-                }
-
-                V086Action action = actions[messages[i].messageId()];
-                if (action == null) {
-                  logger.atSevere().log(
-                      "No action defined to handle client message: " + messages[i]);
-                  continue;
-                }
-
-                // logger.atFine().log(user + " -> " + message);
-                action.performAction(messages[i], this);
-              }
-            }
-          }
-        }
-      } catch (FatalActionException e) {
-        logger.atWarning().withCause(e).log(toString() + " fatal action, closing connection");
-        Thread.yield();
-        stop();
-      }
-    }
-
-    @Override
-    public void actionPerformed(KailleraEvent event) {
-      if (event instanceof GameEvent) {
-        V086GameEventHandler eventHandler = gameEventHandlers.get(event.getClass());
-        if (eventHandler == null) {
-          logger.atSevere().log(
-              toString() + " found no GameEventHandler registered to handle game event: " + event);
-          return;
-        }
-
-        eventHandler.handleEvent((GameEvent) event, this);
-      } else if (event instanceof ServerEvent) {
-        V086ServerEventHandler eventHandler = serverEventHandlers.get(event.getClass());
-        if (eventHandler == null) {
-          logger.atSevere().log(
-              toString()
-                  + " found no ServerEventHandler registered to handle server event: "
-                  + event);
-          return;
-        }
-
-        eventHandler.handleEvent((ServerEvent) event, this);
-      } else if (event instanceof UserEvent) {
-        V086UserEventHandler eventHandler = userEventHandlers.get(event.getClass());
-        if (eventHandler == null) {
-          logger.atSevere().log(
-              toString() + " found no UserEventHandler registered to handle user event: " + event);
-          return;
-        }
-
-        eventHandler.handleEvent((UserEvent) event, this);
-      }
-    }
-
-    public void resend(int timeoutCounter) {
-
-      synchronized (outSynch) {
-        // if ((System.currentTimeMillis() - lastResend) > (user.getPing()*3))
-        if ((System.currentTimeMillis() - lastResend) > server.getMaxPing()) {
-          // int numToSend = (3+timeoutCounter);
-          int numToSend = (3 * timeoutCounter);
-          if (numToSend > MAX_BUNDLE_SIZE) numToSend = MAX_BUNDLE_SIZE;
-
-          logger.atFine().log(this + ": resending last " + numToSend + " messages");
-          send(null, numToSend);
-          lastResend = System.currentTimeMillis();
-        } else {
-          logger.atFine().log("Skipping resend...");
-        }
-      }
-    }
-
-    public void send(V086Message outMessage) {
-      send(outMessage, 5);
-    }
-
-    public void send(V086Message outMessage, int numToSend) {
-      synchronized (outSynch) {
-        if (outMessage != null) {
-          lastMessageBuffer.add(outMessage);
-        }
-
-        numToSend = lastMessageBuffer.fill(outMessages, numToSend);
-        // System.out.println("Server -> " + numToSend);
-        V086Bundle outBundle = new V086Bundle(outMessages, numToSend);
-        //				logger.atFine().log("<- " + outBundle);
-        outBundle.writeTo(outBuffer);
-        // Cast to avoid issue with java version mismatch:
-        // https://stackoverflow.com/a/61267496/2875073
-        ((Buffer) outBuffer).flip();
-        super.send(outBuffer);
-        ((Buffer) outBuffer).clear();
-      }
-    }
   }
 }

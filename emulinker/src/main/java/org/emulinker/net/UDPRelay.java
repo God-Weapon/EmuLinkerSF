@@ -1,6 +1,7 @@
 package org.emulinker.net;
 
 import com.google.common.flogger.FluentLogger;
+import java.io.IOException;
 import java.net.*;
 import java.nio.*;
 import java.nio.channels.*;
@@ -21,12 +22,19 @@ public abstract class UDPRelay implements Runnable {
   protected Map<InetSocketAddress, ClientHandler> clients =
       Collections.synchronizedMap(new HashMap<InetSocketAddress, ClientHandler>());
 
-  public UDPRelay(int listenPort, InetSocketAddress serverSocketAddress) throws Exception {
+  public UDPRelay(int listenPort, InetSocketAddress serverSocketAddress) {
     this.listenPort = listenPort;
     this.serverSocketAddress = serverSocketAddress;
 
-    listenChannel = DatagramChannel.open();
-    listenChannel.socket().bind(new InetSocketAddress(InetAddress.getLocalHost(), this.listenPort));
+    try {
+      listenChannel = DatagramChannel.open();
+      listenChannel
+          .socket()
+          .bind(new InetSocketAddress(InetAddress.getLocalHost(), this.listenPort));
+    } catch (IOException e) {
+      logger.atSevere().withCause(e).log("Failed to bind to channel");
+      throw new IllegalStateException(e);
+    }
 
     logger.atInfo().log("Bound to port " + listenPort);
 

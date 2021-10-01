@@ -20,6 +20,20 @@
 
   <dependencies>
 
+    <!-- https://mvnrepository.com/artifact/io.dropwizard.metrics/metrics-jvm -->
+    <dependency>
+      <groupId>io.dropwizard.metrics</groupId>
+      <artifactId>metrics-jvm</artifactId>
+      <version>4.2.3</version>
+    </dependency>
+
+    <!-- https://mvnrepository.com/artifact/io.dropwizard.metrics/metrics-core -->
+    <dependency>
+      <groupId>io.dropwizard.metrics</groupId>
+      <artifactId>metrics-core</artifactId>
+      <version>4.2.3</version>
+    </dependency>
+
     <dependency>
       <groupId>com.google.flogger</groupId>
       <artifactId>flogger</artifactId>
@@ -38,11 +52,20 @@
       <version>0.6</version>
     </dependency>
 
+    <!-- https://mvnrepository.com/artifact/com.google.dagger/dagger -->
     <dependency>
       <groupId>com.google.dagger</groupId>
       <artifactId>dagger</artifactId>
-      <version>2.38.1</version>
+      <version>2.39</version>
     </dependency>
+
+    <!-- https://mvnrepository.com/artifact/com.google.dagger/dagger-compiler -->
+    <dependency>
+      <groupId>com.google.dagger</groupId>
+      <artifactId>dagger-compiler</artifactId>
+      <version>2.39</version>
+    </dependency>
+
 
     <!-- https://stackoverflow.com/a/62065404/2875073 -->
     <dependency>
@@ -141,12 +164,6 @@
       <artifactId>commons-pool</artifactId>
       <version>1.2</version>
     </dependency>
-
-    <!-- <dependency>
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
-      <version>1.2.12</version>
-    </dependency> -->
 
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
@@ -251,8 +268,8 @@
               <path>
                 <groupId>com.google.dagger</groupId>
                 <artifactId>dagger-compiler</artifactId>
-                <version>2.16</version>
-            </path>
+                <version>2.39</version>
+              </path>
             </annotationProcessorPaths>
           </configuration>
         </plugin>

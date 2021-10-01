@@ -3,7 +3,7 @@ package org.emulinker.kaillera.controller.v086.action;
 import com.google.common.flogger.FluentLogger;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import org.emulinker.kaillera.controller.v086.V086Controller.V086ClientHandler;
+import org.emulinker.kaillera.controller.v086.V086ClientHandler;
 import org.emulinker.kaillera.model.KailleraUser;
 import org.emulinker.kaillera.model.event.*;
 
