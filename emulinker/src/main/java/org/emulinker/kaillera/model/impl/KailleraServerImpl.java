@@ -27,8 +27,6 @@ public final class KailleraServerImpl implements KailleraServer, Executable {
   protected boolean[] allowedConnectionTypes = new boolean[7];
 
   protected final ImmutableList<String> loginMessages;
-  protected boolean allowSinglePlayer = false;
-  protected boolean allowMultipleConnections = false;
 
   protected boolean stopFlag = false;
   protected boolean isRunning = false;
@@ -237,7 +235,7 @@ public final class KailleraServerImpl implements KailleraServer, Executable {
   }
 
   protected boolean getAllowSinglePlayer() {
-    return allowSinglePlayer;
+    return flags.allowSinglePlayer();
   }
 
   protected int getMaxUserNameLength() {
@@ -265,7 +263,7 @@ public final class KailleraServerImpl implements KailleraServer, Executable {
   }
 
   protected boolean getAllowMultipleConnections() {
-    return allowMultipleConnections;
+    return flags.allowMultipleConnections();
   }
 
   public ThreadPoolExecutor getThreadPool() {
@@ -587,7 +585,7 @@ public final class KailleraServerImpl implements KailleraServer, Executable {
                 .getAddress()
                 .equals(u2.getConnectSocketAddress().getAddress())
             && !u.getName().equals(u2.getName())
-            && !allowMultipleConnections) {
+            && !flags.allowMultipleConnections()) {
           users.remove(userListKey);
           logger.atWarning().log(
               user + " login denied: Address already logged in as " + u2.getName());

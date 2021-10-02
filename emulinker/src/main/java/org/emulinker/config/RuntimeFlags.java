@@ -84,7 +84,7 @@ public abstract class RuntimeFlags {
   public static RuntimeFlags loadFromApacheConfiguration(Configuration config) {
     return builder()
         .setAllowMultipleConnections(config.getBoolean("server.allowMultipleConnections"))
-        .setAllowSinglePlayer(config.getBoolean("server.allowSinglePlayer"))
+        .setAllowSinglePlayer(config.getBoolean("server.allowSinglePlayer", true))
         .setCharset(Charset.forName(config.getString("emulinker.charset")))
         .setChatFloodTime(config.getInt("server.chatFloodTime"))
         .setConnectionTypes(config.getList("server.allowedConnectionTypes"))
