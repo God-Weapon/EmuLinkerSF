@@ -3,16 +3,17 @@ package org.emulinker.kaillera.pico;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-import com.codahale.metrics.CsvReporter;
+import com.codahale.metrics.MetricFilter;
 import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.graphite.Graphite;
+import com.codahale.metrics.graphite.GraphiteReporter;
 import com.codahale.metrics.jvm.MemoryUsageGaugeSet;
 import com.codahale.metrics.jvm.ThreadStatesGaugeSet;
 import com.google.common.flogger.FluentLogger;
-import java.io.File;
+import java.net.InetSocketAddress;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.Locale;
 import org.emulinker.config.RuntimeFlags;
 
 public class PicoStarter {
@@ -51,15 +52,17 @@ public class PicoStarter {
 
     RuntimeFlags flags = component.getRuntimeFlags();
     if (flags.metricsEnabled()) {
-      File metricsDir = new File("./metrics/");
-      metricsDir.mkdirs();
-      CsvReporter reporter =
-          CsvReporter.forRegistry(metrics)
-              .formatFor(Locale.US)
+      // TODO(nue): Pass this data to a central server so we can see how performance changes over
+      // time in prod.
+      // "graphite" is the name of a service in docker-compose.yaml.
+      final Graphite graphite = new Graphite(new InetSocketAddress("graphite", 2003));
+      final GraphiteReporter reporter =
+          GraphiteReporter.forRegistry(metrics)
               .convertRatesTo(SECONDS)
               .convertDurationsTo(MILLISECONDS)
-              .build(metricsDir);
-      reporter.start(flags.metricsLoggingFrequency().toSeconds(), SECONDS);
+              .filter(MetricFilter.ALL)
+              .build(graphite);
+      reporter.start(30, SECONDS);
     }
   }
 }

@@ -40,6 +40,24 @@ Note: You will need to have Maven installed.
 
 Note: If you use non-ASCII characters in the `conf/language.properties` file, you need to run with at least Java 9 for the characters to appear correctly.
 
+### Docker
+
+Docker support is WIP.
+
+To run locally with Docker:
+
+```shell
+docker-compose up -d
+```
+
+To run locally with Docker and a local Graphite instance to monitor metrics (note: you need to also set `metrics.enabled=true` in emulinker.cfg):
+
+```
+docker-compose --profile=debug up -d
+```
+
+You can then access the Graphite dashboard at http://localhost/dashboard
+
 [prs-badge]: https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square
 [prs]: http://makeapullrequest.com
 [github-watch-badge]: https://img.shields.io/github/watchers/hopskipnfall/EmuLinkerSF-Netosuma.svg?style=social

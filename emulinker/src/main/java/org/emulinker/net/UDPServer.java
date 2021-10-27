@@ -1,7 +1,6 @@
 package org.emulinker.net;
 
 import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.Timer;
 import com.google.common.flogger.FluentLogger;
 import java.io.IOException;
 import java.net.*;
@@ -38,13 +37,8 @@ public abstract class UDPServer implements Executable {
   private boolean isRunning = false;
   private boolean stopFlag = false;
 
-  protected final Timer serverToClientRequests;
-
   public UDPServer(boolean shutdownOnExit, MetricRegistry metrics) {
     if (shutdownOnExit) Runtime.getRuntime().addShutdownHook(new ShutdownThread());
-
-    this.serverToClientRequests =
-        metrics.timer(MetricRegistry.name(UDPServer.class, "clientToServerRequests"));
   }
 
   public int getBindPort() {
