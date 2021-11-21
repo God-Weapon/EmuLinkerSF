@@ -6,6 +6,7 @@ import javax.inject.Singleton;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 import org.emulinker.kaillera.controller.v086.V086ClientHandler;
 import org.emulinker.kaillera.controller.v086.protocol.*;
+import org.emulinker.kaillera.lookingforgame.TwitterBroadcaster;
 import org.emulinker.kaillera.model.KailleraUser;
 import org.emulinker.kaillera.model.event.*;
 import org.emulinker.kaillera.model.exception.*;
@@ -20,8 +21,12 @@ public class QuitGameAction
   private int actionCount = 0;
   private int handledCount = 0;
 
+  private final TwitterBroadcaster lookingForGameReporter;
+
   @Inject
-  QuitGameAction() {}
+  QuitGameAction(TwitterBroadcaster lookingForGameReporter) {
+    this.lookingForGameReporter = lookingForGameReporter;
+  }
 
   @Override
   public int getActionPerformedCount() {
@@ -45,6 +50,7 @@ public class QuitGameAction
 
     try {
       clientHandler.getUser().quitGame();
+      lookingForGameReporter.cancelActionsForUser(clientHandler.getUser().getID());
     } catch (DropGameException | QuitGameException | CloseGameException e) {
       logger.atSevere().withCause(e).log("Action failed");
     }

@@ -77,6 +77,20 @@ public abstract class RuntimeFlags {
 
   public abstract int v086BufferSize();
 
+  public abstract Duration twitterBroadcastDelay();
+
+  public abstract boolean twitterEnabled();
+
+  public abstract String twitterOAuthAccessToken();
+
+  public abstract String twitterOAuthAccessTokenSecret();
+
+  public abstract String twitterOAuthConsumerKey();
+
+  public abstract String twitterOAuthConsumerSecret();
+
+  public abstract ImmutableList<String> twitterPreventBroadcastNameSuffixes();
+
   public static Builder builder() {
     return new AutoValue_RuntimeFlags.Builder();
   }
@@ -116,6 +130,18 @@ public abstract class RuntimeFlags {
         .setTouchEmulinker(config.getBoolean("masterList.touchEmulinker", false))
         .setTouchKaillera(config.getBoolean("masterList.touchKaillera", false))
         .setV086BufferSize(config.getInt("controllers.v086.bufferSize", 4096))
+        .setTwitterBroadcastDelay(
+            Duration.ofSeconds(config.getInt("twitter.broadcastDelaySeconds", 15)))
+        .setTwitterEnabled(config.getBoolean("twitter.enabled", false))
+        .setTwitterOAuthAccessToken(config.getString("twitter.auth.oAuthAccessToken", ""))
+        .setTwitterOAuthAccessTokenSecret(
+            config.getString("twitter.auth.oAuthAccessTokenSecret", ""))
+        .setTwitterOAuthConsumerKey(config.getString("twitter.auth.oAuthConsumerKey", ""))
+        .setTwitterOAuthConsumerSecret(config.getString("twitter.auth.oAuthConsumerSecret", ""))
+        // TODO(nue): Read these from a file.
+        .setTwitterPreventBroadcastNameSuffixes(ImmutableList.of("待", "街", "町", "再起"))
+        // ImmutableList.copyOf(config.getString("twitter.preventBroadcastNameSuffixes",
+        // "").split(",")))
         .build();
   }
 
@@ -210,6 +236,21 @@ public abstract class RuntimeFlags {
     public abstract Builder setServerWebsite(String serverWebsite);
 
     public abstract Builder setV086BufferSize(int v086BufferSize);
+
+    public abstract Builder setTwitterBroadcastDelay(Duration twitterBroadcastDelay);
+
+    public abstract Builder setTwitterEnabled(boolean twitterEnabled);
+
+    public abstract Builder setTwitterOAuthAccessToken(String twitterOAuthAccessToken);
+
+    public abstract Builder setTwitterOAuthAccessTokenSecret(String twitterOAuthAccessTokenSecret);
+
+    public abstract Builder setTwitterOAuthConsumerKey(String twitterOAuthConsumerKey);
+
+    public abstract Builder setTwitterOAuthConsumerSecret(String twitterOAuthConsumerSecret);
+
+    public abstract Builder setTwitterPreventBroadcastNameSuffixes(
+        ImmutableList<String> twitterPreventBroadcastNameSuffixes);
 
     protected abstract RuntimeFlags innerBuild();
 

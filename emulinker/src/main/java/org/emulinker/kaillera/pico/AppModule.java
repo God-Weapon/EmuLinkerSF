@@ -29,6 +29,9 @@ import org.emulinker.kaillera.model.impl.KailleraServerImpl;
 import org.emulinker.kaillera.release.KailleraServerReleaseInfo;
 import org.emulinker.release.ReleaseInfo;
 import org.emulinker.util.EmuLinkerPropertiesConfig;
+import twitter4j.Twitter;
+import twitter4j.TwitterFactory;
+import twitter4j.conf.ConfigurationBuilder;
 
 @Module
 public abstract class AppModule {
@@ -36,6 +39,24 @@ public abstract class AppModule {
   // NOTE: This is NOT marked final and there are race conditions involved. Inject @RuntimeFlags
   // instead!
   public static Charset charsetDoNotUse = null;
+
+  @Provides
+  public static Twitter provideTwitter(TwitterFactory twitterFactory) {
+    return twitterFactory.getInstance();
+  }
+
+  @Provides
+  @Singleton
+  public static TwitterFactory provideTwitterFactory(RuntimeFlags flags) {
+    return new TwitterFactory(
+        new ConfigurationBuilder()
+            .setDebugEnabled(true)
+            .setOAuthAccessToken(flags.twitterOAuthAccessToken())
+            .setOAuthAccessTokenSecret(flags.twitterOAuthAccessTokenSecret())
+            .setOAuthConsumerKey(flags.twitterOAuthConsumerKey())
+            .setOAuthConsumerSecret(flags.twitterOAuthConsumerSecret())
+            .build());
+  }
 
   @Provides
   @Singleton

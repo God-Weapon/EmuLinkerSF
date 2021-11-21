@@ -10,6 +10,7 @@ import org.emulinker.kaillera.access.AccessManager;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 import org.emulinker.kaillera.controller.v086.V086ClientHandler;
 import org.emulinker.kaillera.controller.v086.protocol.*;
+import org.emulinker.kaillera.lookingforgame.TwitterBroadcaster;
 import org.emulinker.kaillera.model.event.*;
 import org.emulinker.kaillera.model.exception.ActionException;
 import org.emulinker.kaillera.model.exception.GameChatException;
@@ -25,13 +26,16 @@ public class GameChatAction
   public static final byte STATUS_IDLE = 1;
 
   private final GameOwnerCommandAction gameOwnerCommandAction;
+  private final TwitterBroadcaster lookingForGameReporter;
 
   private int actionCount = 0;
   private int handledCount = 0;
 
   @Inject
-  GameChatAction(GameOwnerCommandAction gameOwnerCommandAction) {
+  GameChatAction(
+      GameOwnerCommandAction gameOwnerCommandAction, TwitterBroadcaster lookingForGameReporter) {
     this.gameOwnerCommandAction = gameOwnerCommandAction;
+    this.lookingForGameReporter = lookingForGameReporter;
   }
 
   @Override
@@ -590,6 +594,13 @@ public class GameChatAction
         } catch (Exception e) {
         }
         return;
+      } else if (((GameChat) message).message().equals("/stop")) {
+        KailleraUserImpl user = (KailleraUserImpl) clientHandler.getUser();
+        if (lookingForGameReporter.cancelActionsForUser(user.getID())) {
+          user.getGame().announce("Canceled pending tweet.", user);
+        } else {
+          user.getGame().announce("No pending tweets.", user);
+        }
       } else
         clientHandler
             .getUser()

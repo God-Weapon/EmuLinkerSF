@@ -6,6 +6,7 @@ import javax.inject.Singleton;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 import org.emulinker.kaillera.controller.v086.V086ClientHandler;
 import org.emulinker.kaillera.controller.v086.protocol.*;
+import org.emulinker.kaillera.lookingforgame.TwitterBroadcaster;
 import org.emulinker.kaillera.model.KailleraGame;
 import org.emulinker.kaillera.model.event.*;
 import org.emulinker.kaillera.model.exception.StartGameException;
@@ -20,8 +21,12 @@ public class StartGameAction
   private int actionCount = 0;
   private int handledCount = 0;
 
+  private final TwitterBroadcaster lookingForGameReporter;
+
   @Inject
-  StartGameAction() {}
+  StartGameAction(TwitterBroadcaster lookingForGameReporter) {
+    this.lookingForGameReporter = lookingForGameReporter;
+  }
 
   @Override
   public int getActionPerformedCount() {
@@ -82,5 +87,7 @@ public class StartGameAction
     } catch (MessageFormatException e) {
       logger.atSevere().withCause(e).log("Failed to contruct StartGame_Notification message");
     }
+
+    lookingForGameReporter.cancelActionsForGame(gameStartedEvent.getGame().getID());
   }
 }

@@ -7,6 +7,7 @@ import javax.inject.Singleton;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 import org.emulinker.kaillera.controller.v086.V086ClientHandler;
 import org.emulinker.kaillera.controller.v086.protocol.*;
+import org.emulinker.kaillera.lookingforgame.TwitterBroadcaster;
 import org.emulinker.kaillera.model.*;
 import org.emulinker.kaillera.model.event.*;
 import org.emulinker.kaillera.model.exception.JoinGameException;
@@ -22,8 +23,12 @@ public class JoinGameAction
   private int actionCount = 0;
   private int handledCount = 0;
 
+  private final TwitterBroadcaster lookingForGameReporter;
+
   @Inject
-  JoinGameAction() {}
+  JoinGameAction(TwitterBroadcaster lookingForGameReporter) {
+    this.lookingForGameReporter = lookingForGameReporter;
+  }
 
   @Override
   public int getActionPerformedCount() {
@@ -81,7 +86,7 @@ public class JoinGameAction
 
         for (KailleraUser player : game.getPlayers()) {
           if (!player.equals(thisUser)) {
-            if (player.getStealth() == false)
+            if (!player.getStealth())
               players.add(
                   PlayerInformation.Player.create(
                       player.getName(),
@@ -94,7 +99,7 @@ public class JoinGameAction
         clientHandler.send(PlayerInformation.create(clientHandler.getNextMessageNumber(), players));
       }
 
-      if (user.getStealth() == false)
+      if (!user.getStealth())
         clientHandler.send(
             JoinGame_Notification.create(
                 clientHandler.getNextMessageNumber(),
@@ -106,6 +111,10 @@ public class JoinGameAction
                 user.getConnectionType()));
     } catch (MessageFormatException e) {
       logger.atSevere().withCause(e).log("Failed to contruct JoinGame_Notification message");
+    }
+
+    if (userJoinedEvent.getGame().getOwner().getID() != userJoinedEvent.getUser().getID()) {
+      lookingForGameReporter.cancelActionsForGame(userJoinedEvent.getGame().getID());
     }
   }
 }
