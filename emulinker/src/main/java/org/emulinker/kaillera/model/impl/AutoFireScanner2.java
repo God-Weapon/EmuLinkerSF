@@ -244,7 +244,7 @@ public class AutoFireScanner2 implements AutoFireDetector {
                       + "\t"
                       + (aSequence < bSequence ? aSequence : bSequence)
                       + "\t"
-                      + game.getID()
+                      + game.getId()
                       + "\t"
                       + game.getRomName()
                       + "\t"

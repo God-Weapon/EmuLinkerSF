@@ -22,7 +22,7 @@ public class ConnectMessage_HELLO extends ConnectMessage {
   }
 
   @Override
-  public String description() {
+  public String getDescription() {
     return DESC;
   }
 

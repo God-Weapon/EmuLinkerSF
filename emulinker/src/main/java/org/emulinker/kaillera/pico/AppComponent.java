@@ -10,7 +10,7 @@ import org.emulinker.kaillera.controller.KailleraServerController;
 import org.emulinker.kaillera.controller.connectcontroller.ConnectController;
 import org.emulinker.kaillera.master.client.MasterListUpdaterImpl;
 import org.emulinker.kaillera.model.KailleraServer;
-import org.emulinker.release.ReleaseInfo;
+import org.emulinker.kaillera.release.ReleaseInfo;
 
 @Singleton
 @Component(modules = AppModule.class)

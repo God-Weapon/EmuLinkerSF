@@ -51,7 +51,7 @@ public class PicoStarter {
     metrics.registerAll(new MemoryUsageGaugeSet());
 
     RuntimeFlags flags = component.getRuntimeFlags();
-    if (flags.metricsEnabled()) {
+    if (flags.getMetricsEnabled()) {
       // TODO(nue): Pass this data to a central server so we can see how performance changes over
       // time in prod.
       // "graphite" is the name of a service in docker-compose.yaml.

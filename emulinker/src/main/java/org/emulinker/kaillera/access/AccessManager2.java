@@ -178,7 +178,7 @@ public final class AccessManager2 implements AccessManager, Runnable {
 
     try {
       FileInputStream file = new FileInputStream(this.accessFile);
-      Reader temp = new InputStreamReader(file, flags.charset());
+      Reader temp = new InputStreamReader(file, flags.getCharset());
       BufferedReader reader = new BufferedReader(temp);
       String line = null;
       while ((line = reader.readLine()) != null) {

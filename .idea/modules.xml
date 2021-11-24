@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/EmuLinkerSF-Netosuma.iml" filepath="$PROJECT_DIR$/.idea/EmuLinkerSF-Netosuma.iml" />
+      <module fileurl="file://$PROJECT_DIR$/emulinker/emulinkersf-netosuma.iml" filepath="$PROJECT_DIR$/emulinker/emulinkersf-netosuma.iml" />
+    </modules>
+  </component>
+</project>

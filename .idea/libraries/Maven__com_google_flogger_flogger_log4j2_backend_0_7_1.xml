@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: com.google.flogger:flogger-log4j2-backend:0.7.1">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/google/flogger/flogger-log4j2-backend/0.7.1/flogger-log4j2-backend-0.7.1.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/com/google/flogger/flogger-log4j2-backend/0.7.1/flogger-log4j2-backend-0.7.1-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/google/flogger/flogger-log4j2-backend/0.7.1/flogger-log4j2-backend-0.7.1-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

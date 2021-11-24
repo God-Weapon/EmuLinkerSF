@@ -7,7 +7,7 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.emulinker.kaillera.controller.connectcontroller.ConnectController;
 import org.emulinker.kaillera.master.*;
 import org.emulinker.kaillera.model.*;
-import org.emulinker.release.ReleaseInfo;
+import org.emulinker.kaillera.release.ReleaseInfo;
 
 public class KailleraMasterUpdateTask implements MasterListUpdateTask {
   private static final FluentLogger logger = FluentLogger.forEnclosingClass();
@@ -30,7 +30,6 @@ public class KailleraMasterUpdateTask implements MasterListUpdateTask {
     this.kailleraServer = kailleraServer;
     this.releaseInfo = releaseInfo;
     this.statsCollector = statsCollector;
-    this.publicInfo = publicInfo;
 
     httpClient = new HttpClient();
     httpClient.setConnectionTimeout(5000);
@@ -56,7 +55,7 @@ public class KailleraMasterUpdateTask implements MasterListUpdateTask {
     for (KailleraGame game : kailleraServer.getGames()) {
       if (game.getStatus() != KailleraGame.STATUS_WAITING) continue;
 
-      waitingGames.append(game.getID());
+      waitingGames.append(game.getId());
       waitingGames.append("|");
       waitingGames.append(game.getRomName());
       waitingGames.append("|");

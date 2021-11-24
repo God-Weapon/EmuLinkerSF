@@ -7,7 +7,7 @@ import org.emulinker.kaillera.model.event.KailleraEventListener;
 import org.emulinker.kaillera.model.exception.*;
 import org.emulinker.kaillera.model.impl.KailleraUserImpl;
 import org.emulinker.kaillera.model.impl.Trivia;
-import org.emulinker.release.*;
+import org.emulinker.kaillera.release.ReleaseInfo;
 
 public interface KailleraServer {
   public ReleaseInfo getReleaseInfo();

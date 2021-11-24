@@ -26,8 +26,6 @@ import org.emulinker.kaillera.model.KailleraServer;
 import org.emulinker.kaillera.model.impl.AutoFireDetectorFactory;
 import org.emulinker.kaillera.model.impl.AutoFireDetectorFactoryImpl;
 import org.emulinker.kaillera.model.impl.KailleraServerImpl;
-import org.emulinker.kaillera.release.KailleraServerReleaseInfo;
-import org.emulinker.release.ReleaseInfo;
 import org.emulinker.util.EmuLinkerPropertiesConfig;
 import twitter4j.Twitter;
 import twitter4j.TwitterFactory;
@@ -51,10 +49,10 @@ public abstract class AppModule {
     return new TwitterFactory(
         new ConfigurationBuilder()
             .setDebugEnabled(true)
-            .setOAuthAccessToken(flags.twitterOAuthAccessToken())
-            .setOAuthAccessTokenSecret(flags.twitterOAuthAccessTokenSecret())
-            .setOAuthConsumerKey(flags.twitterOAuthConsumerKey())
-            .setOAuthConsumerSecret(flags.twitterOAuthConsumerSecret())
+            .setOAuthAccessToken(flags.getTwitterOAuthAccessToken())
+            .setOAuthAccessTokenSecret(flags.getTwitterOAuthAccessTokenSecret())
+            .setOAuthConsumerKey(flags.getTwitterOAuthConsumerKey())
+            .setOAuthConsumerSecret(flags.getTwitterOAuthConsumerSecret())
             .build());
   }
 
@@ -71,15 +69,15 @@ public abstract class AppModule {
   @Provides
   @Singleton
   public static RuntimeFlags provideRuntimeFlags(Configuration configuration) {
-    RuntimeFlags flags = RuntimeFlags.loadFromApacheConfiguration(configuration);
-    AppModule.charsetDoNotUse = flags.charset();
+    RuntimeFlags flags = RuntimeFlags.Companion.loadFromApacheConfiguration(configuration);
+    AppModule.charsetDoNotUse = flags.getCharset();
     return flags;
   }
 
   @Provides
   public static ThreadPoolExecutor provideThreadPoolExecutor(RuntimeFlags flags) {
     return new ThreadPoolExecutor(
-        flags.coreThreadPoolSize(),
+        flags.getCoreThreadPoolSize(),
         Integer.MAX_VALUE,
         60L,
         SECONDS,
@@ -91,10 +89,6 @@ public abstract class AppModule {
   public static MetricRegistry provideMetricRegistry() {
     return new MetricRegistry();
   }
-
-  @Binds
-  public abstract ReleaseInfo bindKailleraServerReleaseInfo(
-      KailleraServerReleaseInfo kailleraServerReleaseInfo);
 
   @Binds
   public abstract AccessManager bindAccessManager(AccessManager2 accessManager2);

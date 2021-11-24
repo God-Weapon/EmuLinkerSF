@@ -13,7 +13,7 @@ public class ConnectMessage_TOO extends ConnectMessage {
   }
 
   @Override
-  public String description() {
+  public String getDescription() {
     return DESC;
   }
 

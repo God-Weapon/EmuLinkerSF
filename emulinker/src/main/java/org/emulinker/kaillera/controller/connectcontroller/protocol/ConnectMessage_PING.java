@@ -18,7 +18,7 @@ public class ConnectMessage_PING extends ConnectMessage {
   }
 
   @Override
-  public String description() {
+  public String getDescription() {
     return DESC;
   }
 

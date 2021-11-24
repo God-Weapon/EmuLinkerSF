@@ -76,8 +76,8 @@ public final class V086ClientHandler extends PrivateUDPServer implements Kailler
 
     this.v086Controller = v086Controller;
 
-    inBuffer = ByteBuffer.allocateDirect(flags.v086BufferSize());
-    outBuffer = ByteBuffer.allocateDirect(flags.v086BufferSize());
+    inBuffer = ByteBuffer.allocateDirect(flags.getV086BufferSize());
+    outBuffer = ByteBuffer.allocateDirect(flags.getV086BufferSize());
     inBuffer.order(ByteOrder.LITTLE_ENDIAN);
     outBuffer.order(ByteOrder.LITTLE_ENDIAN);
 
@@ -208,7 +208,7 @@ public final class V086ClientHandler extends PrivateUDPServer implements Kailler
                 + "/"
                 + v086Controller.threadPool.getPoolSize()
                 + ")");
-    v086Controller.clientHandlers.put(user.getID(), this);
+    v086Controller.clientHandlers.put(user.getId(), this);
   }
 
   @Override
@@ -236,7 +236,7 @@ public final class V086ClientHandler extends PrivateUDPServer implements Kailler
     }
 
     if (user != null) {
-      v086Controller.clientHandlers.remove(user.getID());
+      v086Controller.clientHandlers.remove(user.getId());
       user.stop();
       user = null;
     }
@@ -309,9 +309,9 @@ public final class V086ClientHandler extends PrivateUDPServer implements Kailler
       synchronized (inSynch) {
         V086Message[] messages = inBundle.getMessages();
         if (inBundle.getNumMessages() == 1) {
-          lastMessageNumber = messages[0].messageNumber();
+          lastMessageNumber = messages[0].getMessageNumber();
 
-          V086Action action = v086Controller.actions[messages[0].messageId()];
+          V086Action action = v086Controller.actions[messages[0].getMessageId()];
           if (action == null) {
             V086Controller.logger
                 .atSevere()
@@ -329,7 +329,7 @@ public final class V086ClientHandler extends PrivateUDPServer implements Kailler
              */
             {
               prevMessageNumber = lastMessageNumber;
-              lastMessageNumber = messages[i].messageNumber();
+              lastMessageNumber = messages[i].getMessageNumber();
 
               if ((prevMessageNumber + 1) != lastMessageNumber) {
                 if (prevMessageNumber == 0xFFFF && lastMessageNumber == 0) {
@@ -348,7 +348,7 @@ public final class V086ClientHandler extends PrivateUDPServer implements Kailler
                 }
               }
 
-              V086Action action = v086Controller.actions[messages[i].messageId()];
+              V086Action action = v086Controller.actions[messages[i].getMessageId()];
               if (action == null) {
                 V086Controller.logger
                     .atSevere()

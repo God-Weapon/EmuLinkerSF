@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: jaxen:jaxen:1.0-FCS">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/jaxen/jaxen/1.0-FCS/jaxen-1.0-FCS.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/jaxen/jaxen/1.0-FCS/jaxen-1.0-FCS-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/jaxen/jaxen/1.0-FCS/jaxen-1.0-FCS-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

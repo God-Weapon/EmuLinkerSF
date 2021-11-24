@@ -98,7 +98,7 @@ public final class V086Controller implements KailleraServerController {
             + ".  Make sure these ports are open in your firewall!");
 
     Preconditions.checkArgument(
-        flags.v086BufferSize() > 0, "controllers.v086.bufferSize must be > 0");
+        flags.getV086BufferSize() > 0, "controllers.v086.bufferSize must be > 0");
 
     // array access should be faster than a hash and we won't have to create
     // a new Integer each time
@@ -175,7 +175,7 @@ public final class V086Controller implements KailleraServerController {
 
   @Override
   public int getBufferSize() {
-    return flags.v086BufferSize();
+    return flags.getV086BufferSize();
   }
 
   public final ImmutableMap<Class<?>, V086ServerEventHandler> getServerEventHandlers() {
