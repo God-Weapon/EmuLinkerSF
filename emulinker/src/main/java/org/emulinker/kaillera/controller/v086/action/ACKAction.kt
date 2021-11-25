@@ -78,7 +78,7 @@ class ACKAction @Inject internal constructor() :
         if (user.status != KailleraUser.STATUS_CONNECTING.toInt() && user != thisUser)
             users.add(
                 ServerStatus.User(
-                    user.name,
+                    user.name!!,
                     user.ping.toLong(),
                     user.status.toByte(),
                     user.id,
@@ -96,10 +96,10 @@ class ACKAction @Inject internal constructor() :
         }
         games.add(
             ServerStatus.Game(
-                game.romName,
+                game.romName!!,
                 game.id,
-                game.clientType,
-                game.owner!!.name,
+                game.clientType!!,
+                game.owner!!.name!!,
                 num.toString() + "/" + game.maxUsers,
                 game.status.toByte()))
       }
@@ -187,7 +187,7 @@ class ACKAction @Inject internal constructor() :
     try {
       clientHandler.send(ServerStatus(clientHandler.nextMessageNumber, users, games))
     } catch (e: MessageFormatException) {
-      logger.atSevere().withCause(e).log("Failed to contruct new ServerStatus for users")
+      logger.atSevere().withCause(e).log("Failed to construct new ServerStatus for users")
     }
   }
 

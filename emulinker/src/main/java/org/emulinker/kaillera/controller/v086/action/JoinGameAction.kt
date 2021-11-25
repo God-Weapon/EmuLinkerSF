@@ -63,7 +63,7 @@ class JoinGameAction
             if (!player!!.stealth)
                 players.add(
                     PlayerInformation.Player(
-                        player.name, player.ping.toLong(), player.id, player.connectionType))
+                        player.name!!, player.ping.toLong(), player.id, player.connectionType))
           }
         }
         clientHandler.send(PlayerInformation(clientHandler.nextMessageNumber, players))

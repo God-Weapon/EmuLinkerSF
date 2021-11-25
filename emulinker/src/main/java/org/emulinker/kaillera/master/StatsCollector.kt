@@ -5,6 +5,8 @@ import org.emulinker.kaillera.model.KailleraServer
 
 interface StatsCollector {
   fun markGameAsStarted(server: KailleraServer, game: KailleraGame)
-  fun getStartedGamesList(): List<String>
+
+  fun getStartedGamesList(): MutableList<String>
+
   fun clearStartedGamesList()
 }

@@ -25,14 +25,14 @@ data class ServerStatus
   override fun toString(): String {
     val sb = StringBuilder()
     sb.append(infoString + "[users=" + users.size + " games=" + games.size + "]")
-    if (!users.isEmpty()) {
+    if (users.isNotEmpty()) {
       sb.append(EmuUtil.LB)
     }
     for (u in users) {
       sb.append("\t" + u)
       sb.append(EmuUtil.LB)
     }
-    if (!games.isEmpty()) {
+    if (games.isNotEmpty()) {
       sb.append(EmuUtil.LB)
     }
     for (g in games) {
@@ -62,7 +62,7 @@ data class ServerStatus
   // TODO(nue): this User and Game class should not be here.
   data class User
       constructor(
-          val username: String?,
+          val username: String,
           val ping: Long,
           val status: Byte,
           val userId: Int,
@@ -70,9 +70,6 @@ data class ServerStatus
       ) {
 
     init {
-      if (Strings.isNullOrEmpty(username))
-          throw MessageFormatException(
-              "Invalid $DESC format: userName.length == 0, (userID = $userId)")
       if (ping < 0 || ping > 2048)
           throw MessageFormatException("Invalid $DESC format: ping out of acceptable range: $ping")
       if (status < 0 || status > 2)
@@ -114,11 +111,11 @@ data class ServerStatus
 
   data class Game
       constructor(
-          val romName: String?,
+          val romName: String,
           val gameId: Int,
-          val clientType: String?,
-          val username: String?,
-          val players: String?,
+          val clientType: String,
+          val username: String,
+          val players: String,
           val status: Byte
       ) {
 

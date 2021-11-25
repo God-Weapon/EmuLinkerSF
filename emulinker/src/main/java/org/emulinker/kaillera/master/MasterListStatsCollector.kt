@@ -15,7 +15,7 @@ class MasterListStatsCollector @Inject internal constructor() : StatsCollector {
   }
 
   @Synchronized
-  override fun getStartedGamesList(): List<String> {
+  override fun getStartedGamesList(): MutableList<String> {
     return startedGamesList
   }
 

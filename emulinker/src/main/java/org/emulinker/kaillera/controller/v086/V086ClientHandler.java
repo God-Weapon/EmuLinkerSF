@@ -269,21 +269,24 @@ public final class V086ClientHandler extends PrivateUDPServer implements Kailler
       V086Controller.logger
           .atWarning()
           .withCause(e)
-          .log(toString() + " failed to parse: " + EmuUtil.dumpBuffer(buffer));
+          .log(toString() + " failed to parse: " + EmuUtil.INSTANCE.dumpBuffer(buffer));
       return;
     } catch (V086BundleFormatException e) {
       buffer.rewind();
       V086Controller.logger
           .atWarning()
           .withCause(e)
-          .log(toString() + " received invalid message bundle: " + EmuUtil.dumpBuffer(buffer));
+          .log(
+              toString()
+                  + " received invalid message bundle: "
+                  + EmuUtil.INSTANCE.dumpBuffer(buffer));
       return;
     } catch (MessageFormatException e) {
       buffer.rewind();
       V086Controller.logger
           .atWarning()
           .withCause(e)
-          .log(toString() + " received invalid message: " + EmuUtil.dumpBuffer(buffer));
+          .log(toString() + " received invalid message: " + EmuUtil.INSTANCE.dumpBuffer(buffer));
       return;
     }
 

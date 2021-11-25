@@ -72,7 +72,7 @@ class KailleraGameImpl(
   private val timeoutMillis: Int
   private val desynchTimeouts: Int
 
-  override val players: MutableList<KailleraUser?> = CopyOnWriteArrayList()
+  override val players: MutableList<KailleraUser> = CopyOnWriteArrayList()
 
   private val statsCollector: StatsCollector?
   private val kickedUsers: MutableList<String> = ArrayList()
@@ -227,7 +227,7 @@ class KailleraGameImpl(
   @Synchronized
   @Throws(JoinGameException::class)
   override fun join(user: KailleraUser?): Int {
-    val access = server.getAccessManager().getAccess(user!!.socketAddress!!.address)
+    val access = server.accessManager.getAccess(user!!.socketAddress!!.address)
 
     // SF MOD - Join room spam protection
     if (lastAddress == user.connectSocketAddress.address.hostAddress) {
@@ -295,7 +295,7 @@ class KailleraGameImpl(
     if (mutedUsers.contains(user.connectSocketAddress.address.hostAddress)) {
       user.mute = true
     }
-    players.add(user as KailleraUserImpl?)
+    players.add(user as KailleraUserImpl)
     user.playerNumber = players.size
     server.addEvent(GameStatusChangedEvent(server, this))
     logger.atInfo().log("$user joined: $this")
@@ -362,7 +362,7 @@ class KailleraGameImpl(
   @Synchronized
   @Throws(StartGameException::class)
   override fun start(user: KailleraUser?) {
-    val access = server.getAccessManager().getAccess(user!!.socketAddress!!.address)
+    val access = server.accessManager.getAccess(user!!.socketAddress!!.address)
     if (user != owner && access < AccessManager.ACCESS_ADMIN) {
       logger.atWarning().log("$user start game denied: not the owner of $this")
       throw StartGameException(
@@ -437,15 +437,15 @@ class KailleraGameImpl(
     playerActionQueue = arrayOfNulls(players.size)
     startTimeout = false
     delay = 1
-    if (server.getUsers().size > 60) {
+    if (server.users.size > 60) {
       p2P = true
     }
     var i = 0
     while (i < playerActionQueue!!.size && i < players.size) {
       val player = players[i]
       val playerNumber = i + 1
-      if (!swap) player!!.playerNumber = playerNumber
-      player!!.timeouts = 0
+      if (!swap) player.playerNumber = playerNumber
+      player.timeouts = 0
       player.frameCount = 0
       playerActionQueue!![i] =
           PlayerActionQueue(
@@ -657,7 +657,7 @@ class KailleraGameImpl(
     if (!isSynched) {
       throw GameDataException(
           EmuLang.getString("KailleraGameImpl.DesynchedWarning"),
-          data,
+          data!!,
           actionsPerMessage,
           playerNumber,
           playerActionQueue!!.size)
@@ -686,7 +686,7 @@ class KailleraGameImpl(
     if (!isSynched)
         throw GameDataException(
             EmuLang.getString("KailleraGameImpl.DesynchedWarning"),
-            data,
+            data!!,
             user.bytesPerAction,
             playerNumber,
             playerActionQueue!!.size)
@@ -702,7 +702,7 @@ class KailleraGameImpl(
     val playerActionQueue = playerActionQueue!![playerNumber - 1]
     if (!playerActionQueue!!.isSynched || e == playerActionQueue.lastTimeout) return
     playerActionQueue.lastTimeout = e
-    val player: KailleraUser = e.player
+    val player: KailleraUser = e.player!!
     if (timeoutNumber < desynchTimeouts) {
       if (startTimeout) player.timeouts = player.timeouts + 1
       if (timeoutNumber % 12 == 0) {

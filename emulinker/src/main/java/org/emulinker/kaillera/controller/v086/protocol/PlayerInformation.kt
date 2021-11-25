@@ -1,6 +1,5 @@
 package org.emulinker.kaillera.controller.v086.protocol
 
-import com.google.common.base.Strings
 import java.nio.ByteBuffer
 import java.util.function.Consumer
 import org.emulinker.kaillera.controller.messaging.MessageFormatException
@@ -49,15 +48,9 @@ data class PlayerInformation
   }
 
   data class Player
-      constructor(
-          val username: String?, val ping: Long, val userId: Int, val connectionType: Byte
-      ) {
+      constructor(val username: String, val ping: Long, val userId: Int, val connectionType: Byte) {
 
     init {
-      if (Strings.isNullOrEmpty(username)) {
-        throw MessageFormatException(
-            "Invalid $DESC format: userName.length == 0, (userID = $userId)")
-      }
       if (ping < 0 || ping > 2048) { // what should max ping be?
         throw MessageFormatException("Invalid $DESC format: ping out of acceptable range: $ping")
       }

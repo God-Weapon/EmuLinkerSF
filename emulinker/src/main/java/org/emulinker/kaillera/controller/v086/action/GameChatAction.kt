@@ -354,7 +354,7 @@ class GameChatAction
                   "IGNORE USER ERROR: " +
                       user.name +
                       ": " +
-                      clientHandler.remoteSocketAddress.hostName)
+                      clientHandler.remoteSocketAddress!!.hostName)
           return
         }
       } else if (message.message!!.startsWith("/unignore")) {
@@ -395,7 +395,7 @@ class GameChatAction
                   "UNIGNORE USER ERROR: " +
                       user.name +
                       ": " +
-                      clientHandler.remoteSocketAddress.hostName)
+                      clientHandler.remoteSocketAddress!!.hostName)
           return
         }
       } else if (message.message!!.startsWith("/me")) {

@@ -140,7 +140,7 @@ public class PlayerActionQueue {
     			}
     		}
     */
-    throw new PlayerTimeoutException(thisPlayerNumber, thisPlayer);
+    throw new PlayerTimeoutException(thisPlayerNumber, /* timeoutNumber= */ -1, thisPlayer);
   }
 
   private int getSize(int playerNumber) {

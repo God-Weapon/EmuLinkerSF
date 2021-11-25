@@ -23,6 +23,45 @@ import org.emulinker.util.EmuLang
 import org.emulinker.util.EmuUtil
 import org.emulinker.util.WildcardStringPattern
 
+private val logger = FluentLogger.forEnclosingClass()
+
+private const val COMMAND_ANNOUNCE = "/announce"
+
+private const val COMMAND_ANNOUNCEALL = "/announceall"
+
+private const val COMMAND_ANNOUNCEGAME = "/announcegame"
+
+private const val COMMAND_BAN = "/ban"
+
+private const val COMMAND_CLEAR = "/clear"
+
+private const val COMMAND_CLOSEGAME = "/closegame"
+
+private const val COMMAND_FINDGAME = "/findgame"
+
+private const val COMMAND_FINDUSER = "/finduser"
+
+private const val COMMAND_HELP = "/help"
+
+private const val COMMAND_KICK = "/kick"
+
+private const val COMMAND_SILENCE = "/silence"
+
+private const val COMMAND_TEMPADMIN = "/tempadmin"
+
+private const val COMMAND_TRIVIA = "/trivia"
+
+private const val COMMAND_VERSION = "/version"
+
+// SF MOD
+private const val COMMAND_STEALTH = "/stealth"
+
+private const val COMMAND_TEMPELEVATED = "/tempelevated"
+
+private const val COMMAND_TEMPMODERATOR = "/tempmoderator"
+
+private const val DESC = "AdminCommandAction"
+
 @Singleton
 class AdminCommandAction @Inject internal constructor() : V086Action<Chat> {
   override val actionPerformedCount = 0
@@ -30,46 +69,31 @@ class AdminCommandAction @Inject internal constructor() : V086Action<Chat> {
     return DESC
   }
 
-  fun isValidCommand(chat: String?): Boolean {
-    if (chat!!.startsWith(COMMAND_HELP)) {
-      return true
-    } else if (chat.startsWith(COMMAND_FINDUSER)) {
-      return true
-    } else if (chat.startsWith(COMMAND_FINDGAME)) {
-      return true
-    } else if (chat.startsWith(COMMAND_CLOSEGAME)) {
-      return true
-    } else if (chat.startsWith(COMMAND_KICK)) {
-      return true
-    } else if (chat.startsWith(COMMAND_BAN)) {
-      return true
-    } else if (chat.startsWith(COMMAND_TEMPELEVATED)) {
-      return true
-    } else if (chat.startsWith(COMMAND_TEMPMODERATOR)) {
-      return true
-    } else if (chat.startsWith(COMMAND_SILENCE)) {
-      return true
-    } else if (chat.startsWith(COMMAND_ANNOUNCEGAME)) {
-      return true
-    } else if (chat.startsWith(COMMAND_ANNOUNCE)) {
-      return true
-    } else if (chat.startsWith(COMMAND_TEMPADMIN)) {
-      return true
-    } else if (chat.startsWith(COMMAND_VERSION)) {
-      return true
-    } else if (chat.startsWith(COMMAND_CLEAR)) {
-      return true
-    } else if (chat.startsWith(COMMAND_STEALTH)) {
-      return true
-    } else if (chat.startsWith(COMMAND_TRIVIA)) {
-      return true
+  fun isValidCommand(chat: String): Boolean {
+    return when {
+      chat.startsWith(COMMAND_ANNOUNCE) ||
+          chat.startsWith(COMMAND_ANNOUNCEGAME) ||
+          chat.startsWith(COMMAND_BAN) ||
+          chat.startsWith(COMMAND_CLEAR) ||
+          chat.startsWith(COMMAND_CLOSEGAME) ||
+          chat.startsWith(COMMAND_FINDGAME) ||
+          chat.startsWith(COMMAND_FINDUSER) ||
+          chat.startsWith(COMMAND_HELP) ||
+          chat.startsWith(COMMAND_KICK) ||
+          chat.startsWith(COMMAND_SILENCE) ||
+          chat.startsWith(COMMAND_STEALTH) ||
+          chat.startsWith(COMMAND_TEMPADMIN) ||
+          chat.startsWith(COMMAND_TEMPELEVATED) ||
+          chat.startsWith(COMMAND_TEMPMODERATOR) ||
+          chat.startsWith(COMMAND_TRIVIA) ||
+          chat.startsWith(COMMAND_VERSION) -> true
+      else -> false
     }
-    return false
   }
 
   @Throws(FatalActionException::class)
   override fun performAction(chatMessage: Chat, clientHandler: V086ClientHandler?) {
-    val chat = chatMessage.message
+    val chat: String = chatMessage.message!!
     val server = clientHandler!!.controller.server as KailleraServerImpl
     val accessManager = server.accessManager
     val user = clientHandler.user as KailleraUserImpl
@@ -96,39 +120,57 @@ class AdminCommandAction @Inject internal constructor() : V086Action<Chat> {
     }
     logger.atInfo().log("$user: Admin Command: $chat")
     try {
-      if (chat!!.startsWith(COMMAND_HELP)) {
-        processHelp(chat, server, user, clientHandler)
-      } else if (chat.startsWith(COMMAND_FINDUSER)) {
-        processFindUser(chat, server, user, clientHandler)
-      } else if (chat.startsWith(COMMAND_FINDGAME)) {
-        processFindGame(chat, server, user, clientHandler)
-      } else if (chat.startsWith(COMMAND_CLOSEGAME)) {
-        processCloseGame(chat, server, user, clientHandler)
-      } else if (chat.startsWith(COMMAND_KICK)) {
-        processKick(chat, server, user, clientHandler)
-      } else if (chat.startsWith(COMMAND_BAN)) {
-        processBan(chat, server, user, clientHandler)
-      } else if (chat.startsWith(COMMAND_TEMPELEVATED)) {
-        processTempElevated(chat, server, user, clientHandler)
-      } else if (chat.startsWith(COMMAND_TEMPMODERATOR)) {
-        processTempModerator(chat, server, user, clientHandler)
-      } else if (chat.startsWith(COMMAND_SILENCE)) {
-        processSilence(chat, server, user, clientHandler)
-      } else if (chat.startsWith(COMMAND_ANNOUNCEGAME)) {
-        processGameAnnounce(chat, server, user, clientHandler)
-      } else if (chat.startsWith(COMMAND_ANNOUNCE)) {
-        processAnnounce(chat, server, user, clientHandler)
-      } else if (chat.startsWith(COMMAND_TEMPADMIN)) {
-        processTempAdmin(chat, server, user, clientHandler)
-      } else if (chat.startsWith(COMMAND_VERSION)) {
-        processVersion(chat, server, user, clientHandler)
-      } else if (chat.startsWith(COMMAND_CLEAR)) {
-        processClear(chat, server, user, clientHandler)
-      } else if (chat.startsWith(COMMAND_STEALTH)) {
-        processStealth(chat, server, user, clientHandler)
-      } else if (chat.startsWith(COMMAND_TRIVIA)) {
-        processTrivia(chat, server, user, clientHandler)
-      } else throw ActionException("Invalid Command: $chat")
+      when {
+        chat.startsWith(COMMAND_HELP) -> {
+          processHelp(chat, server, user, clientHandler)
+        }
+        chat.startsWith(COMMAND_FINDUSER) -> {
+          processFindUser(chat, server, user, clientHandler)
+        }
+        chat.startsWith(COMMAND_FINDGAME) -> {
+          processFindGame(chat, server, user, clientHandler)
+        }
+        chat.startsWith(COMMAND_CLOSEGAME) -> {
+          processCloseGame(chat, server, user, clientHandler)
+        }
+        chat.startsWith(COMMAND_KICK) -> {
+          processKick(chat, server, user, clientHandler)
+        }
+        chat.startsWith(COMMAND_BAN) -> {
+          processBan(chat, server, user, clientHandler)
+        }
+        chat.startsWith(COMMAND_TEMPELEVATED) -> {
+          processTempElevated(chat, server, user, clientHandler)
+        }
+        chat.startsWith(COMMAND_TEMPMODERATOR) -> {
+          processTempModerator(chat, server, user, clientHandler)
+        }
+        chat.startsWith(COMMAND_SILENCE) -> {
+          processSilence(chat, server, user, clientHandler)
+        }
+        chat.startsWith(COMMAND_ANNOUNCEGAME) -> {
+          processGameAnnounce(chat, server, user, clientHandler)
+        }
+        chat.startsWith(COMMAND_ANNOUNCE) -> {
+          processAnnounce(chat, server, user, clientHandler)
+        }
+        chat.startsWith(COMMAND_TEMPADMIN) -> {
+          processTempAdmin(chat, server, user, clientHandler)
+        }
+        chat.startsWith(COMMAND_VERSION) -> {
+          processVersion(chat, server, user, clientHandler)
+        }
+        chat.startsWith(COMMAND_CLEAR) -> {
+          processClear(chat, server, user, clientHandler)
+        }
+        chat.startsWith(COMMAND_STEALTH) -> {
+          processStealth(chat, server, user, clientHandler)
+        }
+        chat.startsWith(COMMAND_TRIVIA) -> {
+          processTrivia(chat, server, user, clientHandler)
+        }
+        else -> throw ActionException("Invalid Command: $chat")
+      }
     } catch (e: ActionException) {
       logger.atSevere().withCause(e).log("Admin Command Failed: $user: $chat")
       try {
@@ -321,23 +363,13 @@ class AdminCommandAction @Inject internal constructor() : V086Action<Chat> {
     for (user in server.users) {
       if (!user.loggedIn) continue
       if (user.name!!.lowercase(Locale.getDefault()).contains(str.lowercase(Locale.getDefault()))) {
-        val sb = StringBuilder()
-        sb.append("UserID: ")
-        sb.append(user.id)
-        sb.append(", IP: ")
-        sb.append(user.connectSocketAddress.address.hostAddress)
-        sb.append(", Nick: <")
-        sb.append(user.name)
-        sb.append(">, Access: ")
-        sb.append(user.accessStr)
-        if (user.game != null) {
-          sb.append(", GameID: ")
-          sb.append(user.game!!.id)
-          sb.append(", Game: ")
-          sb.append(user.game!!.romName)
-        }
-        clientHandler!!.send(
-            InformationMessage(clientHandler.nextMessageNumber, "server", sb.toString()))
+        var msg =
+            "UserID: ${user.id}, IP: ${user.connectSocketAddress.address.hostAddress}, Nick: <${user.name}>, Access: ${user.accessStr}"
+        msg +=
+            if (user.game == null) ""
+            else ", GameID: ${user.game!!.id}, Game: ${user.game!!.romName}"
+
+        clientHandler!!.send(InformationMessage(clientHandler.nextMessageNumber, "server", msg))
         foundCount++
       }
     }
@@ -905,29 +937,5 @@ class AdminCommandAction @Inject internal constructor() : V086Action<Chat> {
     try {
       Thread.sleep(ms.toLong())
     } catch (e: Exception) {}
-  }
-
-  companion object {
-    private val logger = FluentLogger.forEnclosingClass()
-    const val COMMAND_ANNOUNCE = "/announce"
-    const val COMMAND_ANNOUNCEALL = "/announceall"
-    const val COMMAND_ANNOUNCEGAME = "/announcegame"
-    const val COMMAND_BAN = "/ban"
-    const val COMMAND_CLEAR = "/clear"
-    const val COMMAND_CLOSEGAME = "/closegame"
-    const val COMMAND_FINDGAME = "/findgame"
-    const val COMMAND_FINDUSER = "/finduser"
-    const val COMMAND_HELP = "/help"
-    const val COMMAND_KICK = "/kick"
-    const val COMMAND_SILENCE = "/silence"
-    const val COMMAND_TEMPADMIN = "/tempadmin"
-    const val COMMAND_VERSION = "/version"
-    const val COMMAND_TRIVIA = "/trivia"
-
-    // SF MOD
-    const val COMMAND_STEALTH = "/stealth"
-    const val COMMAND_TEMPELEVATED = "/tempelevated"
-    const val COMMAND_TEMPMODERATOR = "/tempmoderator"
-    private const val DESC = "AdminCommandAction"
   }
 }

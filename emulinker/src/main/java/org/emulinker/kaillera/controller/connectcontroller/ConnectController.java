@@ -185,7 +185,7 @@ public final class ConnectController extends UDPServer {
           "Received invalid message from "
               + EmuUtil.formatSocketAddress(fromSocketAddress)
               + ": "
-              + EmuUtil.dumpBuffer(buffer));
+              + EmuUtil.INSTANCE.dumpBuffer(buffer));
       return;
     }
 

@@ -58,7 +58,7 @@ public class MasterListUpdaterImpl implements MasterListUpdater, Executable {
   }
 
   @Override
-  public synchronized boolean isRunning() {
+  public synchronized boolean getRunning() {
     return isRunning;
   }
 
@@ -96,7 +96,7 @@ public class MasterListUpdaterImpl implements MasterListUpdater, Executable {
     if (publicInfo != null) {
       logger.atFine().log("MasterListUpdater thread received stop request!");
 
-      if (!isRunning()) {
+      if (!getRunning()) {
         logger.atFine().log("MasterListUpdater thread stop request ignored: not running!");
         return;
       }

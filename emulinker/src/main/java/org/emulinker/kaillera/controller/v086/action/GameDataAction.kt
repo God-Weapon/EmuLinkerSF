@@ -28,9 +28,9 @@ class GameDataAction @Inject internal constructor() :
       user.addGameData(data)
     } catch (e: GameDataException) {
       logger.atFine().withCause(e).log("Game data error")
-      if (e.hasResponse()) {
+      if (e.response != null) {
         try {
-          clientHandler!!.send(GameData.create(clientHandler.nextMessageNumber, e.response))
+          clientHandler!!.send(GameData.create(clientHandler.nextMessageNumber, e.response!!))
         } catch (e2: MessageFormatException) {
           logger.atSevere().withCause(e2).log("Failed to contruct GameData message")
         }

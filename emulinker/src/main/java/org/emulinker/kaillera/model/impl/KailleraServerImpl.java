@@ -43,7 +43,7 @@ public final class KailleraServerImpl implements KailleraServer, Executable {
   protected ReleaseInfo releaseInfo;
   protected AutoFireDetectorFactory autoFireDetectorFactory;
 
-  protected Map<Integer, KailleraUserImpl> users;
+  private Map<Integer, KailleraUserImpl> users;
   protected Map<Integer, KailleraGameImpl> games;
 
   private Trivia trivia = null;
@@ -74,7 +74,7 @@ public final class KailleraServerImpl implements KailleraServer, Executable {
 
     ImmutableList.Builder<String> loginMessagesBuilder = ImmutableList.builder();
     for (int i = 1; EmuLang.hasString("KailleraServerImpl.LoginMessage." + i); i++) {
-      loginMessagesBuilder.add(EmuLang.getString("KailleraServerImpl.LoginMessage." + i));
+      loginMessagesBuilder.add(EmuLang.INSTANCE.getString("KailleraServerImpl.LoginMessage." + i));
     }
     loginMessages = loginMessagesBuilder.build();
 
@@ -229,7 +229,7 @@ public final class KailleraServerImpl implements KailleraServer, Executable {
   }
 
   @Override
-  public boolean isRunning() {
+  public boolean getRunning() {
     return isRunning;
   }
 
@@ -281,7 +281,7 @@ public final class KailleraServerImpl implements KailleraServer, Executable {
   public String toString() {
     return String.format(
         "KailleraServerImpl[numUsers=%d numGames=%d isRunning=%b]",
-        getNumUsers(), getNumGames(), isRunning());
+        getNumUsers(), getNumGames(), getRunning());
   }
 
   @Override
@@ -299,7 +299,7 @@ public final class KailleraServerImpl implements KailleraServer, Executable {
   public synchronized void stop() {
     logger.atFine().log("KailleraServer thread received stop request!");
 
-    if (!isRunning()) {
+    if (!getRunning()) {
       logger.atFine().log("KailleraServer thread stop request ignored: not running!");
       return;
     }
@@ -359,7 +359,8 @@ public final class KailleraServerImpl implements KailleraServer, Executable {
           "Connection from "
               + EmuUtil.formatSocketAddress(clientSocketAddress)
               + " denied: Server is full!");
-      throw new ServerFullException(EmuLang.getString("KailleraServerImpl.LoginDeniedServerFull"));
+      throw new ServerFullException(
+          EmuLang.INSTANCE.getString("KailleraServerImpl.LoginDeniedServerFull"));
     }
 
     int userID = getNextUserID();
@@ -419,7 +420,8 @@ public final class KailleraServerImpl implements KailleraServer, Executable {
 
     if (user.getLoggedIn()) {
       logger.atWarning().log(user + " login denied: Already logged in!");
-      throw new LoginException(EmuLang.getString("KailleraServerImpl.LoginDeniedAlreadyLoggedIn"));
+      throw new LoginException(
+          EmuLang.INSTANCE.getString("KailleraServerImpl.LoginDeniedAlreadyLoggedIn"));
     }
 
     Integer userListKey = user.getId();
@@ -427,14 +429,15 @@ public final class KailleraServerImpl implements KailleraServer, Executable {
     if (u == null) {
       logger.atWarning().log(user + " login denied: Connection timed out!");
       throw new LoginException(
-          EmuLang.getString("KailleraServerImpl.LoginDeniedConnectionTimedOut"));
+          EmuLang.INSTANCE.getString("KailleraServerImpl.LoginDeniedConnectionTimedOut"));
     }
 
     int access = accessManager.getAccess(user.getSocketAddress().getAddress());
     if (access < AccessManager.ACCESS_NORMAL) {
       logger.atInfo().log(user + " login denied: Access denied");
       users.remove(userListKey);
-      throw new LoginException(EmuLang.getString("KailleraServerImpl.LoginDeniedAccessDenied"));
+      throw new LoginException(
+          EmuLang.INSTANCE.getString("KailleraServerImpl.LoginDeniedAccessDenied"));
     }
 
     if (access == AccessManager.ACCESS_NORMAL
@@ -443,7 +446,7 @@ public final class KailleraServerImpl implements KailleraServer, Executable {
       logger.atInfo().log(user + " login denied: Ping " + user.getPing() + " > " + getMaxPing());
       users.remove(userListKey);
       throw new PingTimeException(
-          EmuLang.getString(
+          EmuLang.INSTANCE.getString(
               "KailleraServerImpl.LoginDeniedPingTooHigh",
               (user.getPing() + " > " + getMaxPing())));
     }
@@ -457,7 +460,7 @@ public final class KailleraServerImpl implements KailleraServer, Executable {
               + " Not Allowed");
       users.remove(userListKey);
       throw new LoginException(
-          EmuLang.getString(
+          EmuLang.INSTANCE.getString(
               "KailleraServerImpl.LoginDeniedConnectionTypeDenied",
               KailleraUser.Companion.getCONNECTION_TYPE_NAMES()[user.getConnectionType()]));
     }
@@ -466,29 +469,31 @@ public final class KailleraServerImpl implements KailleraServer, Executable {
       logger.atWarning().log(user + " login denied: Invalid ping: " + user.getPing());
       users.remove(userListKey);
       throw new PingTimeException(
-          EmuLang.getString("KailleraServerImpl.LoginErrorInvalidPing", user.getPing()));
+          EmuLang.INSTANCE.getString("KailleraServerImpl.LoginErrorInvalidPing", user.getPing()));
     }
 
     if (access == AccessManager.ACCESS_NORMAL && Strings.isNullOrEmpty(user.getName())
         || user.getName().isBlank()) {
       logger.atInfo().log(user + " login denied: Empty UserName");
       users.remove(userListKey);
-      throw new UserNameException(EmuLang.getString("KailleraServerImpl.LoginDeniedUserNameEmpty"));
+      throw new UserNameException(
+          EmuLang.INSTANCE.getString("KailleraServerImpl.LoginDeniedUserNameEmpty"));
     }
 
     // new SF MOD - Username filter
-    if ((user.getName().equals("Server") || user.getName().toLowerCase().contains("|"))
+    String nameLower = user.getName().toLowerCase();
+    if ((user.getName().equals("Server") || nameLower.contains("|"))
         || (access == AccessManager.ACCESS_NORMAL
-            && (user.getName().toLowerCase().contains("www.")
-                || user.getName().toLowerCase().contains("http://")
-                || user.getName().toLowerCase().contains("https://")
-                || user.getName().toLowerCase().contains("\\")
-                || user.getName().toLowerCase().contains("�")
-                || user.getName().toLowerCase().contains("�")))) {
+            && (nameLower.contains("www.")
+                || nameLower.contains("http://")
+                || nameLower.contains("https://")
+                || nameLower.contains("\\")
+                || nameLower.contains("�")
+                || nameLower.contains("�")))) {
       logger.atInfo().log(user + " login denied: Illegal characters in UserName");
       users.remove(userListKey);
       throw new UserNameException(
-          EmuLang.getString("KailleraServerImpl.LoginDeniedIllegalCharactersInUserName"));
+          EmuLang.INSTANCE.getString("KailleraServerImpl.LoginDeniedIllegalCharactersInUserName"));
     }
 
     // access == AccessManager.ACCESS_NORMAL &&
@@ -496,7 +501,7 @@ public final class KailleraServerImpl implements KailleraServer, Executable {
       logger.atInfo().log(user + " login denied: UserName Length > " + getMaxUserNameLength());
       users.remove(userListKey);
       throw new UserNameException(
-          EmuLang.getString("KailleraServerImpl.LoginDeniedUserNameTooLong"));
+          EmuLang.INSTANCE.getString("KailleraServerImpl.LoginDeniedUserNameTooLong"));
     }
 
     if (access == AccessManager.ACCESS_NORMAL
@@ -505,7 +510,7 @@ public final class KailleraServerImpl implements KailleraServer, Executable {
       logger.atInfo().log(user + " login denied: Client Name Length > " + getMaxClientNameLength());
       users.remove(userListKey);
       throw new UserNameException(
-          EmuLang.getString("KailleraServerImpl.LoginDeniedEmulatorNameTooLong"));
+          EmuLang.INSTANCE.getString("KailleraServerImpl.LoginDeniedEmulatorNameTooLong"));
     }
 
     if (user.getClientType().toLowerCase().contains("|")) {
@@ -521,7 +526,8 @@ public final class KailleraServerImpl implements KailleraServer, Executable {
           logger.atInfo().log(user + " login denied: Illegal characters in UserName");
           users.remove(userListKey);
           throw new UserNameException(
-              EmuLang.getString("KailleraServerImpl.LoginDeniedIllegalCharactersInUserName"));
+              EmuLang.INSTANCE.getString(
+                  "KailleraServerImpl.LoginDeniedIllegalCharactersInUserName"));
         }
       }
     }
@@ -533,7 +539,7 @@ public final class KailleraServerImpl implements KailleraServer, Executable {
               + " login denied: Invalid status="
               + KailleraUser.Companion.getSTATUS_NAMES()[u.getStatus()]);
       throw new LoginException(
-          EmuLang.getString("KailleraServerImpl.LoginErrorInvalidStatus", u.getStatus()));
+          EmuLang.INSTANCE.getString("KailleraServerImpl.LoginErrorInvalidStatus", u.getStatus()));
     }
 
     if (!u.getConnectSocketAddress().getAddress().equals(user.getSocketAddress().getAddress())) {
@@ -545,7 +551,7 @@ public final class KailleraServerImpl implements KailleraServer, Executable {
               + " != "
               + user.getSocketAddress().getAddress().getHostAddress());
       throw new ClientAddressException(
-          EmuLang.getString("KailleraServerImpl.LoginDeniedAddressMatchError"));
+          EmuLang.INSTANCE.getString("KailleraServerImpl.LoginDeniedAddressMatchError"));
     }
 
     if (access == AccessManager.ACCESS_NORMAL
@@ -554,7 +560,7 @@ public final class KailleraServerImpl implements KailleraServer, Executable {
           user + " login denied: AccessManager denied emulator: " + user.getClientType());
       users.remove(userListKey);
       throw new LoginException(
-          EmuLang.getString(
+          EmuLang.INSTANCE.getString(
               "KailleraServerImpl.LoginDeniedEmulatorRestricted", user.getClientType()));
     }
 
@@ -569,7 +575,7 @@ public final class KailleraServerImpl implements KailleraServer, Executable {
           // logoff the old user and login the new one
 
           try {
-            quit(u2, EmuLang.getString("KailleraServerImpl.ForcedQuitReconnected"));
+            quit(u2, EmuLang.INSTANCE.getString("KailleraServerImpl.ForcedQuitReconnected"));
           } catch (Exception e) {
             logger.atSevere().withCause(e).log("Error forcing " + u2 + " quit for reconnect!");
           }
@@ -592,7 +598,8 @@ public final class KailleraServerImpl implements KailleraServer, Executable {
           logger.atWarning().log(
               user + " login denied: Address already logged in as " + u2.getName());
           throw new ClientAddressException(
-              EmuLang.getString("KailleraServerImpl.LoginDeniedAlreadyLoggedInAs", u2.getName()));
+              EmuLang.INSTANCE.getString(
+                  "KailleraServerImpl.LoginDeniedAlreadyLoggedInAs", u2.getName()));
         }
       }
     }
@@ -619,7 +626,10 @@ public final class KailleraServerImpl implements KailleraServer, Executable {
 
     if (access > AccessManager.ACCESS_NORMAL)
       logger.atInfo().log(
-          user + " logged in successfully with " + AccessManager.ACCESS_NAMES[access] + " access!");
+          user
+              + " logged in successfully with "
+              + AccessManager.Companion.getACCESS_NAMES()[access]
+              + " access!");
     else logger.atInfo().log(user + " logged in successfully");
 
     // this is fairly ugly
@@ -677,7 +687,8 @@ public final class KailleraServerImpl implements KailleraServer, Executable {
     }
     if (access >= AccessManager.ACCESS_ADMIN)
       userImpl.addEvent(
-          new InfoMessageEvent(user, EmuLang.getString("KailleraServerImpl.AdminWelcomeMessage")));
+          new InfoMessageEvent(
+              user, EmuLang.INSTANCE.getString("KailleraServerImpl.AdminWelcomeMessage")));
 
     try {
       Thread.sleep(20);
@@ -716,7 +727,7 @@ public final class KailleraServerImpl implements KailleraServer, Executable {
     if (!user.getLoggedIn()) {
       users.remove(user.getId());
       logger.atSevere().log(user + " quit failed: Not logged in");
-      throw new QuitException(EmuLang.getString("KailleraServerImpl.NotLoggedIn"));
+      throw new QuitException(EmuLang.INSTANCE.getString("KailleraServerImpl.NotLoggedIn"));
     }
 
     if (users.remove(user.getId()) == null)
@@ -729,7 +740,7 @@ public final class KailleraServerImpl implements KailleraServer, Executable {
     if (Strings.isNullOrEmpty(quitMsg)
         || (flags.getMaxQuitMessageLength() > 0
             && quitMsg.length() > flags.getMaxQuitMessageLength()))
-      quitMsg = EmuLang.getString("KailleraServerImpl.StandardQuitMessage");
+      quitMsg = EmuLang.INSTANCE.getString("KailleraServerImpl.StandardQuitMessage");
 
     int access =
         user.getServer().getAccessManager().getAccess(user.getSocketAddress().getAddress());
@@ -751,14 +762,14 @@ public final class KailleraServerImpl implements KailleraServer, Executable {
       throws ChatException, FloodException {
     if (!user.getLoggedIn()) {
       logger.atSevere().log(user + " chat failed: Not logged in");
-      throw new ChatException(EmuLang.getString("KailleraServerImpl.NotLoggedIn"));
+      throw new ChatException(EmuLang.INSTANCE.getString("KailleraServerImpl.NotLoggedIn"));
     }
 
     int access = accessManager.getAccess(user.getSocketAddress().getAddress());
     if (access < AccessManager.ACCESS_SUPERADMIN
         && accessManager.isSilenced(user.getSocketAddress().getAddress())) {
       logger.atWarning().log(user + " chat denied: Silenced: " + message);
-      throw new ChatException(EmuLang.getString("KailleraServerImpl.ChatDeniedSilenced"));
+      throw new ChatException(EmuLang.INSTANCE.getString("KailleraServerImpl.ChatDeniedSilenced"));
     }
 
     if (access == AccessManager.ACCESS_NORMAL
@@ -766,7 +777,8 @@ public final class KailleraServerImpl implements KailleraServer, Executable {
         && (System.currentTimeMillis() - ((KailleraUserImpl) user).getLastChatTime())
             < (flags.getChatFloodTime() * 1000)) {
       logger.atWarning().log(user + " chat denied: Flood: " + message);
-      throw new FloodException(EmuLang.getString("KailleraServerImpl.ChatDeniedFloodControl"));
+      throw new FloodException(
+          EmuLang.INSTANCE.getString("KailleraServerImpl.ChatDeniedFloodControl"));
     }
 
     if (message.equals(":USER_COMMAND")) {
@@ -783,13 +795,14 @@ public final class KailleraServerImpl implements KailleraServer, Executable {
         if (chars[i] < 32) {
           logger.atWarning().log(user + " chat denied: Illegal characters in message");
           throw new ChatException(
-              EmuLang.getString("KailleraServerImpl.ChatDeniedIllegalCharacters"));
+              EmuLang.INSTANCE.getString("KailleraServerImpl.ChatDeniedIllegalCharacters"));
         }
       }
 
       if (flags.getMaxChatLength() > 0 && message.length() > flags.getMaxChatLength()) {
         logger.atWarning().log(user + " chat denied: Message Length > " + flags.getMaxChatLength());
-        throw new ChatException(EmuLang.getString("KailleraServerImpl.ChatDeniedMessageTooLong"));
+        throw new ChatException(
+            EmuLang.INSTANCE.getString("KailleraServerImpl.ChatDeniedMessageTooLong"));
       }
     }
 
@@ -810,14 +823,14 @@ public final class KailleraServerImpl implements KailleraServer, Executable {
       throws CreateGameException, FloodException {
     if (!user.getLoggedIn()) {
       logger.atSevere().log(user + " create game failed: Not logged in");
-      throw new CreateGameException(EmuLang.getString("KailleraServerImpl.NotLoggedIn"));
+      throw new CreateGameException(EmuLang.INSTANCE.getString("KailleraServerImpl.NotLoggedIn"));
     }
 
     if (((KailleraUserImpl) user).getGame() != null) {
       logger.atSevere().log(
           user + " create game failed: already in game: " + ((KailleraUserImpl) user).getGame());
       throw new CreateGameException(
-          EmuLang.getString("KailleraServerImpl.CreateGameErrorAlreadyInGame"));
+          EmuLang.INSTANCE.getString("KailleraServerImpl.CreateGameErrorAlreadyInGame"));
     }
 
     if (flags.getMaxGameNameLength() > 0
@@ -825,13 +838,13 @@ public final class KailleraServerImpl implements KailleraServer, Executable {
       logger.atWarning().log(
           user + " create game denied: Rom Name Length > " + flags.getMaxGameNameLength());
       throw new CreateGameException(
-          EmuLang.getString("KailleraServerImpl.CreateGameDeniedNameTooLong"));
+          EmuLang.INSTANCE.getString("KailleraServerImpl.CreateGameDeniedNameTooLong"));
     }
 
     if (romName.toLowerCase().contains("|")) {
       logger.atWarning().log(user + " create game denied: Illegal characters in ROM name");
       throw new CreateGameException(
-          EmuLang.getString("KailleraServerImpl.CreateGameDeniedIllegalCharacters"));
+          EmuLang.INSTANCE.getString("KailleraServerImpl.CreateGameDeniedIllegalCharacters"));
     }
 
     int access = accessManager.getAccess(user.getSocketAddress().getAddress());
@@ -841,7 +854,7 @@ public final class KailleraServerImpl implements KailleraServer, Executable {
               < (flags.getCreateGameFloodTime() * 1000)) {
         logger.atWarning().log(user + " create game denied: Flood: " + romName);
         throw new FloodException(
-            EmuLang.getString("KailleraServerImpl.CreateGameDeniedFloodControl"));
+            EmuLang.INSTANCE.getString("KailleraServerImpl.CreateGameDeniedFloodControl"));
       }
 
       if (flags.getMaxGames() > 0 && getNumGames() >= flags.getMaxGames()) {
@@ -851,7 +864,8 @@ public final class KailleraServerImpl implements KailleraServer, Executable {
                 + flags.getMaxGames()
                 + " current games!");
         throw new CreateGameException(
-            EmuLang.getString("KailleraServerImpl.CreateGameDeniedMaxGames", flags.getMaxGames()));
+            EmuLang.INSTANCE.getString(
+                "KailleraServerImpl.CreateGameDeniedMaxGames", flags.getMaxGames()));
       }
 
       char[] chars = romName.toCharArray();
@@ -859,20 +873,20 @@ public final class KailleraServerImpl implements KailleraServer, Executable {
         if (chars[i] < 32) {
           logger.atWarning().log(user + " create game denied: Illegal characters in ROM name");
           throw new CreateGameException(
-              EmuLang.getString("KailleraServerImpl.CreateGameDeniedIllegalCharacters"));
+              EmuLang.INSTANCE.getString("KailleraServerImpl.CreateGameDeniedIllegalCharacters"));
         }
       }
 
       if (romName.trim().length() == 0) {
         logger.atWarning().log(user + " create game denied: Rom Name Empty");
         throw new CreateGameException(
-            EmuLang.getString("KailleraServerImpl.CreateGameErrorEmptyName"));
+            EmuLang.INSTANCE.getString("KailleraServerImpl.CreateGameErrorEmptyName"));
       }
 
       if (!accessManager.isGameAllowed(romName)) {
         logger.atWarning().log(user + " create game denied: AccessManager denied game: " + romName);
         throw new CreateGameException(
-            EmuLang.getString("KailleraServerImpl.CreateGameDeniedGameBanned"));
+            EmuLang.INSTANCE.getString("KailleraServerImpl.CreateGameDeniedGameBanned"));
       }
     }
 
@@ -903,7 +917,7 @@ public final class KailleraServerImpl implements KailleraServer, Executable {
     }
 
     announce(
-        EmuLang.getString(
+        EmuLang.INSTANCE.getString(
             "KailleraServerImpl.UserCreatedGameAnnouncement", user.getName(), game.getRomName()),
         false,
         null);
@@ -913,7 +927,7 @@ public final class KailleraServerImpl implements KailleraServer, Executable {
             /* gameId= */ game.getId(), /* gameTitle= */ game.getRomName(), /* user= */ user))) {
       user.getGame()
           .announce(
-              EmuLang.getString(
+              EmuLang.INSTANCE.getString(
                   "KailleraServerImpl.TweetPendingAnnouncement",
                   flags.getTwitterBroadcastDelay().getSeconds()),
               user);
@@ -924,7 +938,7 @@ public final class KailleraServerImpl implements KailleraServer, Executable {
   synchronized void closeGame(KailleraGame game, KailleraUser user) throws CloseGameException {
     if (!user.getLoggedIn()) {
       logger.atSevere().log(user + " close " + game + " failed: Not logged in");
-      throw new CloseGameException(EmuLang.getString("KailleraServerImpl.NotLoggedIn"));
+      throw new CloseGameException(EmuLang.INSTANCE.getString("KailleraServerImpl.NotLoggedIn"));
     }
 
     if (!games.containsKey(game.getId())) {
@@ -1107,7 +1121,7 @@ public final class KailleraServerImpl implements KailleraServer, Executable {
                     > (flags.getKeepAliveTimeout() * 1000)) {
               logger.atInfo().log(user + " keepalive timeout!");
               try {
-                quit(user, EmuLang.getString("KailleraServerImpl.ForcedQuitPingTimeout"));
+                quit(user, EmuLang.INSTANCE.getString("KailleraServerImpl.ForcedQuitPingTimeout"));
               } catch (Exception e) {
                 logger.atSevere().withCause(e).log(
                     "Error forcing " + user + " quit for keepalive timeout!");
@@ -1119,7 +1133,9 @@ public final class KailleraServerImpl implements KailleraServer, Executable {
                     > (flags.getIdleTimeout() * 1000)) {
               logger.atInfo().log(user + " inactivity timeout!");
               try {
-                quit(user, EmuLang.getString("KailleraServerImpl.ForcedQuitInactivityTimeout"));
+                quit(
+                    user,
+                    EmuLang.INSTANCE.getString("KailleraServerImpl.ForcedQuitInactivityTimeout"));
               } catch (Exception e) {
                 logger.atSevere().withCause(e).log(
                     "Error forcing " + user + " quit for inactivity timeout!");
@@ -1127,7 +1143,7 @@ public final class KailleraServerImpl implements KailleraServer, Executable {
             } else if (user.getLoggedIn() && access < AccessManager.ACCESS_NORMAL) {
               logger.atInfo().log(user + " banned!");
               try {
-                quit(user, EmuLang.getString("KailleraServerImpl.ForcedQuitBanned"));
+                quit(user, EmuLang.INSTANCE.getString("KailleraServerImpl.ForcedQuitBanned"));
               } catch (Exception e) {
                 logger.atSevere().withCause(e).log(
                     "Error forcing " + user + " quit because banned!");
@@ -1137,7 +1153,9 @@ public final class KailleraServerImpl implements KailleraServer, Executable {
                 && !accessManager.isEmulatorAllowed(user.getClientType())) {
               logger.atInfo().log(user + ": emulator restricted!");
               try {
-                quit(user, EmuLang.getString("KailleraServerImpl.ForcedQuitEmulatorRestricted"));
+                quit(
+                    user,
+                    EmuLang.INSTANCE.getString("KailleraServerImpl.ForcedQuitEmulatorRestricted"));
               } catch (Exception e) {
                 logger.atSevere().withCause(e).log(
                     "Error forcing " + user + " quit because emulator restricted!");

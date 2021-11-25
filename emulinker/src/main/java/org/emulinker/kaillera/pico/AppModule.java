@@ -12,7 +12,6 @@ import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import javax.inject.Singleton;
 import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.ConfigurationException;
 import org.emulinker.config.RuntimeFlags;
 import org.emulinker.kaillera.access.AccessManager;
 import org.emulinker.kaillera.access.AccessManager2;
@@ -59,11 +58,7 @@ public abstract class AppModule {
   @Provides
   @Singleton
   public static Configuration provideConfiguration() {
-    try {
-      return new EmuLinkerPropertiesConfig();
-    } catch (ConfigurationException e) {
-      throw new IllegalStateException(e);
-    }
+    return new EmuLinkerPropertiesConfig();
   }
 
   @Provides
