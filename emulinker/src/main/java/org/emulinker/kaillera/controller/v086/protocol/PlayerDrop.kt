@@ -8,7 +8,7 @@ import org.emulinker.kaillera.pico.AppModule
 import org.emulinker.util.EmuUtil
 
 abstract class PlayerDrop : V086Message() {
-  abstract val username: String?
+  abstract val username: String
   abstract val playerNumber: Byte
 
   // public PlayerDrop(int messageNumber, String userName, byte playerNumber)
@@ -24,7 +24,7 @@ abstract class PlayerDrop : V086Message() {
   //   this.playerNumber = playerNumber;
   // }
   override val bodyLength: Int
-    get() = getNumBytes(username!!) + 2
+    get() = getNumBytes(username) + 2
 
   public override fun writeBodyTo(buffer: ByteBuffer) {
     EmuUtil.writeString(buffer, username, 0x00, AppModule.charsetDoNotUse)

@@ -10,11 +10,11 @@ import org.emulinker.util.EmuUtil
 abstract class Chat
     @Throws(MessageFormatException::class)
     constructor() : V086Message() {
-  abstract val username: String?
-  abstract val message: String?
+  abstract val username: String
+  abstract val message: String
 
   override val bodyLength: Int
-    get() = getNumBytes(username!!) + getNumBytes(message!!) + 2
+    get() = getNumBytes(username) + getNumBytes(message) + 2
 
   public override fun writeBodyTo(buffer: ByteBuffer) {
     EmuUtil.writeString(buffer, username, 0x00, AppModule.charsetDoNotUse)

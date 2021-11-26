@@ -72,10 +72,9 @@ class V086Bundle
       // int messageCount = UnsignedUtil.getUnsignedByte(buffer);
       var messageCount = buffer.get().toInt()
       if (messageCount <= 0 || messageCount > 32)
-          throw V086BundleFormatException("Invalid message count: $messageCount", /* cause= */ null)
+          throw V086BundleFormatException("Invalid message count: $messageCount", cause = null)
       if (buffer.limit() < 1 + messageCount * 6)
-          throw V086BundleFormatException(
-              "Invalid bundle length: " + buffer.limit(), /* cause= */ null)
+          throw V086BundleFormatException("Invalid bundle length: " + buffer.limit(), cause = null)
       var parsedCount = 0
       val messages: Array<V086Message?>
       val msgNum =

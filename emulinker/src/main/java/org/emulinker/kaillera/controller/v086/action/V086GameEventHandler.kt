@@ -5,6 +5,6 @@ import org.emulinker.kaillera.model.event.GameEvent
 
 interface V086GameEventHandler<T : GameEvent?> {
   override fun toString(): String
-  fun handleEvent(event: T, clientHandler: V086ClientHandler?)
+  fun handleEvent(event: T, clientHandler: V086ClientHandler)
   val handledEventCount: Int
 }

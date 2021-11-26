@@ -9,6 +9,8 @@ import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.Throws
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 import org.emulinker.kaillera.access.AccessManager
 import org.emulinker.kaillera.controller.messaging.MessageFormatException
 import org.emulinker.kaillera.controller.v086.V086ClientHandler
@@ -92,13 +94,13 @@ class AdminCommandAction @Inject internal constructor() : V086Action<Chat> {
   }
 
   @Throws(FatalActionException::class)
-  override fun performAction(chatMessage: Chat, clientHandler: V086ClientHandler?) {
-    val chat: String = chatMessage.message!!
-    val server = clientHandler!!.controller.server as KailleraServerImpl
+  override fun performAction(chatMessage: Chat, clientHandler: V086ClientHandler) {
+    val chat: String = chatMessage.message
+    val server = clientHandler.controller.server as KailleraServerImpl
     val accessManager = server.accessManager
     val user = clientHandler.user as KailleraUserImpl
     if (accessManager.getAccess(clientHandler.remoteInetAddress) < AccessManager.ACCESS_ADMIN) {
-      if (chat!!.startsWith(COMMAND_SILENCE) ||
+      if (chat.startsWith(COMMAND_SILENCE) ||
           chat.startsWith(COMMAND_KICK) ||
           chat.startsWith(COMMAND_HELP) ||
           chat.startsWith(COMMAND_FINDUSER) ||
@@ -180,10 +182,10 @@ class AdminCommandAction @Inject internal constructor() : V086Action<Chat> {
                 "server",
                 EmuLang.getString("AdminCommandAction.Failed", e.message)))
       } catch (e2: MessageFormatException) {
-        logger.atSevere().withCause(e2).log("Failed to contruct InformationMessage message")
+        logger.atSevere().withCause(e2).log("Failed to construct InformationMessage message")
       }
     } catch (e: MessageFormatException) {
-      logger.atSevere().withCause(e).log("Failed to contruct message")
+      logger.atSevere().withCause(e).log("Failed to construct message")
     }
   }
 
@@ -416,7 +418,7 @@ class AdminCommandAction @Inject internal constructor() : V086Action<Chat> {
 
   @Throws(ActionException::class, MessageFormatException::class)
   private fun processSilence(
-      message: String?,
+      message: String,
       server: KailleraServerImpl,
       admin: KailleraUserImpl,
       clientHandler: V086ClientHandler?
@@ -454,7 +456,7 @@ class AdminCommandAction @Inject internal constructor() : V086Action<Chat> {
 
   @Throws(ActionException::class, MessageFormatException::class)
   private fun processKick(
-      message: String?,
+      message: String,
       server: KailleraServerImpl,
       admin: KailleraUserImpl,
       clientHandler: V086ClientHandler?
@@ -482,7 +484,7 @@ class AdminCommandAction @Inject internal constructor() : V086Action<Chat> {
 
   @Throws(ActionException::class, MessageFormatException::class)
   private fun processCloseGame(
-      message: String?,
+      message: String,
       server: KailleraServerImpl,
       admin: KailleraUserImpl,
       clientHandler: V086ClientHandler?
@@ -508,7 +510,7 @@ class AdminCommandAction @Inject internal constructor() : V086Action<Chat> {
 
   @Throws(ActionException::class, MessageFormatException::class)
   private fun processBan(
-      message: String?,
+      message: String,
       server: KailleraServerImpl,
       admin: KailleraUserImpl,
       clientHandler: V086ClientHandler?
@@ -537,7 +539,7 @@ class AdminCommandAction @Inject internal constructor() : V086Action<Chat> {
 
   @Throws(ActionException::class, MessageFormatException::class)
   private fun processTempElevated(
-      message: String?,
+      message: String,
       server: KailleraServerImpl,
       admin: KailleraUserImpl,
       clientHandler: V086ClientHandler?
@@ -571,7 +573,7 @@ class AdminCommandAction @Inject internal constructor() : V086Action<Chat> {
   // new superadmin command /tempmoderator
   @Throws(ActionException::class, MessageFormatException::class)
   private fun processTempModerator(
-      message: String?,
+      message: String,
       server: KailleraServerImpl,
       admin: KailleraUserImpl,
       clientHandler: V086ClientHandler?
@@ -604,7 +606,7 @@ class AdminCommandAction @Inject internal constructor() : V086Action<Chat> {
 
   @Throws(ActionException::class, MessageFormatException::class)
   private fun processTempAdmin(
-      message: String?,
+      message: String,
       server: KailleraServerImpl,
       admin: KailleraUserImpl,
       clientHandler: V086ClientHandler?
@@ -635,7 +637,7 @@ class AdminCommandAction @Inject internal constructor() : V086Action<Chat> {
 
   @Throws(ActionException::class, MessageFormatException::class)
   private fun processStealth(
-      message: String?,
+      message: String,
       server: KailleraServerImpl,
       admin: KailleraUserImpl,
       clientHandler: V086ClientHandler?
@@ -654,7 +656,7 @@ class AdminCommandAction @Inject internal constructor() : V086Action<Chat> {
 
   @Throws(ActionException::class, MessageFormatException::class)
   private fun processTrivia(
-      message: String?,
+      message: String,
       server: KailleraServerImpl,
       admin: KailleraUserImpl,
       clientHandler: V086ClientHandler?
@@ -714,7 +716,7 @@ class AdminCommandAction @Inject internal constructor() : V086Action<Chat> {
         throw ActionException("Trivia needs to be started first!")
       }
       server.trivia!!.displayHighScores(true)
-    } else if (message!!.startsWith("/triviaupdate")) {
+    } else if (message.startsWith("/triviaupdate")) {
       if (server.trivia == null) {
         throw ActionException("Trivia needs to be started first!")
       }
@@ -722,15 +724,13 @@ class AdminCommandAction @Inject internal constructor() : V086Action<Chat> {
       try {
         scanner.next()
         val ip = scanner.next()
-        val ip_update = scanner.next()
-        if (server.trivia!!.updateIP(ip, ip_update)) {
+        val ipUpdate = scanner.next()
+        if (server.trivia!!.updateIP(ip, ipUpdate)) {
           server.announce(
-              "<Trivia> " + ip_update.subSequence(0, 4) + ".... Trivia IP was updated!",
-              false,
-              admin)
+              "<Trivia> ${ipUpdate.subSequence(0, 4)}.... Trivia IP was updated!", false, admin)
         } else {
           server.announce(
-              "<Trivia> " + ip.subSequence(0, 4) + " was not found!  Error updating score!",
+              "<Trivia> ${ip.subSequence(0, 4)} was not found!  Error updating score!",
               false,
               admin)
         }
@@ -758,12 +758,12 @@ class AdminCommandAction @Inject internal constructor() : V086Action<Chat> {
 
   @Throws(ActionException::class, MessageFormatException::class)
   private fun processAnnounce(
-      message: String?,
+      message: String,
       server: KailleraServerImpl,
       admin: KailleraUserImpl,
       clientHandler: V086ClientHandler?
   ) {
-    val space = message!!.indexOf(' ')
+    val space = message.indexOf(' ')
     if (space < 0) throw ActionException(EmuLang.getString("AdminCommandAction.AnnounceError"))
     var all = false
     if (message.startsWith(COMMAND_ANNOUNCEALL)) {
@@ -779,7 +779,7 @@ class AdminCommandAction @Inject internal constructor() : V086Action<Chat> {
 
   @Throws(ActionException::class, MessageFormatException::class)
   private fun processGameAnnounce(
-      message: String?,
+      message: String,
       server: KailleraServerImpl,
       admin: KailleraUserImpl,
       clientHandler: V086ClientHandler?
@@ -804,16 +804,15 @@ class AdminCommandAction @Inject internal constructor() : V086Action<Chat> {
 
   @Throws(ActionException::class, MessageFormatException::class)
   private fun processClear(
-      message: String?,
+      message: String,
       server: KailleraServerImpl,
       admin: KailleraUserImpl,
       clientHandler: V086ClientHandler?
   ) {
-    val space = message!!.indexOf(' ')
+    val space = message.indexOf(' ')
     if (space < 0) throw ActionException(EmuLang.getString("AdminCommandAction.ClearError"))
     val addressStr = message.substring(space + 1)
-    var inetAddr: InetAddress? = null
-    inetAddr =
+    val inetAddr: InetAddress =
         try {
           InetAddress.getByName(addressStr)
         } catch (e: Exception) {
@@ -855,7 +854,7 @@ class AdminCommandAction @Inject internal constructor() : V086Action<Chat> {
                   releaseInfo.versionString +
                   ": " +
                   EmuUtil.toSimpleUtcDatetime(releaseInfo.buildDate)))
-      sleep(20)
+      sleep(20.milliseconds)
       if (admin.access >= AccessManager.ACCESS_ADMIN) {
         val props = System.getProperties()
         clientHandler.send(
@@ -863,69 +862,69 @@ class AdminCommandAction @Inject internal constructor() : V086Action<Chat> {
                 clientHandler.nextMessageNumber,
                 "server",
                 "JAVAVER: " + props.getProperty("java.version")))
-        sleep(20)
+        sleep(20.milliseconds)
         clientHandler.send(
             InformationMessage(
                 clientHandler.nextMessageNumber,
                 "server",
                 "JAVAVEND: " + props.getProperty("java.vendor")))
-        sleep(20)
+        sleep(20.milliseconds)
         clientHandler.send(
             InformationMessage(
                 clientHandler.nextMessageNumber,
                 "server",
                 "OSNAME: " + props.getProperty("os.name")))
-        sleep(20)
+        sleep(20.milliseconds)
         clientHandler.send(
             InformationMessage(
                 clientHandler.nextMessageNumber,
                 "server",
                 "OSARCH: " + props.getProperty("os.arch")))
-        sleep(20)
+        sleep(20.milliseconds)
         clientHandler.send(
             InformationMessage(
                 clientHandler.nextMessageNumber,
                 "server",
                 "OSVER: " + props.getProperty("os.version")))
-        sleep(20)
+        sleep(20.milliseconds)
         val runtime = Runtime.getRuntime()
         clientHandler.send(
             InformationMessage(
                 clientHandler.nextMessageNumber,
                 "server",
                 "NUMPROCS: " + runtime.availableProcessors()))
-        sleep(20)
+        sleep(20.milliseconds)
         clientHandler.send(
             InformationMessage(
                 clientHandler.nextMessageNumber, "server", "FREEMEM: " + runtime.freeMemory()))
-        sleep(20)
+        sleep(20.milliseconds)
         clientHandler.send(
             InformationMessage(
                 clientHandler.nextMessageNumber, "server", "MAXMEM: " + runtime.maxMemory()))
-        sleep(20)
+        sleep(20.milliseconds)
         clientHandler.send(
             InformationMessage(
                 clientHandler.nextMessageNumber, "server", "TOTMEM: " + runtime.totalMemory()))
-        sleep(20)
+        sleep(20.milliseconds)
         val env = System.getenv()
         if (EmuUtil.systemIsWindows()) {
           clientHandler.send(
               InformationMessage(
                   clientHandler.nextMessageNumber, "server", "COMPNAME: " + env["COMPUTERNAME"]))
-          sleep(20)
+          sleep(20.milliseconds)
           clientHandler.send(
               InformationMessage(
                   clientHandler.nextMessageNumber, "server", "USER: " + env["USERNAME"]))
-          sleep(20)
+          sleep(20.milliseconds)
         } else {
           clientHandler.send(
               InformationMessage(
                   clientHandler.nextMessageNumber, "server", "COMPNAME: " + env["HOSTNAME"]))
-          sleep(20)
+          sleep(20.milliseconds)
           clientHandler.send(
               InformationMessage(
                   clientHandler.nextMessageNumber, "server", "USER: " + env["USERNAME"]))
-          sleep(20)
+          sleep(20.milliseconds)
         }
       }
     } catch (e: NoSuchElementException) {
@@ -933,9 +932,9 @@ class AdminCommandAction @Inject internal constructor() : V086Action<Chat> {
     }
   }
 
-  private fun sleep(ms: Int) {
+  private fun sleep(d: Duration) {
     try {
-      Thread.sleep(ms.toLong())
+      Thread.sleep(d.inWholeMilliseconds)
     } catch (e: Exception) {}
   }
 }

@@ -33,7 +33,7 @@ class AccessManager2
   var isRunning = false
     private set
   private var stopFlag = false
-  private var accessFile: File
+  private var accessFile: File?
   private var lastLoadModifiedTime: Long = -1
   private val userList: MutableList<UserAccess> = CopyOnWriteArrayList()
   private val gameList: MutableList<GameAccess> = CopyOnWriteArrayList()
@@ -50,11 +50,7 @@ class AccessManager2
     logger
         .atFine()
         .log(
-            "AccessManager2 thread starting (ThreadPool:" +
-                threadPool.activeCount +
-                "/" +
-                threadPool.poolSize +
-                ")")
+            "AccessManager2 thread starting (ThreadPool:${threadPool.activeCount}/${threadPool.poolSize})")
     threadPool.execute(this)
     Thread.yield()
   }
@@ -137,10 +133,10 @@ class AccessManager2
     emulatorList.clear()
     addressList.clear()
     try {
-      val file = FileInputStream(accessFile)
+      val file = FileInputStream(accessFile!!)
       val temp: Reader = InputStreamReader(file, flags.charset)
       val reader = BufferedReader(temp)
-      var line: String? = null
+      var line: String?
       while (reader.readLine().also { line = it } != null) {
         if (Strings.isNullOrEmpty(line) || line!!.startsWith("#") || line!!.startsWith("//"))
             continue
@@ -166,23 +162,23 @@ class AccessManager2
     }
   }
 
-  override fun addTempBan(addressPattern: String?, minutes: Int) {
+  override fun addTempBan(addressPattern: String, minutes: Int) {
     tempBanList.add(TempBan(addressPattern, minutes))
   }
 
-  override fun addTempAdmin(addressPattern: String?, minutes: Int) {
+  override fun addTempAdmin(addressPattern: String, minutes: Int) {
     tempAdminList.add(TempAdmin(addressPattern, minutes))
   }
 
-  override fun addTempModerator(addressPattern: String?, minutes: Int) {
+  override fun addTempModerator(addressPattern: String, minutes: Int) {
     tempModeratorList.add(TempModerator(addressPattern, minutes))
   }
 
-  override fun addTempElevated(addressPattern: String?, minutes: Int) {
+  override fun addTempElevated(addressPattern: String, minutes: Int) {
     tempElevatedList.add(TempElevated(addressPattern, minutes))
   }
 
-  override fun addSilenced(addressPattern: String?, minutes: Int) {
+  override fun addSilenced(addressPattern: String, minutes: Int) {
     silenceList.add(Silence(addressPattern, minutes))
   }
 
@@ -672,10 +668,10 @@ class AccessManager2
         } catch (e: URISyntaxException) {
           throw IllegalStateException("Could not parse URI", e)
         }
-    if (!accessFile.exists()) {
+    if (!accessFile!!.exists()) {
       throw IllegalStateException(FileNotFoundException("Resource not found: /access.conf"))
     }
-    if (!accessFile.canRead()) {
+    if (!accessFile!!.canRead()) {
       throw IllegalStateException(FileNotFoundException("Can not read: /access.conf"))
     }
     loadAccess()

@@ -5,9 +5,7 @@ import org.emulinker.kaillera.controller.messaging.MessageFormatException
 data class Chat_Request
     @Throws(MessageFormatException::class)
     constructor(
-        override val messageNumber: Int,
-        override val message: String?,
-        override val username: String
+        override val messageNumber: Int, override val message: String, override val username: String
     ) : Chat() {
 
   override val description = DESC

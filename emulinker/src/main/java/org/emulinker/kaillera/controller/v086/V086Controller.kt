@@ -12,7 +12,6 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import org.apache.commons.configuration.Configuration
 import org.emulinker.config.RuntimeFlags
-import org.emulinker.kaillera.access.AccessManager
 import org.emulinker.kaillera.controller.KailleraServerController
 import org.emulinker.kaillera.controller.v086.action.*
 import org.emulinker.kaillera.controller.v086.protocol.*
@@ -30,7 +29,6 @@ class V086Controller
     internal constructor(
         override var server: KailleraServer,
         var threadPool: ThreadPoolExecutor,
-        accessManager: AccessManager?,
         config: Configuration,
         loginAction: LoginAction,
         ackAction: ACKAction,

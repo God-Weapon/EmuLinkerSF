@@ -2,7 +2,5 @@ package org.emulinker.kaillera.model.exception
 
 import java.lang.Exception
 
-class UserReadyException : ActionException {
-  constructor(message: String?) : super(message)
-  constructor(message: String?, source: Exception?) : super(message, source)
-}
+class UserReadyException(message: String?, source: Exception? = null) :
+    ActionException(message, source)

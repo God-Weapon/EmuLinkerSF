@@ -15,7 +15,6 @@ object HexConverter {
   fun main(args: Array<String>) {
     val os = BufferedOutputStream(FileOutputStream(args[1]))
     val `is` = Files.newBufferedReader(Paths.get(args[0]), StandardCharsets.UTF_8)
-    var line: String? = null
     `is`.forEachLine {
       val bytes = EmuUtil.hexToByteArray(it)
       os.write(bytes)

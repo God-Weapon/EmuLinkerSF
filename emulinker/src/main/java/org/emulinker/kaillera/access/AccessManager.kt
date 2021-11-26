@@ -66,10 +66,10 @@ interface AccessManager {
    * AccessManager implementation. While active, `isAddressAllowed` should return false, and
    * `getAccess` should return `ACCESS_BANNED`.
    *
-   * @param pattern A pattern to match to an address
+   * @param addressPattern A pattern to match to an address
    * @param minutes Number of minutes this ban is valid from the time of addition
    */
-  fun addTempBan(pattern: String?, minutes: Int)
+  fun addTempBan(addressPattern: String, minutes: Int)
 
   /**
    * Temporairly adds a user to the admin list using a pattern algorythm defined by the
@@ -78,9 +78,9 @@ interface AccessManager {
    * @param pattern A pattern to match to an address
    * @param minutes Number of minutes this grant is valid from the time of addition
    */
-  fun addTempAdmin(pattern: String?, minutes: Int)
-  fun addTempModerator(pattern: String?, minutes: Int)
-  fun addTempElevated(pattern: String?, minutes: Int)
+  fun addTempAdmin(addressPattern: String, minutes: Int)
+  fun addTempModerator(addressPattern: String, minutes: Int)
+  fun addTempElevated(addressPattern: String, minutes: Int)
 
   /**
    * Temporairly adds a user to the silenced list using a pattern algorythm defined by the
@@ -89,7 +89,7 @@ interface AccessManager {
    * @param pattern A pattern to match to an address
    * @param minutes Number of minutes this grant is valid from the time of addition
    */
-  fun addSilenced(pattern: String?, minutes: Int)
+  fun addSilenced(addressPattern: String, minutes: Int)
   fun clearTemp(address: InetAddress?, clearAll: Boolean): Boolean
 
   companion object {

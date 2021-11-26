@@ -5,7 +5,7 @@ import org.emulinker.kaillera.controller.messaging.MessageFormatException
 data class QuitGame_Notification
     @Throws(MessageFormatException::class)
     constructor(
-        override val messageNumber: Int, override val username: String?, override val userId: Int
+        override val messageNumber: Int, override val username: String, override val userId: Int
     ) : QuitGame() {
 
   override val description = DESC

@@ -160,7 +160,7 @@ data class ServerStatus
               1 +
               V086Utils.getNumBytes(username) +
               1 +
-              players!!.length +
+              players.length +
               1 +
               1)
 

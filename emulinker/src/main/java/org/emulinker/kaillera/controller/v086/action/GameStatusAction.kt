@@ -8,6 +8,8 @@ import org.emulinker.kaillera.controller.v086.V086ClientHandler
 import org.emulinker.kaillera.controller.v086.protocol.GameStatus
 import org.emulinker.kaillera.model.event.GameStatusChangedEvent
 
+private val logger = FluentLogger.forEnclosingClass()
+
 @Singleton
 class GameStatusAction @Inject internal constructor() :
     V086ServerEventHandler<GameStatusChangedEvent> {
@@ -18,17 +20,15 @@ class GameStatusAction @Inject internal constructor() :
     return DESC
   }
 
-  override fun handleEvent(
-      statusChangeEvent: GameStatusChangedEvent, clientHandler: V086ClientHandler?
-  ) {
+  override fun handleEvent(event: GameStatusChangedEvent, clientHandler: V086ClientHandler) {
     handledEventCount++
     try {
-      val game = statusChangeEvent.game
+      val game = event.game
       var num = 0
       for (user in game.players) {
-        if (!user!!.stealth) num++
+        if (!user.stealth) num++
       }
-      clientHandler!!.send(
+      clientHandler.send(
           GameStatus(
               clientHandler.nextMessageNumber,
               game.id,
@@ -37,12 +37,11 @@ class GameStatusAction @Inject internal constructor() :
               num.toByte(),
               game.maxUsers.toByte()))
     } catch (e: MessageFormatException) {
-      logger.atSevere().withCause(e).log("Failed to contruct CreateGame_Notification message")
+      logger.atSevere().withCause(e).log("Failed to construct CreateGame_Notification message")
     }
   }
 
   companion object {
-    private val logger = FluentLogger.forEnclosingClass()
     private const val DESC = "GameStatusAction"
   }
 }

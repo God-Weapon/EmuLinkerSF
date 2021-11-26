@@ -38,7 +38,7 @@ class EmuLinkerMasterUpdateTask(
         continue
       }
       waitingGames.append(
-          "${game.romName}|${game.owner!!.name}|${game.owner!!.clientType}|${game.numPlayers}/${game.maxUsers}|")
+          "${game.romName}|${game.owner.name}|${game.owner.clientType}|${game.numPlayers}/${game.maxUsers}|")
     }
     val params =
         arrayOf(

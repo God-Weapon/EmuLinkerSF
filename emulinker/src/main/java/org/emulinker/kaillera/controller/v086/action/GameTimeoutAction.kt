@@ -6,6 +6,8 @@ import javax.inject.Singleton
 import org.emulinker.kaillera.controller.v086.V086ClientHandler
 import org.emulinker.kaillera.model.event.GameTimeoutEvent
 
+private val logger = FluentLogger.forEnclosingClass()
+
 @Singleton
 class GameTimeoutAction @Inject internal constructor() : V086GameEventHandler<GameTimeoutEvent> {
   override var handledEventCount = 0
@@ -15,37 +17,25 @@ class GameTimeoutAction @Inject internal constructor() : V086GameEventHandler<Ga
     return DESC
   }
 
-  override fun handleEvent(timeoutEvent: GameTimeoutEvent, clientHandler: V086ClientHandler?) {
+  override fun handleEvent(event: GameTimeoutEvent, clientHandler: V086ClientHandler) {
     handledEventCount++
-    val player = timeoutEvent.user
-    val user = clientHandler!!.user
+    val player = event.user
+    val user = clientHandler.user
     if (player == user) {
       logger
           .atFine()
           .log(
-              user.toString() +
-                  " received timeout event " +
-                  timeoutEvent.timeoutNumber +
-                  " for " +
-                  timeoutEvent.game +
-                  ": resending messages...")
-      clientHandler.resend(timeoutEvent.timeoutNumber)
+              "$user received timeout event ${event.timeoutNumber} for ${event.game}: resending messages...")
+      clientHandler.resend(event.timeoutNumber)
     } else {
       logger
           .atFine()
           .log(
-              user.toString() +
-                  " received timeout event " +
-                  timeoutEvent.timeoutNumber +
-                  " from " +
-                  player +
-                  " for " +
-                  timeoutEvent.game)
+              "${user.toString()} received timeout event ${event.timeoutNumber} from $player for ${event.game}")
     }
   }
 
   companion object {
-    private val logger = FluentLogger.forEnclosingClass()
     private const val DESC = "GameTimeoutAction"
   }
 }

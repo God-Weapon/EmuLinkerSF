@@ -7,7 +7,7 @@ data class PlayerDrop_Notification
     @Throws(MessageFormatException::class)
     constructor(
         override val messageNumber: Int,
-        override val username: String?,
+        override val username: String,
         override val playerNumber: Byte
     ) : PlayerDrop() {
 

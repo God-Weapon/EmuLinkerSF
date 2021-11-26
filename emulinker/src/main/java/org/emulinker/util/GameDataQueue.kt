@@ -39,7 +39,7 @@ class GameDataQueue(
 
     @Throws(PlayerTimeoutException::class, DesynchException::class)
     fun getData(byteCount: Int, bytesPerAction: Int): ByteArray? {
-      var data: ByteArray? = null
+      val data: ByteArray?
       if (lastData != null) {
         data = lastData
         lastData = null

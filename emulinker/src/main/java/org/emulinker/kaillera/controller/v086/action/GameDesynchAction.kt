@@ -9,6 +9,8 @@ import org.emulinker.kaillera.controller.v086.protocol.GameChat_Notification
 import org.emulinker.kaillera.model.event.GameDesynchEvent
 import org.emulinker.util.EmuLang
 
+private val logger = FluentLogger.forEnclosingClass()
+
 @Singleton
 class GameDesynchAction @Inject internal constructor() : V086GameEventHandler<GameDesynchEvent> {
   override var handledEventCount = 0
@@ -18,18 +20,18 @@ class GameDesynchAction @Inject internal constructor() : V086GameEventHandler<Ga
     return DESC
   }
 
-  override fun handleEvent(desynchEvent: GameDesynchEvent, clientHandler: V086ClientHandler?) {
+  override fun handleEvent(event: GameDesynchEvent, clientHandler: V086ClientHandler) {
     handledEventCount++
     try {
-      clientHandler!!.send(
+      clientHandler.send(
           GameChat_Notification(
               clientHandler.nextMessageNumber,
               EmuLang.getString("GameDesynchAction.DesynchDetected"),
-              desynchEvent.message))
+              event.message))
       // if (clientHandler.getUser().getStatus() == KailleraUser.STATUS_PLAYING)
       //	clientHandler.getUser().dropGame();
     } catch (e: MessageFormatException) {
-      logger.atSevere().withCause(e).log("Failed to contruct GameChat_Notification message")
+      logger.atSevere().withCause(e).log("Failed to construct GameChat_Notification message")
     }
     // catch (DropGameException e)
     // {
@@ -38,7 +40,6 @@ class GameDesynchAction @Inject internal constructor() : V086GameEventHandler<Ga
   }
 
   companion object {
-    private val logger = FluentLogger.forEnclosingClass()
     private const val DESC = "GameDesynchAction"
   }
 }

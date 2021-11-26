@@ -20,7 +20,7 @@ interface KailleraGame {
   val owner: KailleraUser?
   val playerActionQueue: Array<PlayerActionQueue?>?
   val players: MutableList<KailleraUser>
-  val romName: String?
+  val romName: String
   val server: KailleraServer?
   val startTimeoutTime: Long
   val status: Int

@@ -9,13 +9,13 @@ import org.emulinker.util.EmuUtil
 import org.emulinker.util.UnsignedUtil
 
 abstract class QuitGame : V086Message() {
-  abstract val username: String?
+  abstract val username: String
   abstract val userId: Int
 
   override val messageId = ID
 
   override val bodyLength: Int
-    get() = getNumBytes(username!!) + 3
+    get() = getNumBytes(username) + 3
 
   public override fun writeBodyTo(buffer: ByteBuffer) {
     EmuUtil.writeString(buffer, username, 0x00, AppModule.charsetDoNotUse)

@@ -28,10 +28,10 @@ class QuitGameAction
   }
 
   @Throws(FatalActionException::class)
-  override fun performAction(message: QuitGame_Request, clientHandler: V086ClientHandler?) {
+  override fun performAction(message: QuitGame_Request, clientHandler: V086ClientHandler) {
     actionPerformedCount++
     try {
-      clientHandler!!.user!!.quitGame()
+      clientHandler.user!!.quitGame()
       lookingForGameReporter.cancelActionsForUser(clientHandler.user!!.id)
     } catch (e: DropGameException) {
       logger.atSevere().withCause(e).log("Action failed")
@@ -47,21 +47,21 @@ class QuitGameAction
     }
   }
 
-  override fun handleEvent(userQuitEvent: UserQuitGameEvent, clientHandler: V086ClientHandler?) {
+  override fun handleEvent(event: UserQuitGameEvent, clientHandler: V086ClientHandler) {
     handledEventCount++
-    val thisUser = clientHandler!!.user
+    val thisUser = clientHandler.user
     try {
-      val user = userQuitEvent.user
+      val user = event.user
       if (!user.stealth)
           clientHandler.send(
-              QuitGame_Notification(clientHandler.nextMessageNumber, user.name, user.id))
+              QuitGame_Notification(clientHandler.nextMessageNumber, user.name!!, user.id))
       if (thisUser === user) {
         if (user.stealth)
             clientHandler.send(
-                QuitGame_Notification(clientHandler.nextMessageNumber, user.name, user.id))
+                QuitGame_Notification(clientHandler.nextMessageNumber, user.name!!, user.id))
       }
     } catch (e: MessageFormatException) {
-      logger.atSevere().withCause(e).log("Failed to contruct QuitGame_Notification message")
+      logger.atSevere().withCause(e).log("Failed to construct QuitGame_Notification message")
     }
   }
 

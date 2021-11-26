@@ -17,12 +17,12 @@ class CloseGameAction @Inject internal constructor() : V086ServerEventHandler<Ga
     return DESC
   }
 
-  override fun handleEvent(gameClosedEvent: GameClosedEvent, clientHandler: V086ClientHandler?) {
+  override fun handleEvent(event: GameClosedEvent, clientHandler: V086ClientHandler) {
     handledEventCount++
     try {
-      clientHandler!!.send(CloseGame(clientHandler.nextMessageNumber, gameClosedEvent.game.id, 0))
+      clientHandler.send(CloseGame(clientHandler.nextMessageNumber, event.game.id, 0))
     } catch (e: MessageFormatException) {
-      logger.atSevere().withCause(e).log("Failed to contruct CloseGame_Notification message")
+      logger.atSevere().withCause(e).log("Failed to construct CloseGame_Notification message")
     }
   }
 

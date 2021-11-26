@@ -15,6 +15,8 @@ import org.emulinker.kaillera.model.impl.KailleraGameImpl
 import org.emulinker.kaillera.model.impl.KailleraUserImpl
 import org.emulinker.util.EmuLang
 
+private val logger = FluentLogger.forEnclosingClass()
+
 @Singleton
 class GameOwnerCommandAction @Inject internal constructor() : V086Action<GameChat> {
   override val actionPerformedCount = 0
@@ -22,105 +24,79 @@ class GameOwnerCommandAction @Inject internal constructor() : V086Action<GameCha
     return DESC
   }
 
-  fun isValidCommand(chat: String?): Boolean {
-    if (chat!!.startsWith(COMMAND_HELP)) {
-      return true
-    } else if (chat.startsWith(COMMAND_DETECTAUTOFIRE)) {
-      return true
-    } else if (chat.startsWith(COMMAND_MAXUSERS)) {
-      return true
-    } else if (chat.startsWith(COMMAND_MAXPING)) {
-      return true
-    } else if (chat == COMMAND_START) {
-      return true
-    } else if (chat.startsWith(COMMAND_STARTN)) {
-      return true
-    } else if (chat.startsWith(COMMAND_MUTE)) {
-      return true
-    } else if (chat.startsWith(COMMAND_EMU)) {
-      return true
-    } else if (chat.startsWith(COMMAND_CONN)) {
-      return true
-    } else if (chat.startsWith(COMMAND_UNMUTE)) {
-      return true
-    } else if (chat.startsWith(COMMAND_SWAP)) {
-      return true
-    } else if (chat.startsWith(COMMAND_KICK)) {
-      return true
-    } else if (chat.startsWith(COMMAND_SAMEDELAY)) {
-      return true
-    } else if (chat.startsWith(COMMAND_LAGSTAT)) {
-      return true
-    } else if (chat.startsWith(COMMAND_NUM)) {
-      return true
+  fun isValidCommand(chat: String): Boolean {
+    return when {
+      chat.startsWith(COMMAND_HELP) ||
+          chat.startsWith(COMMAND_DETECTAUTOFIRE) ||
+          chat.startsWith(COMMAND_MAXUSERS) ||
+          chat.startsWith(COMMAND_MAXPING) ||
+          chat == COMMAND_START ||
+          chat.startsWith(COMMAND_STARTN) ||
+          chat.startsWith(COMMAND_MUTE) ||
+          chat.startsWith(COMMAND_EMU) ||
+          chat.startsWith(COMMAND_CONN) ||
+          chat.startsWith(COMMAND_UNMUTE) ||
+          chat.startsWith(COMMAND_SWAP) ||
+          chat.startsWith(COMMAND_KICK) ||
+          chat.startsWith(COMMAND_SAMEDELAY) ||
+          chat.startsWith(COMMAND_LAGSTAT) ||
+          chat.startsWith(COMMAND_NUM) -> true
+      else -> false
     }
-    return false
   }
 
   @Throws(FatalActionException::class)
-  override fun performAction(chatMessage: GameChat, clientHandler: V086ClientHandler?) {
-    val chat = chatMessage.message
-    val user = clientHandler!!.user as KailleraUserImpl
+  override fun performAction(message: GameChat, clientHandler: V086ClientHandler) {
+    val chat = message.message
+    val user = clientHandler.user as KailleraUserImpl
     val game =
         user.game ?: throw FatalActionException("GameOwner Command Failed: Not in a game: $chat")
-    if (!user.equals(game.owner) && user.access < AccessManager.ACCESS_SUPERADMIN) {
-      if (chat!!.startsWith(COMMAND_HELP)) {} else {
+    if (user != game.owner && user.access < AccessManager.ACCESS_SUPERADMIN) {
+      if (!chat.startsWith(COMMAND_HELP)) {
         logger.atWarning().log("GameOwner Command Denied: Not game owner: $game: $user: $chat")
         game.announce("GameOwner Command Error: You are not an owner!", user)
         return
       }
     }
     try {
-      if (chat!!.startsWith(COMMAND_HELP)) {
-        processHelp(chat, game, user, clientHandler)
-      } else if (chat.startsWith(COMMAND_DETECTAUTOFIRE)) {
-        processDetectAutoFire(chat, game, user, clientHandler)
-      } else if (chat.startsWith(COMMAND_MAXUSERS)) {
-        processMaxUsers(chat, game, user, clientHandler)
-      } else if (chat.startsWith(COMMAND_MAXPING)) {
-        processMaxPing(chat, game, user, clientHandler)
-      } else if (chat == COMMAND_START) {
-        processStart(chat, game, user, clientHandler)
-      } else if (chat.startsWith(COMMAND_STARTN)) {
-        processStartN(chat, game, user, clientHandler)
-      } else if (chat.startsWith(COMMAND_MUTE)) {
-        processMute(chat, game, user, clientHandler)
-      } else if (chat.startsWith(COMMAND_EMU)) {
-        processEmu(chat, game, user, clientHandler)
-      } else if (chat.startsWith(COMMAND_CONN)) {
-        processConn(chat, game, user, clientHandler)
-      } else if (chat.startsWith(COMMAND_UNMUTE)) {
-        processUnmute(chat, game, user, clientHandler)
-      } else if (chat.startsWith(COMMAND_SWAP)) {
-        processSwap(chat, game, user, clientHandler)
-      } else if (chat.startsWith(COMMAND_KICK)) {
-        processKick(chat, game, user, clientHandler)
-      } else if (chat.startsWith(COMMAND_LAGSTAT)) {
-        processLagstat(chat, game, user, clientHandler)
-      } else if (chat.startsWith(COMMAND_SAMEDELAY)) {
-        processSameDelay(chat, game, user, clientHandler)
-      } else if (chat.startsWith(COMMAND_NUM)) {
-        processNum(chat, game, user, clientHandler)
-      } else {
-        game.announce("Unknown Command: $chat", user)
-        logger.atInfo().log("Unknown GameOwner Command: $game: $user: $chat")
+      when {
+        chat.startsWith(COMMAND_HELP) -> processHelp(chat, game, user, clientHandler)
+        chat.startsWith(COMMAND_DETECTAUTOFIRE) ->
+            processDetectAutoFire(chat, game, user, clientHandler)
+        chat.startsWith(COMMAND_MAXUSERS) -> processMaxUsers(chat, game, user, clientHandler)
+        chat.startsWith(COMMAND_MAXPING) -> processMaxPing(chat, game, user, clientHandler)
+        chat == COMMAND_START -> processStart(chat, game, user, clientHandler)
+        chat.startsWith(COMMAND_STARTN) -> processStartN(chat, game, user, clientHandler)
+        chat.startsWith(COMMAND_MUTE) -> processMute(chat, game, user, clientHandler)
+        chat.startsWith(COMMAND_EMU) -> processEmu(chat, game, user, clientHandler)
+        chat.startsWith(COMMAND_CONN) -> processConn(chat, game, user, clientHandler)
+        chat.startsWith(COMMAND_UNMUTE) -> processUnmute(chat, game, user, clientHandler)
+        chat.startsWith(COMMAND_SWAP) -> processSwap(chat, game, user, clientHandler)
+        chat.startsWith(COMMAND_KICK) -> processKick(chat, game, user, clientHandler)
+        chat.startsWith(COMMAND_LAGSTAT) -> processLagstat(chat, game, user, clientHandler)
+        chat.startsWith(COMMAND_SAMEDELAY) -> processSameDelay(chat, game, user, clientHandler)
+        chat.startsWith(COMMAND_NUM) -> processNum(chat, game, user, clientHandler)
+        else -> {
+          game.announce("Unknown Command: $chat", user)
+          logger.atInfo().log("Unknown GameOwner Command: $game: $user: $chat")
+        }
       }
     } catch (e: ActionException) {
       logger.atInfo().withCause(e).log("GameOwner Command Failed: $game: $user: $chat")
       game.announce(EmuLang.getString("GameOwnerCommandAction.CommandFailed", e.message), user)
     } catch (e: MessageFormatException) {
-      logger.atSevere().withCause(e).log("Failed to contruct message")
+      logger.atSevere().withCause(e).log("Failed to construct message")
     }
   }
 
   @Throws(ActionException::class, MessageFormatException::class)
   private fun processHelp(
-      message: String?,
+      message: String,
       game: KailleraGameImpl,
       admin: KailleraUserImpl,
-      clientHandler: V086ClientHandler?
+      clientHandler: V086ClientHandler
   ) {
-    if (!admin.equals(game.owner) && admin.access < AccessManager.ACCESS_SUPERADMIN) return
+    if (admin != game.owner && admin.access < AccessManager.ACCESS_SUPERADMIN) return
     // game.setIndividualGameAnnounce(admin.getPlayerNumber());
     // game.announce(EmuLang.getString("GameOwnerCommandAction.AvailableCommands"));
     // try { Thread.sleep(20); } catch(Exception e) {}
@@ -192,10 +168,10 @@ class GameOwnerCommandAction @Inject internal constructor() : V086Action<GameCha
 
   @Throws(ActionException::class, MessageFormatException::class)
   private fun processDetectAutoFire(
-      message: String?,
+      message: String,
       game: KailleraGameImpl,
       admin: KailleraUserImpl,
-      clientHandler: V086ClientHandler?
+      clientHandler: V086ClientHandler
   ) {
     if (game.status != KailleraGame.STATUS_WAITING.toInt()) {
       game.announce(EmuLang.getString("GameOwnerCommandAction.AutoFireChangeDeniedInGame"), admin)
@@ -225,10 +201,10 @@ class GameOwnerCommandAction @Inject internal constructor() : V086Action<GameCha
 
   @Throws(ActionException::class, MessageFormatException::class)
   private fun processEmu(
-      message: String?,
+      message: String,
       game: KailleraGameImpl,
       admin: KailleraUserImpl,
-      clientHandler: V086ClientHandler?
+      clientHandler: V086ClientHandler
   ) {
     var emu = game.owner.clientType
     if (message == "/setemu any") {
@@ -242,10 +218,10 @@ class GameOwnerCommandAction @Inject internal constructor() : V086Action<GameCha
   // new gameowner command /setconn
   @Throws(ActionException::class, MessageFormatException::class)
   private fun processConn(
-      message: String?,
+      message: String,
       game: KailleraGameImpl,
       admin: KailleraUserImpl,
-      clientHandler: V086ClientHandler?
+      clientHandler: V086ClientHandler
   ) {
     var conn = CONNECTION_TYPE_NAMES[game.owner.connectionType.toInt()]
     if (message == "/setconn any") {
@@ -258,35 +234,35 @@ class GameOwnerCommandAction @Inject internal constructor() : V086Action<GameCha
 
   @Throws(ActionException::class, MessageFormatException::class)
   private fun processNum(
-      message: String?,
+      message: String,
       game: KailleraGameImpl,
       admin: KailleraUserImpl,
-      clientHandler: V086ClientHandler?
+      clientHandler: V086ClientHandler
   ) {
     admin.game!!.announce(game.numPlayers.toString() + " in the room!", admin)
   }
 
   @Throws(ActionException::class, MessageFormatException::class)
   private fun processLagstat(
-      message: String?,
+      message: String,
       game: KailleraGameImpl,
       admin: KailleraUserImpl,
-      clientHandler: V086ClientHandler?
+      clientHandler: V086ClientHandler
   ) {
     if (game.status != KailleraGame.STATUS_PLAYING.toInt())
         game.announce("Lagstat is only available during gameplay!", admin)
     if (message == "/lagstat") {
       var str = ""
       for (player in game.players) {
-        if (!player!!.stealth) str = str + "P" + player.playerNumber + ": " + player.timeouts + ", "
+        if (!player.stealth) str = str + "P" + player.playerNumber + ": " + player.timeouts + ", "
       }
-      if (str.length > 0) {
+      if (str.isNotEmpty()) {
         str = str.substring(0, str.length - ", ".length)
         game.announce("$str lag spikes", null)
       }
     } else if (message == "/lagreset") {
       for (player in game.players) {
-        player!!.timeouts = 0
+        player.timeouts = 0
       }
       game.announce("LagStat has been reset!", null)
     }
@@ -294,10 +270,10 @@ class GameOwnerCommandAction @Inject internal constructor() : V086Action<GameCha
 
   @Throws(ActionException::class, MessageFormatException::class)
   private fun processSameDelay(
-      message: String?,
+      message: String,
       game: KailleraGameImpl,
       admin: KailleraUserImpl,
-      clientHandler: V086ClientHandler?
+      clientHandler: V086ClientHandler
   ) {
     if (message == "/samedelay true") {
       game.sameDelay = true
@@ -311,10 +287,10 @@ class GameOwnerCommandAction @Inject internal constructor() : V086Action<GameCha
 
   @Throws(ActionException::class, MessageFormatException::class)
   private fun processMute(
-      message: String?,
+      message: String,
       game: KailleraGameImpl,
       admin: KailleraUserImpl,
-      clientHandler: V086ClientHandler?
+      clientHandler: V086ClientHandler
   ) {
     val scanner = Scanner(message).useDelimiter(" ")
     try {
@@ -332,7 +308,7 @@ class GameOwnerCommandAction @Inject internal constructor() : V086Action<GameCha
         return
       }
       val userID = scanner.nextInt()
-      val user = clientHandler!!.user!!.server.getUser(userID) as KailleraUserImpl
+      val user = clientHandler.user!!.server.getUser(userID) as KailleraUserImpl
       if (user == null) {
         admin.game!!.announce("Player doesn't exist!", admin)
         return
@@ -353,17 +329,17 @@ class GameOwnerCommandAction @Inject internal constructor() : V086Action<GameCha
       val user1 = clientHandler.user as KailleraUserImpl
       user1.game!!.announce(user.name + " has been muted!", null)
     } catch (e: NoSuchElementException) {
-      val user = clientHandler!!.user as KailleraUserImpl
+      val user = clientHandler.user as KailleraUserImpl
       user.game!!.announce("Mute Player Error: /mute <UserID>", admin)
     }
   }
 
   @Throws(ActionException::class, MessageFormatException::class)
   private fun processUnmute(
-      message: String?,
+      message: String,
       game: KailleraGameImpl,
       admin: KailleraUserImpl,
-      clientHandler: V086ClientHandler?
+      clientHandler: V086ClientHandler
   ) {
     val scanner = Scanner(message).useDelimiter(" ")
     try {
@@ -377,7 +353,7 @@ class GameOwnerCommandAction @Inject internal constructor() : V086Action<GameCha
         return
       }
       val userID = scanner.nextInt()
-      val user = clientHandler!!.user!!.server.getUser(userID) as KailleraUserImpl
+      val user = clientHandler.user!!.server.getUser(userID)
       if (user == null) {
         admin.game!!.announce("Player doesn't exist!", admin)
         return
@@ -393,26 +369,26 @@ class GameOwnerCommandAction @Inject internal constructor() : V086Action<GameCha
       }
       game.mutedUsers.remove(user.connectSocketAddress.address.hostAddress)
       user.mute = false
-      val user1 = clientHandler.user as KailleraUserImpl
-      user1.game!!.announce(user.name + " has been unmuted!", null)
+      val user1 = clientHandler.user
+      (user1 as KailleraUserImpl?)!!.game!!.announce(user.name + " has been unmuted!", null)
     } catch (e: NoSuchElementException) {
-      val user = clientHandler!!.user as KailleraUserImpl
+      val user = clientHandler.user as KailleraUserImpl
       user.game!!.announce("Unmute Player Error: /unmute <UserID>", admin)
     }
   }
 
   @Throws(ActionException::class, MessageFormatException::class)
   private fun processStartN(
-      message: String?,
+      message: String,
       game: KailleraGameImpl,
       admin: KailleraUserImpl,
-      clientHandler: V086ClientHandler?
+      clientHandler: V086ClientHandler
   ) {
     val scanner = Scanner(message).useDelimiter(" ")
     try {
       scanner.next()
       val num = scanner.nextInt()
-      if (num > 0 && num < 101) {
+      if (num in 1..100) {
         game.startN = num.toByte().toInt()
         game.announce("This game will start when $num players have joined.", null)
       } else {
@@ -425,10 +401,10 @@ class GameOwnerCommandAction @Inject internal constructor() : V086Action<GameCha
 
   @Throws(ActionException::class, MessageFormatException::class)
   private fun processSwap(
-      message: String?,
+      message: String,
       game: KailleraGameImpl,
       admin: KailleraUserImpl,
-      clientHandler: V086ClientHandler?
+      clientHandler: V086ClientHandler
   ) {
     /*if(game.getStatus() != KailleraGame.STATUS_PLAYING){
     	game.announce("Failed: wap Players can only be used during gameplay!", admin);
@@ -440,7 +416,7 @@ class GameOwnerCommandAction @Inject internal constructor() : V086Action<GameCha
       val str: String
       scanner.next()
       val test = scanner.nextInt()
-      str = Integer.toString(test)
+      str = test.toString()
       if (game.players.size < str.length) {
         game.announce("Failed: You can't swap more than the # of players in the room.", admin)
         return
@@ -489,20 +465,20 @@ class GameOwnerCommandAction @Inject internal constructor() : V086Action<GameCha
 
   @Throws(ActionException::class, MessageFormatException::class)
   private fun processStart(
-      message: String?,
+      message: String,
       game: KailleraGameImpl,
       admin: KailleraUserImpl,
-      clientHandler: V086ClientHandler?
+      clientHandler: V086ClientHandler
   ) {
     game.start(admin)
   }
 
   @Throws(ActionException::class, MessageFormatException::class)
   private fun processKick(
-      message: String?,
+      message: String,
       game: KailleraGameImpl,
       admin: KailleraUserImpl,
-      clientHandler: V086ClientHandler?
+      clientHandler: V086ClientHandler
   ) {
     val scanner = Scanner(message).useDelimiter(" ")
     try {
@@ -518,7 +494,7 @@ class GameOwnerCommandAction @Inject internal constructor() : V086Action<GameCha
         return
       }
       val playerNumber = scanner.nextInt()
-      if (playerNumber > 0 && playerNumber < 101) {
+      if (playerNumber in 1..100) {
         if (game.getPlayer(playerNumber) != null)
             game.kick(admin, game.getPlayer(playerNumber)!!.id)
         else {
@@ -534,10 +510,10 @@ class GameOwnerCommandAction @Inject internal constructor() : V086Action<GameCha
 
   @Throws(ActionException::class, MessageFormatException::class)
   private fun processMaxUsers(
-      message: String?,
+      message: String,
       game: KailleraGameImpl,
       admin: KailleraUserImpl,
-      clientHandler: V086ClientHandler?
+      clientHandler: V086ClientHandler
   ) {
     if (System.currentTimeMillis() - lastMaxUserChange <= 3000) {
       game.announce("Max User Command Spam Detection...Please Wait!", admin)
@@ -550,7 +526,7 @@ class GameOwnerCommandAction @Inject internal constructor() : V086Action<GameCha
     try {
       scanner.next()
       val num = scanner.nextInt()
-      if (num > 0 && num < 101) {
+      if (num in 1..100) {
         game.maxUsers = num
         game.announce("Max Users has been set to $num", null)
       } else {
@@ -563,16 +539,16 @@ class GameOwnerCommandAction @Inject internal constructor() : V086Action<GameCha
 
   @Throws(ActionException::class, MessageFormatException::class)
   private fun processMaxPing(
-      message: String?,
+      message: String,
       game: KailleraGameImpl,
       admin: KailleraUserImpl,
-      clientHandler: V086ClientHandler?
+      clientHandler: V086ClientHandler
   ) {
     val scanner = Scanner(message).useDelimiter(" ")
     try {
       scanner.next()
       val num = scanner.nextInt()
-      if (num > 0 && num < 1001) {
+      if (num in 1..1000) {
         game.maxPing = num
         game.announce("Max Ping has been set to $num", null)
       } else {
@@ -584,7 +560,6 @@ class GameOwnerCommandAction @Inject internal constructor() : V086Action<GameCha
   }
 
   companion object {
-    private val logger = FluentLogger.forEnclosingClass()
     const val COMMAND_HELP = "/help"
     const val COMMAND_DETECTAUTOFIRE = "/detectautofire"
 

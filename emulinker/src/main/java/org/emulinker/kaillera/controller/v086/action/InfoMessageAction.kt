@@ -8,6 +8,8 @@ import org.emulinker.kaillera.controller.v086.V086ClientHandler
 import org.emulinker.kaillera.controller.v086.protocol.InformationMessage
 import org.emulinker.kaillera.model.event.InfoMessageEvent
 
+private val logger = FluentLogger.forEnclosingClass()
+
 @Singleton
 class InfoMessageAction @Inject internal constructor() : V086UserEventHandler<InfoMessageEvent> {
   override var handledEventCount = 0
@@ -17,18 +19,17 @@ class InfoMessageAction @Inject internal constructor() : V086UserEventHandler<In
     return DESC
   }
 
-  override fun handleEvent(infoEvent: InfoMessageEvent, clientHandler: V086ClientHandler?) {
+  override fun handleEvent(event: InfoMessageEvent, clientHandler: V086ClientHandler) {
     handledEventCount++
     try {
-      clientHandler!!.send(
-          InformationMessage(clientHandler.nextMessageNumber, "server", infoEvent.message))
+      clientHandler.send(
+          InformationMessage(clientHandler.nextMessageNumber, "server", event.message))
     } catch (e: MessageFormatException) {
-      logger.atSevere().withCause(e).log("Failed to contruct InformationMessage message")
+      logger.atSevere().withCause(e).log("Failed to construct InformationMessage message")
     }
   }
 
   companion object {
-    private val logger = FluentLogger.forEnclosingClass()
     private const val DESC = "InfoMessageAction"
   }
 }

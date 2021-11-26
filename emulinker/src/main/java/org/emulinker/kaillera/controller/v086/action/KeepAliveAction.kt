@@ -15,9 +15,9 @@ class KeepAliveAction @Inject internal constructor() : V086Action<KeepAlive> {
   }
 
   @Throws(FatalActionException::class)
-  override fun performAction(message: KeepAlive, clientHandler: V086ClientHandler?) {
+  override fun performAction(message: KeepAlive, clientHandler: V086ClientHandler) {
     actionPerformedCount++
-    if (clientHandler!!.user == null)
+    if (clientHandler.user == null)
         throw FatalActionException("User does not exist: KeepAliveAction!")
     clientHandler.user!!.updateLastKeepAlive()
   }

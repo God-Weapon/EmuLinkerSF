@@ -11,7 +11,7 @@ class MasterListStatsCollector @Inject internal constructor() : StatsCollector {
 
   @Synchronized
   override fun markGameAsStarted(server: KailleraServer, game: KailleraGame) {
-    startedGamesList.add(game.romName!!)
+    startedGamesList.add(game.romName)
   }
 
   @Synchronized

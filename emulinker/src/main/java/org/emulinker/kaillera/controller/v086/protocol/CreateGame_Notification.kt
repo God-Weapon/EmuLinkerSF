@@ -7,9 +7,9 @@ data class CreateGame_Notification
     @Throws(MessageFormatException::class)
     constructor(
         override val messageNumber: Int,
-        override val username: String?,
-        override val romName: String?,
-        override val clientType: String?,
+        override val username: String,
+        override val romName: String,
+        override val clientType: String,
         override val gameId: Int,
         override val val1: Int
     ) : CreateGame() {

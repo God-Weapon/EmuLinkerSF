@@ -1,7 +1,4 @@
 package org.emulinker.kaillera.model.exception
 
-open class ActionException : Exception {
-  constructor()
-  constructor(message: String?) : super(message)
-  constructor(message: String?, source: Exception?) : super(message, source)
-}
+open class ActionException(message: String? = null, source: Exception? = null) :
+    Exception(message, source)

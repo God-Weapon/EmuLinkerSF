@@ -4,7 +4,7 @@ import org.emulinker.kaillera.controller.messaging.MessageFormatException
 
 data class Quit_Request
     @Throws(MessageFormatException::class)
-    constructor(override val messageNumber: Int, override val message: String?) : Quit() {
+    constructor(override val messageNumber: Int, override val message: String) : Quit() {
 
   override val username = ""
   override val userId = 0xFFFF

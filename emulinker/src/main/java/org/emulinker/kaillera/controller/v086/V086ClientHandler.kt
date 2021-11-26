@@ -57,8 +57,8 @@ class V086ClientHandler
   // private LinkedList<V086Message>	lastMessages			= new LinkedList<V086Message>();
   private val lastMessageBuffer = LastMessageBuffer(V086Controller.MAX_BUNDLE_SIZE)
   private val outMessages = arrayOfNulls<V086Message>(V086Controller.MAX_BUNDLE_SIZE)
-  private val inBuffer: ByteBuffer
-  private val outBuffer: ByteBuffer
+  private val inBuffer: ByteBuffer = ByteBuffer.allocateDirect(flags.v086BufferSize)
+  private val outBuffer: ByteBuffer = ByteBuffer.allocateDirect(flags.v086BufferSize)
   private val inSynch = Any()
   private val outSynch = Any()
   private var testStart: Long = 0
@@ -243,7 +243,7 @@ class V086ClientHandler
               .log(
                   toString() +
                       " received bundle of " +
-                      inBundle!!.numMessages +
+                      inBundle.numMessages +
                       " messages from " +
                       user)
           clientRetryCount++
@@ -261,7 +261,7 @@ class V086ClientHandler
           if (action == null) {
             logger.atSevere().log("No action defined to handle client message: " + messages[0])
           }
-          (action!! as V086Action<V086Message>).performAction(messages[0]!!, this)
+          (action as V086Action<V086Message>).performAction(messages[0]!!, this)
         } else {
           // read the bundle from back to front to process the oldest messages first
           for (i in inBundle.numMessages - 1 downTo 0) {
@@ -380,8 +380,6 @@ class V086ClientHandler
   }
 
   init {
-    inBuffer = ByteBuffer.allocateDirect(flags.v086BufferSize)
-    outBuffer = ByteBuffer.allocateDirect(flags.v086BufferSize)
     inBuffer.order(ByteOrder.LITTLE_ENDIAN)
     outBuffer.order(ByteOrder.LITTLE_ENDIAN)
     resetGameDataCache()

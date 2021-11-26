@@ -14,6 +14,8 @@ import org.emulinker.kaillera.model.exception.CreateGameException
 import org.emulinker.kaillera.model.exception.FloodException
 import org.emulinker.util.EmuLang
 
+private val logger = FluentLogger.forEnclosingClass()
+
 @Singleton
 class CreateGameAction @Inject internal constructor() :
     V086Action<CreateGame>, V086ServerEventHandler<GameCreatedEvent> {
@@ -27,15 +29,15 @@ class CreateGameAction @Inject internal constructor() :
   }
 
   @Throws(FatalActionException::class)
-  override fun performAction(createGameMessage: CreateGame, clientHandler: V086ClientHandler?) {
+  override fun performAction(message: CreateGame, clientHandler: V086ClientHandler) {
     actionPerformedCount++
     try {
-      clientHandler!!.user!!.createGame(createGameMessage.romName)
+      clientHandler.user!!.createGame(message.romName)
     } catch (e: CreateGameException) {
       logger
           .atInfo()
           .withCause(e)
-          .log("Create Game Denied: " + clientHandler!!.user + ": " + createGameMessage.romName)
+          .log("Create Game Denied: " + clientHandler.user + ": " + message.romName)
       try {
         clientHandler.send(
             InformationMessage(
@@ -45,16 +47,16 @@ class CreateGameAction @Inject internal constructor() :
         clientHandler.send(
             QuitGame_Notification(
                 clientHandler.nextMessageNumber,
-                clientHandler.user!!.name,
+                clientHandler.user!!.name!!,
                 clientHandler.user!!.id))
       } catch (e2: MessageFormatException) {
-        logger.atSevere().withCause(e2).log("Failed to contruct message")
+        logger.atSevere().withCause(e2).log("Failed to construct message")
       }
     } catch (e: FloodException) {
       logger
           .atInfo()
           .withCause(e)
-          .log("Create Game Denied: " + clientHandler!!.user + ": " + createGameMessage.romName)
+          .log("Create Game Denied: " + clientHandler.user + ": " + message.romName)
       try {
         clientHandler.send(
             InformationMessage(
@@ -64,34 +66,33 @@ class CreateGameAction @Inject internal constructor() :
         clientHandler.send(
             QuitGame_Notification(
                 clientHandler.nextMessageNumber,
-                clientHandler.user!!.name,
+                clientHandler.user!!.name!!,
                 clientHandler.user!!.id))
       } catch (e2: MessageFormatException) {
-        logger.atSevere().withCause(e2).log("Failed to contruct message")
+        logger.atSevere().withCause(e2).log("Failed to construct message")
       }
     }
   }
 
-  override fun handleEvent(gameCreatedEvent: GameCreatedEvent, clientHandler: V086ClientHandler?) {
+  override fun handleEvent(event: GameCreatedEvent, clientHandler: V086ClientHandler) {
     handledEventCount++
     try {
-      val game = gameCreatedEvent.game
+      val game = event.game
       val owner = game.owner
-      clientHandler!!.send(
+      clientHandler.send(
           CreateGame_Notification(
               clientHandler.nextMessageNumber,
-              owner!!.name,
+              owner!!.name!!,
               game.romName,
-              owner.clientType,
+              owner.clientType!!,
               game.id,
               0.toShort().toInt()))
     } catch (e: MessageFormatException) {
-      logger.atSevere().withCause(e).log("Failed to contruct CreateGame_Notification message")
+      logger.atSevere().withCause(e).log("Failed to construct CreateGame_Notification message")
     }
   }
 
   companion object {
-    private val logger = FluentLogger.forEnclosingClass()
     private const val DESC = "CreateGameAction"
   }
 }

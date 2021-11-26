@@ -180,8 +180,8 @@ class KailleraUserImpl(
   val accessStr: String
     get() = AccessManager.ACCESS_NAMES[access]
 
-  override fun equals(obj: Any?): Boolean {
-    return obj is KailleraUserImpl && obj.id == id
+  override fun equals(other: Any?): Boolean {
+    return other is KailleraUserImpl && other.id == id
   }
 
   fun toDetailedString(): String {
@@ -299,7 +299,7 @@ class KailleraUserImpl(
       logger.atWarning().log("$this join game failed: User status is Connecting!")
       throw JoinGameException(EmuLang.getString("KailleraUserImpl.JoinGameErrorNotFullConnected"))
     }
-    val game = server.getGame(gameID) as KailleraGameImpl
+    val game = server.getGame(gameID)
     if (game == null) {
       logger.atWarning().log("$this join game failed: Game $gameID does not exist!")
       throw JoinGameException(EmuLang.getString("KailleraUserImpl.JoinGameErrorDoesNotExist"))
@@ -315,7 +315,7 @@ class KailleraUserImpl(
     //
     // }
     playerNumber = game.join(this)
-    this.game = game
+    this.game = game as KailleraGameImpl?
     gameDataErrorTime = -1
     return game
   }

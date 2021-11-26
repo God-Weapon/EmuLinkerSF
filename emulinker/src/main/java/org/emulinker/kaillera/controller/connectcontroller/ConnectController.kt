@@ -254,7 +254,7 @@ class ConnectController
     controllersMap = HashMap()
     for (controller in kailleraServerControllers) {
       val clientTypes = controller.clientTypes
-      for (j in clientTypes!!.indices) {
+      for (j in clientTypes.indices) {
         logger.atFine().log("Mapping client type " + clientTypes[j] + " to " + controller)
         controllersMap[clientTypes[j]] = controller
       }

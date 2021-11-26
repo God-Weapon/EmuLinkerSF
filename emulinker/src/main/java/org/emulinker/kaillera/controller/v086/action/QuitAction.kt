@@ -10,6 +10,8 @@ import org.emulinker.kaillera.controller.v086.protocol.Quit_Request
 import org.emulinker.kaillera.model.event.UserQuitEvent
 import org.emulinker.kaillera.model.exception.ActionException
 
+private val logger = FluentLogger.forEnclosingClass()
+
 @Singleton
 class QuitAction @Inject internal constructor() :
     V086Action<Quit_Request>, V086ServerEventHandler<UserQuitEvent> {
@@ -23,29 +25,27 @@ class QuitAction @Inject internal constructor() :
   }
 
   @Throws(FatalActionException::class)
-  override fun performAction(quitRequest: Quit_Request, clientHandler: V086ClientHandler?) {
+  override fun performAction(message: Quit_Request, clientHandler: V086ClientHandler) {
     actionPerformedCount++
     try {
-      clientHandler!!.user!!.quit(quitRequest.message)
+      clientHandler.user!!.quit(message.message)
     } catch (e: ActionException) {
       throw FatalActionException("Failed to quit: " + e.message)
     }
   }
 
-  override fun handleEvent(userQuitEvent: UserQuitEvent, clientHandler: V086ClientHandler?) {
+  override fun handleEvent(event: UserQuitEvent, clientHandler: V086ClientHandler) {
     handledEventCount++
     try {
-      val user = userQuitEvent.user
-      clientHandler!!.send(
-          Quit_Notification(
-              clientHandler.nextMessageNumber, user.name, user.id, userQuitEvent.message))
+      val user = event.user
+      clientHandler.send(
+          Quit_Notification(clientHandler.nextMessageNumber, user.name!!, user.id, event.message))
     } catch (e: MessageFormatException) {
-      logger.atSevere().withCause(e).log("Failed to contruct Quit_Notification message")
+      logger.atSevere().withCause(e).log("Failed to construct Quit_Notification message")
     }
   }
 
   companion object {
-    private val logger = FluentLogger.forEnclosingClass()
     private const val DESC = "QuitAction"
   }
 }

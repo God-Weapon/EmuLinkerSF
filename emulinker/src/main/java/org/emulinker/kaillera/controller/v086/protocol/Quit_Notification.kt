@@ -7,9 +7,9 @@ data class Quit_Notification
     @Throws(MessageFormatException::class)
     constructor(
         override val messageNumber: Int,
-        override val username: String?,
+        override val username: String,
         override val userId: Int,
-        override val message: String?
+        override val message: String
     ) : Quit() {
 
   override val description = DESC

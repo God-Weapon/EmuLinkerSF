@@ -26,7 +26,7 @@ object EmuUtil {
   @JvmField val LB = System.getProperty("line.separator")
   @JvmField var DATE_FORMAT: DateFormat = SimpleDateFormat("MM/dd/yyyy HH:mm:ss")
   fun systemIsWindows(): Boolean {
-    return if (File.separatorChar == '\\') true else false
+    return File.separatorChar == '\\'
   }
 
   fun loadProperties(filename: String): Properties? {
@@ -60,8 +60,8 @@ object EmuUtil {
     val len = data.size
     val sb = StringBuilder()
     for (i in 0 until len) {
-      if (Character.isLetterOrDigit(data[i].toChar()) || data[i] >= 32 && data[i] <= 126)
-          sb.append(data[i].toChar())
+      if (Character.isLetterOrDigit(data[i].toInt().toChar()) || data[i] in 32..126)
+          sb.append(data[i].toInt().toChar())
       else sb.append(byteToHex(data[i]))
       if (i < len - 1) sb.append(',')
     }
@@ -200,7 +200,7 @@ object EmuUtil {
     //		return new String(tempArray, 0, i);
   }
 
-  fun writeString(buffer: ByteBuffer, s: String?, stopByte: Int, charset: Charset) {
+  fun writeString(buffer: ByteBuffer, s: String, stopByte: Int, charset: Charset) {
     buffer.put(charset.encode(s))
     //		char[] tempArray = s.toCharArray();
     //		for(int i=0; i<tempArray.length; i++)
@@ -212,9 +212,9 @@ object EmuUtil {
   fun construct(className: String, args: Array<Any>): Any {
     return try {
       val c = Class.forName(className)
-      val contructorArgs: Array<Class<*>?> = arrayOfNulls(args.size)
-      for (i in args.indices) contructorArgs[i] = args[i].javaClass
-      val constructor = c.getConstructor(*contructorArgs)
+      val constructorArgs: Array<Class<*>?> = arrayOfNulls(args.size)
+      for (i in args.indices) constructorArgs[i] = args[i].javaClass
+      val constructor = c.getConstructor(*constructorArgs)
       constructor.newInstance(*args)
     } catch (e: Exception) {
       throw InstantiationException("Problem constructing new " + className + ": " + e.message)

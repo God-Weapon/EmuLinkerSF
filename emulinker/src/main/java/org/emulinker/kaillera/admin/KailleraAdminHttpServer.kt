@@ -24,7 +24,7 @@ class KailleraAdminHttpServer(
     threadPool: ThreadPoolExecutor?,
     connectController: ConnectController?,
     kailleraServer: KailleraServer?
-) {
+) : AdminServer {
   private var appServer = Server()
 
   /**
@@ -71,7 +71,7 @@ class KailleraAdminHttpServer(
     }
   }
 
-  fun start() {
+  override fun start() {
     logger.atInfo().log("Starting Web-based Admin Interface.")
     if (!appServer.isStarted) {
       try {
@@ -82,7 +82,7 @@ class KailleraAdminHttpServer(
     }
   }
 
-  fun stop() {
+  override fun stop() {
     logger.atInfo().log("Stoping!")
     if (appServer.isStarted) {
       try {

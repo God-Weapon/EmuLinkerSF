@@ -35,7 +35,7 @@ interface KailleraUser {
   var lastMsgID: Int
   var msg: Boolean
   var mute: Boolean
-  var name: String?
+  var name: String? // TODO(nue): Remove this "?"
   var p2P: Boolean
   var ping: Int
   var playerNumber: Int

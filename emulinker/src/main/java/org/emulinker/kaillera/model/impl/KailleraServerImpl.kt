@@ -115,10 +115,10 @@ class KailleraServerImpl
         .atFine()
         .log(
             "KailleraServer thread starting (ThreadPool:%d/%d)",
-            threadPool!!.activeCount,
-            threadPool!!.poolSize)
+            threadPool.activeCount,
+            threadPool.poolSize)
     stopFlag = false
-    threadPool!!.execute(this)
+    threadPool.execute(this)
     Thread.yield()
   }
 
@@ -130,7 +130,7 @@ class KailleraServerImpl
       return
     }
     stopFlag = true
-    for (user in usersMap.values) user!!.stop()
+    for (user in usersMap.values) user.stop()
     usersMap.clear()
     gamesMap.clear()
   }
@@ -189,20 +189,20 @@ class KailleraServerImpl
         .log(
             user.toString() +
                 " Thread starting (ThreadPool:" +
-                threadPool!!.activeCount +
+                threadPool.activeCount +
                 "/" +
-                threadPool!!.poolSize +
+                threadPool.poolSize +
                 ")")
-    threadPool!!.execute(user)
+    threadPool.execute(user)
     Thread.yield()
     logger
         .atFine()
         .log(
             user.toString() +
                 " Thread started (ThreadPool:" +
-                threadPool!!.activeCount +
+                threadPool.activeCount +
                 "/" +
-                threadPool!!.poolSize +
+                threadPool.poolSize +
                 ")")
     usersMap[userID] = user
     return user
@@ -361,7 +361,7 @@ class KailleraServerImpl
           getString("KailleraServerImpl.LoginDeniedEmulatorRestricted", user.clientType))
     }
     for (u2 in users) {
-      if (u2!!.loggedIn) {
+      if (u2.loggedIn) {
         if (!u2.equals(u) &&
             (u.connectSocketAddress.address == u2.connectSocketAddress.address) &&
             u.name == u2.name) {
@@ -429,7 +429,7 @@ class KailleraServerImpl
         sb.append(":USERINFO=")
         var sbCount = 0
         for (u3 in users) {
-          if (!u3!!.loggedIn) continue
+          if (!u3.loggedIn) continue
           sb.append(u3.id)
           sb.append(0x02.toChar())
           sb.append(u3.connectSocketAddress.address.hostAddress)
@@ -747,7 +747,7 @@ class KailleraServerImpl
     if (user != null) {
       if (gamesAlso) { //   /msg and /me commands
         for (kailleraUser in users) {
-          if (kailleraUser!!.loggedIn) {
+          if (kailleraUser.loggedIn) {
             val access = accessManager.getAccess(user.connectSocketAddress.address)
             if (access < AccessManager.ACCESS_ADMIN) {
               if (!kailleraUser.searchIgnoredUsers(user.connectSocketAddress.address.hostAddress))
@@ -771,7 +771,7 @@ class KailleraServerImpl
       }
     } else {
       for (kailleraUser in users) {
-        if (kailleraUser!!.loggedIn) {
+        if (kailleraUser.loggedIn) {
           kailleraUser.addEvent(InfoMessageEvent(kailleraUser, announcement))
 
           // SF MOD
@@ -788,7 +788,7 @@ class KailleraServerImpl
 
   fun addEvent(event: ServerEvent) {
     for (user in usersMap.values) {
-      if (user!!.loggedIn) {
+      if (user.loggedIn) {
         if (user.status != KailleraUser.STATUS_IDLE.toInt()) {
           if (user.p2P) {
             if (event.toString() == "GameDataEvent") user.addEvent(event)
@@ -825,7 +825,7 @@ class KailleraServerImpl
         if (stopFlag) break
         if (usersMap.isEmpty()) continue
         for (user in users) {
-          synchronized(user!!) {
+          synchronized(user) {
             val access = accessManager.getAccess(user.connectSocketAddress.address)
             (user as KailleraUserImpl?)!!.access = access
 

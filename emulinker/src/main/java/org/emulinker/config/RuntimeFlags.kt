@@ -76,6 +76,7 @@ data class RuntimeFlags
   companion object {
 
     fun loadFromApacheConfiguration(config: Configuration): RuntimeFlags {
+      @Suppress("UNCHECKED_CAST") // TODO(nue): Replace commons-configurations.
       return RuntimeFlags(
           allowMultipleConnections = config.getBoolean("server.allowMultipleConnections"),
           allowSinglePlayer = config.getBoolean("server.allowSinglePlayer", true),

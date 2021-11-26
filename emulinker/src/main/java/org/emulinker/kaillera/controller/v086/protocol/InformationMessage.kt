@@ -9,7 +9,7 @@ import org.emulinker.util.EmuUtil
 
 data class InformationMessage
     @Throws(MessageFormatException::class)
-    constructor(override val messageNumber: Int, val source: String?, val message: String?) :
+    constructor(override val messageNumber: Int, val source: String, val message: String) :
     V086Message() {
 
   override val description = DESC
@@ -26,7 +26,7 @@ data class InformationMessage
   }
 
   override val bodyLength: Int
-    get() = getNumBytes(source!!) + getNumBytes(message!!) + 2
+    get() = getNumBytes(source) + getNumBytes(message) + 2
 
   public override fun writeBodyTo(buffer: ByteBuffer) {
     EmuUtil.writeString(buffer, source, 0x00, AppModule.charsetDoNotUse)

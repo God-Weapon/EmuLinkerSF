@@ -27,9 +27,9 @@ class LoginAction @Inject internal constructor() :
   }
 
   @Throws(FatalActionException::class)
-  override fun performAction(userInfo: UserInformation, clientHandler: V086ClientHandler?) {
+  override fun performAction(userInfo: UserInformation, clientHandler: V086ClientHandler) {
     actionPerformedCount++
-    val user: KailleraUser = clientHandler!!.user!!
+    val user: KailleraUser = clientHandler.user!!
     user.name = userInfo.username
     user.clientType = userInfo.clientType
     user.socketAddress = clientHandler.remoteSocketAddress
@@ -42,11 +42,11 @@ class LoginAction @Inject internal constructor() :
     }
   }
 
-  override fun handleEvent(userJoinedEvent: UserJoinedEvent, clientHandler: V086ClientHandler?) {
+  override fun handleEvent(event: UserJoinedEvent, clientHandler: V086ClientHandler) {
     handledEventCount++
     try {
-      val user = userJoinedEvent.user as KailleraUserImpl
-      clientHandler!!.send(
+      val user = event.user as KailleraUserImpl
+      clientHandler.send(
           UserJoined(
               clientHandler.nextMessageNumber,
               user.name!!,

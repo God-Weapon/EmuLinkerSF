@@ -8,7 +8,6 @@ import io.reactivex.rxjava3.schedulers.Schedulers
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 import java.util.concurrent.TimeUnit
-import java.util.function.Predicate
 import javax.inject.Inject
 import javax.inject.Singleton
 import org.emulinker.config.RuntimeFlags
@@ -88,7 +87,7 @@ class TwitterBroadcaster
     return cancelMatchingEvents { event: LookingForGameEvent -> event.gameId == gameId }
   }
 
-  private fun cancelMatchingEvents(predicate: Predicate<in LookingForGameEvent>): Boolean {
+  private fun cancelMatchingEvents(predicate: (LookingForGameEvent) -> Boolean): Boolean {
     val anyModified =
         pendingReports
             .keys

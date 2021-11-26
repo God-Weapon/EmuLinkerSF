@@ -39,20 +39,10 @@ data class UserJoined
 
   // TODO(nue): Get rid of this.
   override fun toString(): String {
-    return (infoString +
-        "[userName=" +
-        username +
-        " userID=" +
-        userId +
-        " ping=" +
-        ping +
-        " connectionType=" +
-        CONNECTION_TYPE_NAMES[connectionType.toInt()] +
-        "]")
+    return "$infoString[userName=$username userID=$userId ping=$ping connectionType=${CONNECTION_TYPE_NAMES[connectionType.toInt()]}]"
   }
 
-  override val bodyLength: Int
-    get() = getNumBytes(username) + 8
+  override val bodyLength = getNumBytes(username) + 8
 
   public override fun writeBodyTo(buffer: ByteBuffer) {
     EmuUtil.writeString(buffer, username, 0x00, AppModule.charsetDoNotUse)

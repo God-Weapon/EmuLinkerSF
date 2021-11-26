@@ -28,9 +28,9 @@ class ACKAction @Inject internal constructor() :
   }
 
   @Throws(FatalActionException::class)
-  override fun performAction(message: ClientACK, clientHandler: V086ClientHandler?) {
+  override fun performAction(message: ClientACK, clientHandler: V086ClientHandler) {
     actionPerformedCount++
-    val user = clientHandler!!.user
+    val user = clientHandler.user
     if (user!!.loggedIn) return
     clientHandler.addSpeedMeasurement()
     if (clientHandler.speedMeasurementCount > numAcksForSpeedTest) {
@@ -38,12 +38,7 @@ class ACKAction @Inject internal constructor() :
       logger
           .atFine()
           .log(
-              "Calculated " +
-                  user +
-                  " ping time: average=" +
-                  clientHandler.averageNetworkSpeed +
-                  ", best=" +
-                  clientHandler.bestNetworkSpeed)
+              "Calculated $user ping time: average=${clientHandler.averageNetworkSpeed}, best=${clientHandler.bestNetworkSpeed}")
       try {
         user.login()
       } catch (e: LoginException) {
@@ -52,7 +47,7 @@ class ACKAction @Inject internal constructor() :
               ConnectionRejected(
                   clientHandler.nextMessageNumber, "server", user.id, e.message ?: ""))
         } catch (e2: MessageFormatException) {
-          logger.atSevere().withCause(e).log("Failed to contruct new ConnectionRejected")
+          logger.atSevere().withCause(e2).log("Failed to construct new ConnectionRejected")
         }
         throw FatalActionException("Login failed: " + e.message)
       }
@@ -60,13 +55,13 @@ class ACKAction @Inject internal constructor() :
       try {
         clientHandler.send(ServerACK(clientHandler.nextMessageNumber))
       } catch (e: MessageFormatException) {
-        logger.atSevere().withCause(e).log("Failed to contruct new ServerACK")
+        logger.atSevere().withCause(e).log("Failed to construct new ServerACK")
         return
       }
     }
   }
 
-  override fun handleEvent(event: UserEvent, clientHandler: V086ClientHandler?) {
+  override fun handleEvent(event: UserEvent, clientHandler: V086ClientHandler) {
     handledEventCount++
     val connectedEvent = event as ConnectedEvent
     val server = connectedEvent.server
@@ -85,26 +80,26 @@ class ACKAction @Inject internal constructor() :
                     user.connectionType))
       }
     } catch (e: MessageFormatException) {
-      logger.atSevere().withCause(e).log("Failed to contruct new ServerStatus.User")
+      logger.atSevere().withCause(e).log("Failed to construct new ServerStatus.User")
       return
     }
     try {
       for (game in server.games) {
         var num = 0
         for (user in game.players) {
-          if (!user!!.stealth) num++
+          if (!user.stealth) num++
         }
         games.add(
             ServerStatus.Game(
-                game.romName!!,
+                game.romName,
                 game.id,
                 game.clientType!!,
-                game.owner!!.name!!,
+                game.owner.name!!,
                 num.toString() + "/" + game.maxUsers,
                 game.status.toByte()))
       }
     } catch (e: MessageFormatException) {
-      logger.atSevere().withCause(e).log("Failed to contruct new ServerStatus.User")
+      logger.atSevere().withCause(e).log("Failed to construct new ServerStatus.User")
       return
     }
 
@@ -174,16 +169,7 @@ class ACKAction @Inject internal constructor() :
     logger
         .atFine()
         .log(
-            "Sending ServerStatus to " +
-                clientHandler!!.user +
-                ": " +
-                users.size +
-                " users, " +
-                games.size +
-                " games in " +
-                counter +
-                " bytes, games: " +
-                sb.toString())
+            "Sending ServerStatus to ${clientHandler!!.user}: ${users.size} users, ${games.size} games in $counter bytes, games: $sb")
     try {
       clientHandler.send(ServerStatus(clientHandler.nextMessageNumber, users, games))
     } catch (e: MessageFormatException) {

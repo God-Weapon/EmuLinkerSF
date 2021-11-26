@@ -11,13 +11,13 @@ import org.emulinker.util.UnsignedUtil
 abstract class JoinGame : V086Message() {
   abstract val gameId: Int
   abstract val val1: Int
-  abstract val username: String?
+  abstract val username: String
   abstract val ping: Long
   abstract val userId: Int
   abstract val connectionType: Byte
 
   override val bodyLength: Int
-    get() = getNumBytes(username!!) + 13
+    get() = getNumBytes(username) + 13
 
   public override fun writeBodyTo(buffer: ByteBuffer) {
     buffer.put(0x00.toByte())

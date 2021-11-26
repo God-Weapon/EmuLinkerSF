@@ -9,6 +9,8 @@ import org.emulinker.kaillera.controller.v086.protocol.GameChat_Notification
 import org.emulinker.kaillera.controller.v086.protocol.GameKick
 import org.emulinker.kaillera.model.exception.GameKickException
 
+private val logger = FluentLogger.forEnclosingClass()
+
 @Singleton
 class GameKickAction @Inject internal constructor() : V086Action<GameKick> {
   override var actionPerformedCount = 0
@@ -19,24 +21,23 @@ class GameKickAction @Inject internal constructor() : V086Action<GameKick> {
   }
 
   @Throws(FatalActionException::class)
-  override fun performAction(kickRequest: GameKick, clientHandler: V086ClientHandler?) {
+  override fun performAction(message: GameKick, clientHandler: V086ClientHandler) {
     actionPerformedCount++
     try {
-      clientHandler!!.user!!.gameKick(kickRequest.userId)
+      clientHandler.user!!.gameKick(message.userId)
     } catch (e: GameKickException) {
       logger.atSevere().withCause(e).log("Failed to kick")
       // new SF MOD - kick errors notifications
       try {
-        clientHandler!!.send(
-            GameChat_Notification(clientHandler.nextMessageNumber, "Error", e.message))
+        clientHandler.send(
+            GameChat_Notification(clientHandler.nextMessageNumber, "Error", e.message!!))
       } catch (ex: MessageFormatException) {
-        logger.atSevere().withCause(ex).log("Failed to contruct GameChat_Notification message")
+        logger.atSevere().withCause(ex).log("Failed to construct GameChat_Notification message")
       }
     }
   }
 
   companion object {
-    private val logger = FluentLogger.forEnclosingClass()
     private const val DESC = "GameKickAction"
   }
 }

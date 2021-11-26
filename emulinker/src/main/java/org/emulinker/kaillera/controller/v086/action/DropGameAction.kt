@@ -10,6 +10,8 @@ import org.emulinker.kaillera.controller.v086.protocol.PlayerDrop_Request
 import org.emulinker.kaillera.model.event.UserDroppedGameEvent
 import org.emulinker.kaillera.model.exception.DropGameException
 
+private val logger = FluentLogger.forEnclosingClass()
+
 @Singleton
 class DropGameAction @Inject internal constructor() :
     V086Action<PlayerDrop_Request>, V086GameEventHandler<UserDroppedGameEvent> {
@@ -23,35 +25,32 @@ class DropGameAction @Inject internal constructor() :
   }
 
   @Throws(FatalActionException::class)
-  override fun performAction(message: PlayerDrop_Request, clientHandler: V086ClientHandler?) {
+  override fun performAction(message: PlayerDrop_Request, clientHandler: V086ClientHandler) {
     actionPerformedCount++
     try {
-      clientHandler!!.user!!.dropGame()
+      clientHandler.user!!.dropGame()
     } catch (e: DropGameException) {
       logger.atFine().withCause(e).log("Failed to drop game")
     }
   }
 
-  override fun handleEvent(
-      userDroppedEvent: UserDroppedGameEvent, clientHandler: V086ClientHandler?
-  ) {
+  override fun handleEvent(event: UserDroppedGameEvent, clientHandler: V086ClientHandler) {
     handledEventCount++
     try {
-      val user = userDroppedEvent.user
-      val playerNumber = userDroppedEvent.playerNumber
+      val user = event.user
+      val playerNumber = event.playerNumber
       //			clientHandler.send(PlayerDrop_Notification.create(clientHandler.getNextMessageNumber(),
       // user.getName(), (byte) game.getPlayerNumber(user)));
       if (!user.stealth)
-          clientHandler!!.send(
+          clientHandler.send(
               PlayerDrop_Notification(
-                  clientHandler.nextMessageNumber, user.name, playerNumber.toByte()))
+                  clientHandler.nextMessageNumber, user.name!!, playerNumber.toByte()))
     } catch (e: MessageFormatException) {
-      logger.atSevere().withCause(e).log("Failed to contruct PlayerDrop_Notification message")
+      logger.atSevere().withCause(e).log("Failed to construct PlayerDrop_Notification message")
     }
   }
 
   companion object {
-    private val logger = FluentLogger.forEnclosingClass()
     private const val DESC = "DropGameAction"
   }
 }

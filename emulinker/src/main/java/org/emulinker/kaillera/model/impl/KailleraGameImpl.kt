@@ -132,7 +132,7 @@ class KailleraGameImpl(
     get() {
       var count = 0
       for (player in players) {
-        if (player!!.status == KailleraUser.STATUS_PLAYING.toInt()) {
+        if (player.status == KailleraUser.STATUS_PLAYING.toInt()) {
           count++
         }
       }
@@ -155,7 +155,7 @@ class KailleraGameImpl(
     }
 
   fun addEvent(event: GameEvent?) {
-    for (player in players) (player!! as KailleraUserImpl).addEvent(event)
+    for (player in players) (player as KailleraUserImpl).addEvent(event)
   }
 
   @Synchronized
@@ -199,7 +199,7 @@ class KailleraGameImpl(
       throw GameKickException(EmuLang.getString("KailleraGameImpl.GameKickDeniedCannotKickSelf"))
     }
     for (player in players) {
-      if (player!!.id == userID) {
+      if (player.id == userID) {
         try {
           if (user.access != AccessManager.ACCESS_SUPERADMIN) {
             if (player.access >= AccessManager.ACCESS_ADMIN) {
@@ -398,7 +398,7 @@ class KailleraGameImpl(
     // do not start if not game
     if (owner.game!!.romName.startsWith("*")) return
     for (player in players) {
-      if (player!!.stealth == false) {
+      if (!player.stealth) {
         if (player.connectionType != owner.connectionType) {
           logger
               .atWarning()
@@ -561,7 +561,7 @@ class KailleraGameImpl(
       status = KailleraGame.STATUS_WAITING.toInt()
     }
     addEvent(UserDroppedGameEvent(this, user, playerNumber))
-    if (user!!.p2P) {
+    if (user.p2P) {
       // KailleraUserImpl u = (KailleraUserImpl) user;
       // u.addEvent(ServerACK.create(.getNextMessageNumber());
       // u.addEvent(new ConnectedEvent(server, user));
@@ -606,7 +606,7 @@ class KailleraGameImpl(
       logger.atInfo().log("$this: game desynched: game closed!")
     }
     for (player in players) {
-      (player!! as KailleraUserImpl).apply {
+      (player as KailleraUserImpl).apply {
         status = KailleraUser.STATUS_IDLE.toInt()
         mute = false
         p2P = false
@@ -686,7 +686,7 @@ class KailleraGameImpl(
     if (!isSynched)
         throw GameDataException(
             EmuLang.getString("KailleraGameImpl.DesynchedWarning"),
-            data!!,
+            data,
             user.bytesPerAction,
             playerNumber,
             playerActionQueue!!.size)

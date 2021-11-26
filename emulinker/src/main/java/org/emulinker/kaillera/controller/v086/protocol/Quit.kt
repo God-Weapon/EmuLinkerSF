@@ -9,12 +9,13 @@ import org.emulinker.util.EmuUtil
 import org.emulinker.util.UnsignedUtil
 
 abstract class Quit : V086Message() {
-  abstract val username: String?
+  /** NOTE: May be the empty string. */
+  abstract val username: String
   abstract val userId: Int
-  abstract val message: String?
+  abstract val message: String
 
   override val bodyLength: Int
-    get() = getNumBytes(username!!) + getNumBytes(message!!) + 4
+    get() = getNumBytes(username) + getNumBytes(message) + 4
 
   public override fun writeBodyTo(buffer: ByteBuffer) {
     EmuUtil.writeString(buffer, username, 0x00, AppModule.charsetDoNotUse)
@@ -33,7 +34,9 @@ abstract class Quit : V086Message() {
       val message = EmuUtil.readString(buffer, 0x00, AppModule.charsetDoNotUse)
       return if (Strings.isNullOrEmpty(userName) && userID == 0xFFFF) {
         Quit_Request(messageNumber, message)
-      } else Quit_Notification(messageNumber, userName, userID, message)
+      } else {
+        Quit_Notification(messageNumber, userName, userID, message)
+      }
     }
   }
 }

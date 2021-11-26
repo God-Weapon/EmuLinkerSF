@@ -8,11 +8,11 @@ import org.emulinker.kaillera.pico.AppModule
 import org.emulinker.util.EmuUtil
 
 abstract class GameChat : V086Message() {
-  abstract val username: String?
-  abstract val message: String?
+  abstract val username: String
+  abstract val message: String
 
   override val bodyLength: Int
-    get() = getNumBytes(username!!) + getNumBytes(message!!) + 2
+    get() = getNumBytes(username) + getNumBytes(message) + 2
 
   public override fun writeBodyTo(buffer: ByteBuffer) {
     EmuUtil.writeString(buffer, username, 0x00, AppModule.charsetDoNotUse)
@@ -21,6 +21,7 @@ abstract class GameChat : V086Message() {
 
   companion object {
     const val ID: Byte = 0x08
+
     @Throws(ParseException::class, MessageFormatException::class)
     fun parse(messageNumber: Int, buffer: ByteBuffer): GameChat {
       if (buffer.remaining() < 3) throw ParseException("Failed byte count validation!")
