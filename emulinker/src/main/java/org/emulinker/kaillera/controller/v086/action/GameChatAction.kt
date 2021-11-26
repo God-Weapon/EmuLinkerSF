@@ -15,6 +15,8 @@ import org.emulinker.kaillera.model.exception.ActionException
 import org.emulinker.kaillera.model.exception.GameChatException
 import org.emulinker.kaillera.model.impl.KailleraUserImpl
 
+private val logger = FluentLogger.forEnclosingClass()
+
 @Singleton
 class GameChatAction
     @Inject
@@ -36,7 +38,7 @@ class GameChatAction
     if (clientHandler!!.user == null) {
       throw FatalActionException("User does not exist: GameChatAction $message")
     }
-    if (clientHandler.user.game == null) return
+    if (clientHandler.user!!.game == null) return
     if (message.message!!.startsWith(ADMIN_COMMAND_ESCAPE_STRING)) {
       // if(clientHandler.getUser().getAccess() >= AccessManager.ACCESS_ADMIN ||
       // clientHandler.getUser().equals(clientHandler.getUser().getGame().getOwner())){
@@ -55,7 +57,7 @@ class GameChatAction
     actionPerformedCount++
     val gameChatMessage = message
     try {
-      clientHandler.user.gameChat(gameChatMessage.message!!, gameChatMessage.messageNumber)
+      clientHandler.user!!.gameChat(gameChatMessage.message!!, gameChatMessage.messageNumber)
     } catch (e: GameChatException) {
       logger.atSevere().withCause(e).log("Failed to send game chat message")
     }
@@ -64,9 +66,9 @@ class GameChatAction
   @Throws(FatalActionException::class)
   private fun checkCommands(message: V086Message, clientHandler: V086ClientHandler?) {
     var doCommand = true
-    if (clientHandler!!.user.access < AccessManager.ACCESS_ELEVATED) {
+    if (clientHandler!!.user!!.access < AccessManager.ACCESS_ELEVATED) {
       try {
-        clientHandler.user.chat(":USER_COMMAND")
+        clientHandler.user!!.chat(":USER_COMMAND")
       } catch (e: ActionException) {
         doCommand = false
       }
@@ -75,23 +77,23 @@ class GameChatAction
       if ((message as GameChat).message == "/msgon") {
         val user = clientHandler.user as KailleraUserImpl
         try {
-          clientHandler.user.msg = true
+          clientHandler.user!!.msg = true
           user.game!!.announce("Private messages are now on.", user)
         } catch (e: Exception) {}
         return
       } else if (message.message == "/msgoff") {
         val user = clientHandler.user as KailleraUserImpl
         try {
-          clientHandler.user.msg = false
+          clientHandler.user!!.msg = false
           user.game!!.announce("Private messages are now off.", user)
         } catch (e: Exception) {}
         return
       } else if (message.message!!.startsWith("/p2p")) {
         val user = clientHandler.user as KailleraUserImpl
         if (message.message == "/p2pon") {
-          if (clientHandler.user.game!!.owner.equals(clientHandler.user)) {
-            clientHandler.user.game!!.p2P = true
-            for (u in clientHandler.user.game!!.players) {
+          if (clientHandler.user!!.game!!.owner.equals(clientHandler.user)) {
+            clientHandler.user!!.game!!.p2P = true
+            for (u in clientHandler.user!!.game!!.players) {
               u!!.p2P = true
               if (u.loggedIn) {
                 u.game!!.announce(
@@ -99,20 +101,20 @@ class GameChatAction
               }
             }
           } else {
-            clientHandler.user.p2P = true
-            for (u in clientHandler.user.game!!.players) {
+            clientHandler.user!!.p2P = true
+            for (u in clientHandler.user!!.game!!.players) {
               if (u!!.loggedIn) {
                 u.game!!.announce(
-                    clientHandler.user.name +
+                    clientHandler.user!!.name +
                         " will NOT receive any server activity during gameplay!",
                     u)
               }
             }
           }
         } else if (message.message == "/p2poff") {
-          if (clientHandler.user.game!!.owner.equals(clientHandler.user)) {
-            clientHandler.user.game!!.p2P = false
-            for (u in clientHandler.user.game!!.players) {
+          if (clientHandler.user!!.game!!.owner.equals(clientHandler.user)) {
+            clientHandler.user!!.game!!.p2P = false
+            for (u in clientHandler.user!!.game!!.players) {
               u!!.p2P = false
               if (u.loggedIn) {
                 u.game!!.announce(
@@ -120,11 +122,11 @@ class GameChatAction
               }
             }
           } else {
-            clientHandler.user.p2P = false
-            for (u in clientHandler.user.game!!.players) {
+            clientHandler.user!!.p2P = false
+            for (u in clientHandler.user!!.game!!.players) {
               if (u!!.loggedIn) {
                 u.game!!.announce(
-                    clientHandler.user.name +
+                    clientHandler.user!!.name +
                         " will NOW receive ALL server activity during gameplay!",
                     u)
               }
@@ -138,18 +140,18 @@ class GameChatAction
         val user1 = clientHandler.user as KailleraUserImpl
         val scanner = Scanner(message.message).useDelimiter(" ")
         val access =
-            clientHandler.user.server.accessManager.getAccess(
-                clientHandler.user.socketAddress!!.address)
+            clientHandler.user!!.server.accessManager.getAccess(
+                clientHandler.user!!.socketAddress!!.address)
         if (access < AccessManager.ACCESS_SUPERADMIN &&
-            clientHandler.user.server.accessManager.isSilenced(
-                clientHandler.user.socketAddress!!.address)) {
+            clientHandler.user!!.server.accessManager.isSilenced(
+                clientHandler.user!!.socketAddress!!.address)) {
           user1.game!!.announce("You are silenced!", user1)
           return
         }
         try {
           scanner.next()
           val userID = scanner.nextInt()
-          val user = clientHandler.user.server.getUser(userID) as KailleraUserImpl
+          val user = clientHandler.user!!.server.getUser(userID) as KailleraUserImpl
           val sb = StringBuilder()
           while (scanner.hasNext()) {
             sb.append(scanner.next())
@@ -169,7 +171,7 @@ class GameChatAction
           }
           if (!user.msg ||
               user.searchIgnoredUsers(
-                  clientHandler.user.connectSocketAddress.address.hostAddress)) {
+                  clientHandler.user!!.connectSocketAddress.address.hostAddress)) {
             user1.game!!.announce("<" + user.name + "> Is not accepting private messages!", user1)
             return
           }
@@ -207,22 +209,22 @@ class GameChatAction
                     ">(" +
                     user.id +
                     ") <" +
-                    clientHandler.user.name +
+                    clientHandler.user!!.name +
                     "> (" +
-                    clientHandler.user.id +
+                    clientHandler.user!!.id +
                     "): " +
                     m,
                 user1)
           }
           if (user.game != null) {
             user.game!!.announce(
-                "<" + clientHandler.user.name + "> (" + clientHandler.user.id + "): " + m, user)
+                "<" + clientHandler.user!!.name + "> (" + clientHandler.user!!.id + "): " + m, user)
           }
           return
         } catch (e: NoSuchElementException) {
           if (user1.lastMsgID != -1) {
             try {
-              val user = clientHandler.user.server.getUser(user1.lastMsgID) as KailleraUserImpl
+              val user = clientHandler.user!!.server.getUser(user1.lastMsgID) as KailleraUserImpl
               val sb = StringBuilder()
               while (scanner.hasNext()) {
                 sb.append(scanner.next())
@@ -279,16 +281,17 @@ class GameChatAction
                         ">(" +
                         user.id +
                         ") <" +
-                        clientHandler.user.name +
+                        clientHandler.user!!.name +
                         "> (" +
-                        clientHandler.user.id +
+                        clientHandler.user!!.id +
                         "): " +
                         m,
                     user1)
               }
               if (user.game != null) {
                 user.game!!.announce(
-                    "<" + clientHandler.user.name + "> (" + clientHandler.user.id + "): " + m, user)
+                    "<" + clientHandler.user!!.name + "> (" + clientHandler.user!!.id + "): " + m,
+                    user)
               }
               return
             } catch (e1: Exception) {
@@ -303,16 +306,17 @@ class GameChatAction
       } else if (message.message == "/ignoreall") {
         val user = clientHandler.user as KailleraUserImpl
         try {
-          clientHandler.user.ignoreAll = true
-          user.server.announce(clientHandler.user.name + " is now ignoring everyone!", false, null)
+          clientHandler.user!!.ignoreAll = true
+          user.server.announce(
+              clientHandler.user!!.name + " is now ignoring everyone!", false, null)
         } catch (e: Exception) {}
         return
       } else if (message.message == "/unignoreall") {
         val user = clientHandler.user as KailleraUserImpl
         try {
-          clientHandler.user.ignoreAll = false
+          clientHandler.user!!.ignoreAll = false
           user.server.announce(
-              clientHandler.user.name + " is now unignoring everyone!", false, null)
+              clientHandler.user!!.name + " is now unignoring everyone!", false, null)
         } catch (e: Exception) {}
         return
       } else if (message.message!!.startsWith("/ignore")) {
@@ -321,7 +325,7 @@ class GameChatAction
         try {
           scanner.next()
           val userID = scanner.nextInt()
-          val user = clientHandler.user.server.getUser(userID) as KailleraUserImpl
+          val user = clientHandler.user!!.server.getUser(userID) as KailleraUserImpl
           if (user == null) {
             user1.game!!.announce("User not found!", user1)
             return
@@ -330,7 +334,7 @@ class GameChatAction
             user1.game!!.announce("You can't ignore yourself!", user1)
             return
           }
-          if (clientHandler.user.findIgnoredUser(user.connectSocketAddress.address.hostAddress)) {
+          if (clientHandler.user!!.findIgnoredUser(user.connectSocketAddress.address.hostAddress)) {
             user1.game!!.announce("You can't ignore a user that is already ignored!", user1)
             return
           }
@@ -338,9 +342,9 @@ class GameChatAction
             user1.game!!.announce("You cannot ignore a moderator or admin!", user1)
             return
           }
-          clientHandler.user.addIgnoredUser(user.connectSocketAddress.address.hostAddress)
+          clientHandler.user!!.addIgnoredUser(user.connectSocketAddress.address.hostAddress)
           user.server.announce(
-              clientHandler.user.name + " is now ignoring <" + user.name + "> ID: " + user.id,
+              clientHandler.user!!.name + " is now ignoring <" + user.name + "> ID: " + user.id,
               false,
               null)
           return
@@ -363,19 +367,24 @@ class GameChatAction
         try {
           scanner.next()
           val userID = scanner.nextInt()
-          val user = clientHandler.user.server.getUser(userID) as KailleraUserImpl
+          val user = clientHandler.user!!.server.getUser(userID) as KailleraUserImpl
           if (user == null) {
             user1.game!!.announce("User Not Found!", user1)
             return
           }
-          if (!clientHandler.user.findIgnoredUser(user.connectSocketAddress.address.hostAddress)) {
+          if (!clientHandler.user!!.findIgnoredUser(
+              user.connectSocketAddress.address.hostAddress)) {
             user1.game!!.announce("You can't unignore a user that isn't ignored", user1)
             return
           }
-          if (clientHandler.user.removeIgnoredUser(
+          if (clientHandler.user!!.removeIgnoredUser(
               user.connectSocketAddress.address.hostAddress, false))
               user.server.announce(
-                  clientHandler.user.name + " is now unignoring <" + user.name + "> ID: " + user.id,
+                  clientHandler.user!!.name +
+                      " is now unignoring <" +
+                      user.name +
+                      "> ID: " +
+                      user.id,
                   false,
                   null)
           else
@@ -401,7 +410,7 @@ class GameChatAction
       } else if (message.message!!.startsWith("/me")) {
         val space = message.message!!.indexOf(' ')
         if (space < 0) {
-          clientHandler.user.game!!.announce("Invalid # of Fields!", clientHandler.user)
+          clientHandler.user!!.game!!.announce("Invalid # of Fields!", clientHandler.user)
           return
         }
         var announcement = message.message!!.substring(space + 1)
@@ -410,18 +419,18 @@ class GameChatAction
                 announcement.substring(
                     1) // this protects against people screwing up the emulinker supraclient
         val access =
-            clientHandler.user.server.accessManager.getAccess(
-                clientHandler.user.socketAddress!!.address)
+            clientHandler.user!!.server.accessManager.getAccess(
+                clientHandler.user!!.socketAddress!!.address)
         if (access < AccessManager.ACCESS_SUPERADMIN &&
-            clientHandler.user.server.accessManager.isSilenced(
-                clientHandler.user.socketAddress!!.address)) {
-          clientHandler.user.game!!.announce("You are silenced!", clientHandler.user)
+            clientHandler.user!!.server.accessManager.isSilenced(
+                clientHandler.user!!.socketAddress!!.address)) {
+          clientHandler.user!!.game!!.announce("You are silenced!", clientHandler.user)
           return
         }
-        if (clientHandler.user.server.checkMe(clientHandler.user, announcement)) {
+        if (clientHandler.user!!.server.checkMe(clientHandler.user, announcement)) {
           val m = announcement
-          announcement = "*" + clientHandler.user.name + " " + m
-          for (user in clientHandler.user.game!!.players) {
+          announcement = "*" + clientHandler.user!!.name + " " + m
+          for (user in clientHandler.user!!.game!!.players) {
             user!!.game!!.announce(announcement, user)
           }
           return
@@ -457,20 +466,20 @@ class GameChatAction
           user.game!!.announce("No pending tweets.", user)
         }
       } else
-          clientHandler.user.game!!.announce(
+          clientHandler.user!!.game!!.announce(
               "Unknown Command: " + message.message, clientHandler.user)
     } else {
-      clientHandler.user.game!!.announce("Denied: Flood Control", clientHandler.user)
+      clientHandler.user!!.game!!.announce("Denied: Flood Control", clientHandler.user)
     }
   }
 
   override fun handleEvent(gameChatEvent: GameChatEvent, clientHandler: V086ClientHandler?) {
     handledEventCount++
     try {
-      if (clientHandler!!.user.searchIgnoredUsers(
+      if (clientHandler!!.user!!.searchIgnoredUsers(
           gameChatEvent.user.connectSocketAddress.address.hostAddress))
           return
-      else if (clientHandler.user.ignoreAll) {
+      else if (clientHandler.user!!.ignoreAll) {
         if (gameChatEvent.user.access < AccessManager.ACCESS_ADMIN &&
             gameChatEvent.user !== clientHandler.user)
             return
@@ -484,7 +493,6 @@ class GameChatAction
   }
 
   companion object {
-    private val logger = FluentLogger.forEnclosingClass()
     const val ADMIN_COMMAND_ESCAPE_STRING = "/"
     private const val DESC = "GameChatAction"
     const val STATUS_IDLE: Byte = 1

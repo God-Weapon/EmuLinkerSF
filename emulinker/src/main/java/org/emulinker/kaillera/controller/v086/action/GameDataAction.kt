@@ -25,7 +25,7 @@ class GameDataAction @Inject internal constructor() :
       val user = clientHandler!!.user
       val data = message.gameData
       clientHandler.clientGameDataCache.add(data)
-      user.addGameData(data)
+      user!!.addGameData(data)
     } catch (e: GameDataException) {
       logger.atFine().withCause(e).log("Game data error")
       if (e.response != null) {

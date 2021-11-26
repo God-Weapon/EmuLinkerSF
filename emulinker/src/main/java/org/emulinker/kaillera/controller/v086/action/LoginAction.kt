@@ -10,6 +10,7 @@ import org.emulinker.kaillera.controller.v086.protocol.InformationMessage
 import org.emulinker.kaillera.controller.v086.protocol.ServerACK
 import org.emulinker.kaillera.controller.v086.protocol.UserInformation
 import org.emulinker.kaillera.controller.v086.protocol.UserJoined
+import org.emulinker.kaillera.model.KailleraUser
 import org.emulinker.kaillera.model.event.UserJoinedEvent
 import org.emulinker.kaillera.model.impl.KailleraUserImpl
 
@@ -28,7 +29,7 @@ class LoginAction @Inject internal constructor() :
   @Throws(FatalActionException::class)
   override fun performAction(userInfo: UserInformation, clientHandler: V086ClientHandler?) {
     actionPerformedCount++
-    val user = clientHandler!!.user
+    val user: KailleraUser = clientHandler!!.user!!
     user.name = userInfo.username
     user.clientType = userInfo.clientType
     user.socketAddress = clientHandler.remoteSocketAddress

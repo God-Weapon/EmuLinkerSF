@@ -29,7 +29,7 @@ class StartGameAction
   override fun performAction(message: StartGame_Request, clientHandler: V086ClientHandler?) {
     actionPerformedCount++
     try {
-      clientHandler!!.user.startGame()
+      clientHandler!!.user!!.startGame()
     } catch (e: StartGameException) {
       logger.atFine().withCause(e).log("Failed to start game")
       try {
@@ -45,13 +45,13 @@ class StartGameAction
     handledEventCount++
     try {
       val game = gameStartedEvent.game
-      clientHandler!!.user.tempDelay = game.delay - clientHandler.user.delay
+      clientHandler!!.user!!.tempDelay = game.delay - clientHandler.user!!.delay
       val delay: Int
       delay =
           if (game.sameDelay) {
             game.delay
           } else {
-            clientHandler.user.delay
+            clientHandler.user!!.delay
           }
       val playerNumber = game.getPlayerNumber(clientHandler.user)
       clientHandler.send(

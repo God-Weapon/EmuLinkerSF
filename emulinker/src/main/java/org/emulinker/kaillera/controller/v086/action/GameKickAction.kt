@@ -22,7 +22,7 @@ class GameKickAction @Inject internal constructor() : V086Action<GameKick> {
   override fun performAction(kickRequest: GameKick, clientHandler: V086ClientHandler?) {
     actionPerformedCount++
     try {
-      clientHandler!!.user.gameKick(kickRequest.userId)
+      clientHandler!!.user!!.gameKick(kickRequest.userId)
     } catch (e: GameKickException) {
       logger.atSevere().withCause(e).log("Failed to kick")
       // new SF MOD - kick errors notifications

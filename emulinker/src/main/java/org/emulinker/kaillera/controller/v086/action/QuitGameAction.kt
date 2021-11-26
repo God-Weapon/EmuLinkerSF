@@ -31,8 +31,8 @@ class QuitGameAction
   override fun performAction(message: QuitGame_Request, clientHandler: V086ClientHandler?) {
     actionPerformedCount++
     try {
-      clientHandler!!.user.quitGame()
-      lookingForGameReporter.cancelActionsForUser(clientHandler.user.id)
+      clientHandler!!.user!!.quitGame()
+      lookingForGameReporter.cancelActionsForUser(clientHandler.user!!.id)
     } catch (e: DropGameException) {
       logger.atSevere().withCause(e).log("Action failed")
     } catch (e: QuitGameException) {

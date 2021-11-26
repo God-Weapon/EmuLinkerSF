@@ -146,7 +146,7 @@ class KailleraGameImpl(
       if (playerActionQueue == null) return 0
       var count = 0
       for (i in playerActionQueue!!.indices) {
-        if (playerActionQueue!![i]!!.isSynched) count++
+        if (playerActionQueue!![i]!!.synched) count++
       }
       return count
 
@@ -504,7 +504,7 @@ class KailleraGameImpl(
     logger
         .atInfo()
         .log(user.toString() + " (player " + playerNumber + ") is ready to play: " + this)
-    playerActionQueue!![playerNumber - 1]!!.isSynched = true
+    playerActionQueue!![playerNumber - 1]!!.synched = true
     if (synchedCount == numPlayers) {
       logger.atInfo().log("$this all players are ready: starting...")
       status = KailleraGame.STATUS_PLAYING.toInt()
@@ -546,10 +546,10 @@ class KailleraGameImpl(
     }
     logger.atInfo().log(user.toString() + " dropped: " + this)
     if (playerNumber - 1 < playerActionQueue!!.size)
-        playerActionQueue!![playerNumber - 1]!!.isSynched = false
+        playerActionQueue!![playerNumber - 1]!!.synched = false
     if (synchedCount < 2 && isSynched) {
       isSynched = false
-      for (q in playerActionQueue!!) q!!.isSynched = false
+      for (q in playerActionQueue!!) q!!.synched = false
       logger.atInfo().log("$this: game desynched: less than 2 players playing!")
     }
     autoFireDetector?.stop(playerNumber)
@@ -602,7 +602,7 @@ class KailleraGameImpl(
     }
     if (isSynched) {
       isSynched = false
-      for (q in playerActionQueue!!) q!!.isSynched = false
+      for (q in playerActionQueue!!) q!!.synched = false
       logger.atInfo().log("$this: game desynched: game closed!")
     }
     for (player in players) {
@@ -631,8 +631,8 @@ class KailleraGameImpl(
                   user +
                   ": player desynched: dropped a packet! Also left the game already: KailleraGameImpl -> DroppedPacket")
     }
-    if (playerActionQueue != null && playerActionQueue!![playerNumber - 1]!!.isSynched) {
-      playerActionQueue!![playerNumber - 1]!!.isSynched = false
+    if (playerActionQueue != null && playerActionQueue!![playerNumber - 1]!!.synched) {
+      playerActionQueue!![playerNumber - 1]!!.synched = false
       logger.atInfo().log("$this: $user: player desynched: dropped a packet!")
       addEvent(
           PlayerDesynchEvent(
@@ -641,7 +641,7 @@ class KailleraGameImpl(
               EmuLang.getString("KailleraGameImpl.DesynchDetectedDroppedPacket", user.name)))
       if (synchedCount < 2 && isSynched) {
         isSynched = false
-        for (q in playerActionQueue!!) q!!.isSynched = false
+        for (q in playerActionQueue!!) q!!.synched = false
         logger.atInfo().log("$this: game desynched: less than 2 players synched!")
       }
     }
@@ -662,7 +662,7 @@ class KailleraGameImpl(
           playerNumber,
           playerActionQueue!!.size)
     }
-    playerActionQueue!![playerNumber - 1]!!.addActions(data)
+    playerActionQueue!![playerNumber - 1]!!.addActions(data!!)
     autoFireDetector?.addData(playerNumber, data, user!!.bytesPerAction)
     val response = ByteArray(user!!.arraySize)
     for (actionCounter in 0 until actionsPerMessage) {
@@ -700,7 +700,7 @@ class KailleraGameImpl(
     val playerNumber = e.playerNumber
     val timeoutNumber = e.timeoutNumber
     val playerActionQueue = playerActionQueue!![playerNumber - 1]
-    if (!playerActionQueue!!.isSynched || e == playerActionQueue.lastTimeout) return
+    if (!playerActionQueue!!.synched || e == playerActionQueue.lastTimeout) return
     playerActionQueue.lastTimeout = e
     val player: KailleraUser = e.player!!
     if (timeoutNumber < desynchTimeouts) {
@@ -711,7 +711,7 @@ class KailleraGameImpl(
       }
     } else {
       logger.atInfo().log(this.toString() + ": " + player + ": Timeout #" + timeoutNumber / 12)
-      playerActionQueue.isSynched = false
+      playerActionQueue.synched = false
       logger.atInfo().log("$this: $player: player desynched: Lagged!")
       addEvent(
           PlayerDesynchEvent(
@@ -720,7 +720,7 @@ class KailleraGameImpl(
               EmuLang.getString("KailleraGameImpl.DesynchDetectedPlayerLagged", player.name)))
       if (synchedCount < 2) {
         isSynched = false
-        for (q in this.playerActionQueue!!) q!!.isSynched = false
+        for (q in this.playerActionQueue!!) q!!.synched = false
         logger.atInfo().log("$this: game desynched: less than 2 players synched!")
       }
     }
@@ -742,7 +742,7 @@ class KailleraGameImpl(
             id,
             if (romName.length > 15) romName.substring(0, 15) + "..." else romName)
     startDate = Date()
-    statsCollector = server.getStatsCollector()
+    statsCollector = server.statsCollector
     autoFireDetector = server.getAutoFireDetector(this)
   }
 }

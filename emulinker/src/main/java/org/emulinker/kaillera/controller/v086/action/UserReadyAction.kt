@@ -25,7 +25,7 @@ class UserReadyAction @Inject internal constructor() :
   override fun performAction(message: AllReady, clientHandler: V086ClientHandler?) {
     actionPerformedCount++
     try {
-      clientHandler!!.user.playerReady()
+      clientHandler!!.user!!.playerReady()
     } catch (e: UserReadyException) {
       logger.atFine().withCause(e).log("Ready signal failed")
     }

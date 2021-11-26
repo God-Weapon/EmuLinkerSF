@@ -10,7 +10,7 @@ interface KailleraServerController {
   val bufferSize: Int
   val version: String?
   val numClients: Int
-  val clientTypes: Array<String?>?
+  val clientTypes: Array<String>
 
   @Throws(ServerFullException::class, NewConnectionException::class)
   fun newConnection(clientSocketAddress: InetSocketAddress?, protocol: String?): Int

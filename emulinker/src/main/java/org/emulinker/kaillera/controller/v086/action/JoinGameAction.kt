@@ -30,7 +30,7 @@ class JoinGameAction
   override fun performAction(joinGameRequest: JoinGame_Request, clientHandler: V086ClientHandler?) {
     actionPerformedCount++
     try {
-      clientHandler!!.user.joinGame(joinGameRequest.gameId)
+      clientHandler!!.user!!.joinGame(joinGameRequest.gameId)
     } catch (e: JoinGameException) {
       logger.atSevere().withCause(e).log("Failed to join game.")
       try {
@@ -41,7 +41,9 @@ class JoinGameAction
                 EmuLang.getString("JoinGameAction.JoinGameDenied", e.message)))
         clientHandler.send(
             QuitGame_Notification(
-                clientHandler.nextMessageNumber, clientHandler.user.name, clientHandler.user.id))
+                clientHandler.nextMessageNumber,
+                clientHandler.user!!.name,
+                clientHandler.user!!.id))
       } catch (e2: MessageFormatException) {
         logger.atSevere().withCause(e2).log("Failed to contruct new Message")
       }

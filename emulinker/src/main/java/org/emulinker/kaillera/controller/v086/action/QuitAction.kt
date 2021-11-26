@@ -26,7 +26,7 @@ class QuitAction @Inject internal constructor() :
   override fun performAction(quitRequest: Quit_Request, clientHandler: V086ClientHandler?) {
     actionPerformedCount++
     try {
-      clientHandler!!.user.quit(quitRequest.message)
+      clientHandler!!.user!!.quit(quitRequest.message)
     } catch (e: ActionException) {
       throw FatalActionException("Failed to quit: " + e.message)
     }

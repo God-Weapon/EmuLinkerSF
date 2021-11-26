@@ -332,7 +332,7 @@ class GameOwnerCommandAction @Inject internal constructor() : V086Action<GameCha
         return
       }
       val userID = scanner.nextInt()
-      val user = clientHandler!!.user.server.getUser(userID) as KailleraUserImpl
+      val user = clientHandler!!.user!!.server.getUser(userID) as KailleraUserImpl
       if (user == null) {
         admin.game!!.announce("Player doesn't exist!", admin)
         return
@@ -377,7 +377,7 @@ class GameOwnerCommandAction @Inject internal constructor() : V086Action<GameCha
         return
       }
       val userID = scanner.nextInt()
-      val user = clientHandler!!.user.server.getUser(userID) as KailleraUserImpl
+      val user = clientHandler!!.user!!.server.getUser(userID) as KailleraUserImpl
       if (user == null) {
         admin.game!!.announce("Player doesn't exist!", admin)
         return

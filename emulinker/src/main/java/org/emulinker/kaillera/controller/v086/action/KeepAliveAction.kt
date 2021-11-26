@@ -19,7 +19,7 @@ class KeepAliveAction @Inject internal constructor() : V086Action<KeepAlive> {
     actionPerformedCount++
     if (clientHandler!!.user == null)
         throw FatalActionException("User does not exist: KeepAliveAction!")
-    clientHandler.user.updateLastKeepAlive()
+    clientHandler.user!!.updateLastKeepAlive()
   }
 
   companion object {

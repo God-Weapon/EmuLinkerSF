@@ -31,7 +31,7 @@ class ACKAction @Inject internal constructor() :
   override fun performAction(message: ClientACK, clientHandler: V086ClientHandler?) {
     actionPerformedCount++
     val user = clientHandler!!.user
-    if (user.loggedIn) return
+    if (user!!.loggedIn) return
     clientHandler.addSpeedMeasurement()
     if (clientHandler.speedMeasurementCount > numAcksForSpeedTest) {
       user.ping = clientHandler.averageNetworkSpeed

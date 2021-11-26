@@ -16,6 +16,7 @@
     <build-timestamp>${maven.build.timestamp}</build-timestamp>
     <maven.build.timestamp.format>yyyy-MM-dd'T'HH:mm:ss'Z'</maven.build.timestamp.format>
     <kotlin.version>1.6.0</kotlin.version>
+    <dagger.version>2.39</dagger.version>
     <!-- Optional but gives us incremental builds. -->
     <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
   </properties>
@@ -100,16 +101,15 @@
     <dependency>
       <groupId>com.google.dagger</groupId>
       <artifactId>dagger</artifactId>
-      <version>2.39</version>
+      <version>${dagger.version}</version>
     </dependency>
 
     <!-- https://mvnrepository.com/artifact/com.google.dagger/dagger-compiler -->
     <dependency>
       <groupId>com.google.dagger</groupId>
       <artifactId>dagger-compiler</artifactId>
-      <version>2.39</version>
+      <version>${dagger.version}</version>
     </dependency>
-
 
     <!-- https://stackoverflow.com/a/62065404/2875073 -->
     <dependency>
@@ -235,6 +235,9 @@
   </dependencies>
 
   <build>
+    <sourceDirectory>${project.basedir}/src/main/java</sourceDirectory>
+    <testSourceDirectory>${project.basedir}/src/test/java</testSourceDirectory>
+
     <plugins>
       <!-- clean lifecycle, see https://maven.apache.org/ref/current/maven-core/lifecycles.html#clean_Lifecycle -->
       <plugin>
@@ -259,7 +262,28 @@
         <groupId>org.jetbrains.kotlin</groupId>
         <artifactId>kotlin-maven-plugin</artifactId>
         <version>${kotlin.version}</version>
+
         <executions>
+          <execution>
+            <id>kapt</id>
+            <goals>
+              <goal>kapt</goal>
+            </goals>
+            <configuration>
+              <sourceDirs>
+                <sourceDir>${project.basedir}/src/main/java</sourceDir>
+              </sourceDirs>
+              <annotationProcessorPaths>
+                <!-- Specify your annotation processors here. -->
+                <annotationProcessorPath>
+                  <groupId>com.google.dagger</groupId>
+                  <artifactId>dagger-compiler</artifactId>
+                  <version>${dagger.version}</version>
+                </annotationProcessorPath>
+              </annotationProcessorPaths>
+            </configuration>
+          </execution>
+
           <execution>
             <id>compile</id>
             <goals>
@@ -267,11 +291,11 @@
             </goals>
             <configuration>
               <sourceDirs>
-                <sourceDir>${project.basedir}/src/main/kotlin</sourceDir>
                 <sourceDir>${project.basedir}/src/main/java</sourceDir>
               </sourceDirs>
             </configuration>
           </execution>
+
           <execution>
             <id>test-compile</id>
             <goals>
@@ -279,7 +303,6 @@
             </goals>
             <configuration>
               <sourceDirs>
-                <sourceDir>${project.basedir}/src/test/kotlin</sourceDir>
                 <sourceDir>${project.basedir}/src/test/java</sourceDir>
               </sourceDirs>
             </configuration>
@@ -319,21 +342,8 @@
         </executions>
         <configuration>
           <showWarnings>true</showWarnings>
-
           <source>8</source>
           <target>8</target>
-          <annotationProcessorPaths>
-            <path>
-              <groupId>com.google.errorprone</groupId>
-              <artifactId>error_prone_core</artifactId>
-              <version>2.8.1</version>
-            </path>
-            <path>
-              <groupId>com.google.dagger</groupId>
-              <artifactId>dagger-compiler</artifactId>
-              <version>2.39</version>
-            </path>
-          </annotationProcessorPaths>
         </configuration>
       </plugin>
 
@@ -342,14 +352,6 @@
         <artifactId>spotless-maven-plugin</artifactId>
         <version>2.12.2</version>
         <configuration>
-          <compilerArgs>
-            <!-- These additional flags are here to support JDK 16. https://errorprone.info/docs/installation -->
-            <arg>--add-exports jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED</arg>
-            <arg>--add-exports jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED</arg>
-            <arg>--add-exports jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED</arg>
-            <arg>--add-exports jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED</arg>
-            <arg>--add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</arg>
-          </compilerArgs>
 
           <formats>
             <!-- you can define as many formats as you want, each is independent -->
@@ -369,9 +371,6 @@
             </format>
           </formats>
 
-          <java>
-            <googleJavaFormat />
-          </java>
           <kotlin>
             <!-- These are the defaults, you can override if you want -->
             <includes>
@@ -387,6 +386,7 @@
           </kotlin>
         </configuration>
       </plugin>
+
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>

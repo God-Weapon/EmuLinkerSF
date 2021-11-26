@@ -21,7 +21,7 @@ interface KailleraServer {
   val accessManager: AccessManager
   val users: Collection<KailleraUserImpl>
   val games: Collection<KailleraGameImpl>
-  var trivia: Trivia
+  var trivia: Trivia?
   var switchTrivia: Boolean
 
   fun announce(announcement: String, gamesAlso: Boolean, user: KailleraUserImpl?)

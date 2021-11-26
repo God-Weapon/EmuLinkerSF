@@ -406,7 +406,7 @@ class KailleraUserImpl(
       throw UserReadyException(EmuLang.getString("KailleraUserImpl.PlayerReadyErrorNotInGame"))
     }
     if (playerNumber > game!!.playerActionQueue!!.size ||
-        game!!.playerActionQueue!![playerNumber - 1]!!.isSynched) {
+        game!!.playerActionQueue!![playerNumber - 1]!!.synched) {
       return
     }
     totalDelay = game!!.delay + tempDelay + 5

@@ -661,8 +661,8 @@ class AdminCommandAction @Inject internal constructor() : V086Action<Chat> {
   ) {
     if (message == "/triviareset") {
       if (server.switchTrivia) {
-        server.trivia.saveScores(true)
-        server.triviaThread.stop()
+        server.trivia!!.saveScores(true)
+        server.triviaThread!!.stop()
       }
       server.announce("<Trivia> " + "SupraTrivia has been reset!", false, null)
       val trivia = Trivia(server)
@@ -672,7 +672,7 @@ class AdminCommandAction @Inject internal constructor() : V086Action<Chat> {
       server.trivia = trivia
       trivia.setTriviaPaused(false)
     } else if (message == "/triviaon") {
-      if (server.switchTrivia == true) throw ActionException("Trivia already started!")
+      if (server.switchTrivia) throw ActionException("Trivia already started!")
       server.announce("SupraTrivia has been started!", false, null)
       val trivia = Trivia(server)
       val triviaThread = Thread(trivia)
@@ -683,37 +683,37 @@ class AdminCommandAction @Inject internal constructor() : V086Action<Chat> {
     } else if (message == "/triviaoff") {
       if (server.trivia == null) throw ActionException("Trivia needs to be started first!")
       server.announce("SupraTrivia has been stopped!", false, null)
-      server.trivia.saveScores(false)
-      server.triviaThread.stop()
+      server.trivia!!.saveScores(false)
+      server.triviaThread!!.stop()
       server.switchTrivia = false
       server.trivia = null
     } else if (message == "/triviapause") {
       if (server.trivia == null) {
         throw ActionException("Trivia needs to be started first!")
       }
-      server.trivia.setTriviaPaused(true)
+      server.trivia!!.setTriviaPaused(true)
       server.announce("<Trivia> " + "SupraTrivia will be paused after this question!", false, null)
     } else if (message == "/triviaresume") {
       if (server.trivia == null) {
         throw ActionException("Trivia needs to be started first!")
       }
-      server.trivia.setTriviaPaused(false)
+      server.trivia!!.setTriviaPaused(false)
       server.announce("<Trivia> " + "SupraTrivia has been resumed!", false, null)
     } else if (message == "/triviasave") {
       if (server.trivia == null) {
         throw ActionException("Trivia needs to be started first!")
       }
-      server.trivia.saveScores(true)
+      server.trivia!!.saveScores(true)
     } else if (message == "/triviascores") {
       if (server.trivia == null) {
         throw ActionException("Trivia needs to be started first!")
       }
-      server.trivia.displayHighScores(false)
+      server.trivia!!.displayHighScores(false)
     } else if (message == "/triviawin") {
       if (server.trivia == null) {
         throw ActionException("Trivia needs to be started first!")
       }
-      server.trivia.displayHighScores(true)
+      server.trivia!!.displayHighScores(true)
     } else if (message!!.startsWith("/triviaupdate")) {
       if (server.trivia == null) {
         throw ActionException("Trivia needs to be started first!")
@@ -723,7 +723,7 @@ class AdminCommandAction @Inject internal constructor() : V086Action<Chat> {
         scanner.next()
         val ip = scanner.next()
         val ip_update = scanner.next()
-        if (server.trivia.updateIP(ip, ip_update)) {
+        if (server.trivia!!.updateIP(ip, ip_update)) {
           server.announce(
               "<Trivia> " + ip_update.subSequence(0, 4) + ".... Trivia IP was updated!",
               false,
@@ -745,7 +745,7 @@ class AdminCommandAction @Inject internal constructor() : V086Action<Chat> {
       try {
         scanner.next()
         val questionTime = scanner.nextInt()
-        server.trivia.setQuestionTime(questionTime * 1000)
+        server.trivia!!.setQuestionTime(questionTime * 1000)
         server.announce(
             "<Trivia> " + "SupraTrivia's question delay has been changed to " + questionTime + "s!",
             false,
