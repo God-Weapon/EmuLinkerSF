@@ -4,6 +4,7 @@ import java.lang.InterruptedException
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.Throws
+import kotlin.concurrent.withLock
 
 class PlayerActionQueue(
     val playerNumber: Int,
@@ -14,29 +15,18 @@ class PlayerActionQueue(
     capture: Boolean
 ) {
   var lastTimeout: PlayerTimeoutException? = null
-  private val array: ByteArray
-  private val heads: IntArray
+  private val array: ByteArray = ByteArray(gameBufferSize)
+  private val heads = IntArray(numPlayers)
   private var tail = 0
 
   private val lock = ReentrantLock()
+  private val condition = lock.newCondition()
 
   var synched = false
     set(value) {
       field = value
       if (!value) {
-        val condition = lock.newCondition()
-        synchronized(lock) { condition.signalAll() }
-        /*
-                    try
-                    {
-                        os.flush();
-                        os.close();
-                    }
-                    catch(Exception e)
-                    {
-                        e.printStackTrace();
-                    }
-        */
+        lock.withLock { condition.signalAll() }
       }
     }
 
@@ -48,19 +38,15 @@ class PlayerActionQueue(
       tail++
       if (tail == gameBufferSize) tail = 0
     }
-    val condition = lock.newCondition()
-    lock.lock()
-    synchronized(lock) { condition.signalAll() }
+    lock.withLock { condition.signalAll() }
     lastTimeout = null
   }
 
   @Throws(PlayerTimeoutException::class)
   fun getAction(playerNumber: Int, actions: ByteArray, location: Int, actionLength: Int) {
-    lock.lock()
-    synchronized(lock) {
+    lock.withLock {
       if (getSize(playerNumber) < actionLength && synched) {
         try {
-          val condition = lock.newCondition()
           condition.await(gameTimeoutMillis.toLong(), TimeUnit.MILLISECONDS)
         } catch (e: InterruptedException) {}
       }
@@ -80,25 +66,5 @@ class PlayerActionQueue(
 
   private fun getSize(playerNumber: Int): Int {
     return (tail + gameBufferSize - heads[playerNumber - 1]) % gameBufferSize
-  }
-
-  //	private OutputStream			os;
-  //	private InputStream				is;
-  init {
-    array = ByteArray(gameBufferSize)
-    heads = IntArray(numPlayers)
-    /*
-    		if(capture)
-    		{
-    			try
-    			{
-    				os = new BufferedOutputStream(new FileOutputStream("test.cap"));
-    			}
-    			catch(Exception e)
-    			{
-    				e.printStackTrace();
-    			}
-    		}
-    */
   }
 }
