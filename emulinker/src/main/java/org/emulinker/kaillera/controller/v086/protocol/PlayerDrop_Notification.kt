@@ -11,7 +11,7 @@ data class PlayerDrop_Notification
         override val playerNumber: Byte
     ) : PlayerDrop() {
 
-  override val description = DESC
+  override val shortName = DESC
   override val messageId = ID
 
   init {

@@ -19,9 +19,7 @@ class UserReadyAction @Inject internal constructor() :
   override var handledEventCount = 0
     private set
 
-  override fun toString(): String {
-    return DESC
-  }
+  override fun toString() = DESC
 
   @Throws(FatalActionException::class)
   override fun performAction(message: AllReady, clientHandler: V086ClientHandler) {

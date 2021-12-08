@@ -8,7 +8,7 @@ data class JoinGame_Request
         override val messageNumber: Int, override val gameId: Int, override val connectionType: Byte
     ) : JoinGame() {
 
-  override val description = DESC
+  override val shortName = DESC
   override val messageId = ID
 
   override val val1 = 0

@@ -11,7 +11,7 @@ data class StartGame_Notification
         override val numPlayers: Short
     ) : StartGame() {
 
-  override val description = DESC
+  override val shortName = DESC
   override val messageId = ID
 
   init {

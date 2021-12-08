@@ -8,7 +8,7 @@ import org.emulinker.util.UnsignedUtil
 data class CachedGameData
     @Throws(MessageFormatException::class)
     constructor(override val messageNumber: Int, val key: Int) : V086Message() {
-  override val description = DESC
+  override val shortName = DESC
   override val messageId = ID
 
   override val bodyLength: Int

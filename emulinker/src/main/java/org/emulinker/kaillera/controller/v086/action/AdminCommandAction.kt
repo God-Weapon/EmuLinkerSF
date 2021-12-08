@@ -67,9 +67,7 @@ private const val DESC = "AdminCommandAction"
 @Singleton
 class AdminCommandAction @Inject internal constructor() : V086Action<Chat> {
   override val actionPerformedCount = 0
-  override fun toString(): String {
-    return DESC
-  }
+  override fun toString() = DESC
 
   fun isValidCommand(chat: String): Boolean {
     return when {

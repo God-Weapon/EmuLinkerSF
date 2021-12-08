@@ -8,10 +8,10 @@ import org.emulinker.kaillera.controller.messaging.MessageFormatException
 class ConnectMessage_PING : ConnectMessage() {
 
   override val iD = ID
-  override val description = DESC
+  override val shortName = "Client Ping"
 
   var clientSocketAddress: InetSocketAddress? = null
-  override fun toString() = DESC
+  override fun toString() = shortName
 
   override val length: Int
     get() = ID.length + 1
@@ -23,7 +23,6 @@ class ConnectMessage_PING : ConnectMessage() {
 
   companion object {
     const val ID = "PING"
-    private const val DESC = "Client Ping"
 
     @Throws(MessageFormatException::class)
     fun parse(msg: String): ConnectMessage {

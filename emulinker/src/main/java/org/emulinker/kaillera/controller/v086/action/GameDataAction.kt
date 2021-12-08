@@ -10,6 +10,8 @@ import org.emulinker.kaillera.controller.v086.protocol.GameData
 import org.emulinker.kaillera.model.event.GameDataEvent
 import org.emulinker.kaillera.model.exception.GameDataException
 
+private const val DESC = "GameDataAction"
+
 private val logger = FluentLogger.forEnclosingClass()
 
 @Singleton
@@ -17,9 +19,8 @@ class GameDataAction @Inject internal constructor() :
     V086Action<GameData>, V086GameEventHandler<GameDataEvent> {
   override val actionPerformedCount = 0
   override val handledEventCount = 0
-  override fun toString(): String {
-    return DESC
-  }
+
+  override fun toString() = DESC
 
   @Throws(FatalActionException::class)
   override fun performAction(message: GameData, clientHandler: V086ClientHandler) {
@@ -57,9 +58,5 @@ class GameDataAction @Inject internal constructor() :
         logger.atSevere().withCause(e).log("Failed to construct CachedGameData message")
       }
     }
-  }
-
-  companion object {
-    private const val DESC = "GameDataAction"
   }
 }

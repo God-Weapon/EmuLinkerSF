@@ -7,7 +7,7 @@ data class CreateGame_Request
     constructor(override val messageNumber: Int, override val romName: String) : CreateGame() {
 
   override val messageId = ID
-  override val description = DESC
+  override val shortName = DESC
 
   override val username = ""
   override val clientType = ""

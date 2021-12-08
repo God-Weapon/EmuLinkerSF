@@ -15,6 +15,8 @@ import javax.inject.Singleton
 import org.emulinker.config.RuntimeFlags
 import org.emulinker.util.WildcardStringPattern
 
+private val logger = FluentLogger.forEnclosingClass()
+
 @Singleton
 class AccessManager2
     @Inject
@@ -22,8 +24,6 @@ class AccessManager2
         private val threadPool: ThreadPoolExecutor, private val flags: RuntimeFlags
     ) : AccessManager, Runnable {
   companion object {
-    private val logger = FluentLogger.forEnclosingClass()
-
     init {
       Security.setProperty("networkaddress.cache.ttl", "60")
       Security.setProperty("networkaddress.cache.negative.ttl", "60")

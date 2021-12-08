@@ -9,12 +9,14 @@ import org.emulinker.util.EmuUtil
 class ConnectMessage_HELLO(val protocol: String) : ConnectMessage() {
 
   override val iD = ID
-  override val description = DESC
+
+  override val shortName = "Client Connection Request"
+
   override val length = ID.length + protocol.length + 1
 
   var clientSocketAddress: InetSocketAddress? = null
   override fun toString(): String {
-    return "$description: protocol: $protocol"
+    return "$shortName: protocol: $protocol"
   }
 
   override fun writeTo(buffer: ByteBuffer?) {
@@ -24,7 +26,6 @@ class ConnectMessage_HELLO(val protocol: String) : ConnectMessage() {
 
   companion object {
     const val ID = "HELLO"
-    const val DESC = "Client Connection Request"
 
     @Throws(MessageFormatException::class)
     fun parse(msg: String): ConnectMessage {

@@ -12,7 +12,7 @@ data class InformationMessage
     constructor(override val messageNumber: Int, val source: String, val message: String) :
     V086Message() {
 
-  override val description = DESC
+  override val shortName = DESC
   override val messageId = ID
 
   init {

@@ -22,6 +22,10 @@ import org.emulinker.util.EmuUtil
 
 private val logger = FluentLogger.forEnclosingClass()
 
+private const val ADMIN_COMMAND_ESCAPE_STRING = "/"
+
+private const val DESC = "ChatAction"
+
 @Singleton
 class ChatAction @Inject internal constructor(private val adminCommandAction: AdminCommandAction) :
     V086Action<Chat_Request>, V086ServerEventHandler<ChatEvent> {
@@ -30,9 +34,7 @@ class ChatAction @Inject internal constructor(private val adminCommandAction: Ad
   override var handledEventCount = 0
     private set
 
-  override fun toString(): String {
-    return DESC
-  }
+  override fun toString() = DESC
 
   @Throws(FatalActionException::class)
   override fun performAction(message: Chat_Request, clientHandler: V086ClientHandler) {
@@ -656,10 +658,5 @@ class ChatAction @Inject internal constructor(private val adminCommandAction: Ad
     } catch (e: MessageFormatException) {
       logger.atSevere().withCause(e).log("Failed to construct Chat_Notification message")
     }
-  }
-
-  companion object {
-    const val ADMIN_COMMAND_ESCAPE_STRING = "/"
-    private const val DESC = "ChatAction"
   }
 }

@@ -15,6 +15,10 @@ import org.emulinker.kaillera.model.exception.ActionException
 import org.emulinker.kaillera.model.exception.GameChatException
 import org.emulinker.kaillera.model.impl.KailleraUserImpl
 
+private const val ADMIN_COMMAND_ESCAPE_STRING = "/"
+
+private const val DESC = "GameChatAction"
+
 private val logger = FluentLogger.forEnclosingClass()
 
 @Singleton
@@ -29,9 +33,7 @@ class GameChatAction
   override var handledEventCount = 0
     private set
 
-  override fun toString(): String {
-    return DESC
-  }
+  override fun toString() = DESC
 
   @Throws(FatalActionException::class)
   override fun performAction(message: GameChat_Request, clientHandler: V086ClientHandler) {
@@ -467,11 +469,5 @@ class GameChatAction
     } catch (e: MessageFormatException) {
       logger.atSevere().withCause(e).log("Failed to construct GameChat_Notification message")
     }
-  }
-
-  companion object {
-    const val ADMIN_COMMAND_ESCAPE_STRING = "/"
-    private const val DESC = "GameChatAction"
-    const val STATUS_IDLE: Byte = 1
   }
 }

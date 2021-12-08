@@ -10,7 +10,7 @@ data class GameData
     @Throws(MessageFormatException::class)
     private constructor(override val messageNumber: Int, val gameData: ByteArray) : V086Message() {
 
-  override val description = DESC
+  override val shortName = DESC
   override val messageId = ID
 
   override val bodyLength: Int

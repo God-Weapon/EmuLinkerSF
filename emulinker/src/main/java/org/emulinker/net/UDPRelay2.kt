@@ -218,7 +218,7 @@ abstract class UDPRelay2
   }
 
   companion object {
-    const val DEFAULT_BUFFER_SIZE = 4096
+    private const val DEFAULT_BUFFER_SIZE = 4096
     private var threadCounter = 0
   }
 }

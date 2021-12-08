@@ -3,13 +3,14 @@ package org.emulinker.kaillera.controller.messaging
 import java.nio.Buffer
 import java.nio.ByteBuffer
 
-abstract class ByteBufferMessage {
+abstract class ByteBufferMessage : HasShortName {
   private var buffer: ByteBuffer? = null
 
   abstract val length: Int
 
-  abstract val description: String
+  @Deprecated("Use shortName or something else")
   abstract override fun toString(): String
+
   protected fun initBuffer() {
     initBuffer(length)
   }

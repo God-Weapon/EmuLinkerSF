@@ -8,6 +8,8 @@ import org.emulinker.kaillera.controller.v086.V086ClientHandler
 import org.emulinker.kaillera.controller.v086.protocol.GameChat_Notification
 import org.emulinker.kaillera.model.event.GameInfoEvent
 
+private const val DESC = "GameInfoAction"
+
 private val logger = FluentLogger.forEnclosingClass()
 
 @Singleton
@@ -15,9 +17,7 @@ class GameInfoAction @Inject internal constructor() : V086GameEventHandler<GameI
   override var handledEventCount = 0
     private set
 
-  override fun toString(): String {
-    return DESC
-  }
+  override fun toString() = DESC
 
   override fun handleEvent(infoEvent: GameInfoEvent, clientHandler: V086ClientHandler) {
     handledEventCount++
@@ -30,9 +30,5 @@ class GameInfoAction @Inject internal constructor() : V086GameEventHandler<GameI
     } catch (e: MessageFormatException) {
       logger.atSevere().withCause(e).log("Failed to construct GameChat_Notification message")
     }
-  }
-
-  companion object {
-    private const val DESC = "GameInfoAction"
   }
 }

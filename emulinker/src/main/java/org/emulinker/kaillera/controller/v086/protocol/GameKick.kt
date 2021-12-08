@@ -10,7 +10,7 @@ data class GameKick
     constructor(override val messageNumber: Int, val userId: Int) : V086Message() {
 
   override val bodyLength = 3
-  override val description = DESC
+  override val shortName = DESC
   override val messageId = ID
 
   init {

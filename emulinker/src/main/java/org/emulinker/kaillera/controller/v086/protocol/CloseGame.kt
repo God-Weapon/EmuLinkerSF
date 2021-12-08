@@ -10,7 +10,7 @@ data class CloseGame
     @Throws(MessageFormatException::class)
     constructor(override val messageNumber: Int, val gameId: Int, val val1: Int) : V086Message() {
 
-  override val description = DESC
+  override val shortName = DESC
   override val messageId = ID
 
   override val bodyLength = 5

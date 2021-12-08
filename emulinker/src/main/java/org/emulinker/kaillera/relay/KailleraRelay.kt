@@ -17,6 +17,8 @@ import org.emulinker.kaillera.controller.messaging.MessageFormatException
 import org.emulinker.net.UDPRelay
 import org.emulinker.util.EmuUtil.formatSocketAddress
 
+private val logger = FluentLogger.forEnclosingClass()
+
 @Deprecated("This doesn't seem to be used anywhere! Maybe we can get rid of it. ")
 internal class KailleraRelay
     @AssistedInject
@@ -119,9 +121,5 @@ internal class KailleraRelay
     // https://stackoverflow.com/a/61267496/2875073
     (sendBuffer as Buffer).flip()
     return sendBuffer
-  }
-
-  companion object {
-    private val logger = FluentLogger.forEnclosingClass()
   }
 }

@@ -4,13 +4,13 @@ import java.nio.ByteBuffer
 import kotlin.Throws
 import org.emulinker.kaillera.controller.messaging.MessageFormatException
 
+private const val DESC = "Server Full Response"
+
 class ConnectMessage_TOO : ConnectMessage() {
   override val iD = ID
-  override val description = DESC
+  override val shortName = DESC
 
-  override fun toString(): String {
-    return DESC
-  }
+  override fun toString() = DESC
 
   override val length: Int
     get() = ID.length + 1
@@ -22,7 +22,6 @@ class ConnectMessage_TOO : ConnectMessage() {
 
   companion object {
     const val ID = "TOO"
-    private const val DESC = "Server Full Response"
 
     @Throws(MessageFormatException::class)
     fun parse(msg: String): ConnectMessage {

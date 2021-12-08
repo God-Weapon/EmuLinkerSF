@@ -11,6 +11,8 @@ import org.emulinker.kaillera.pico.AppModule
 import org.emulinker.util.EmuUtil
 import org.emulinker.util.UnsignedUtil
 
+private val logger = FluentLogger.forEnclosingClass()
+
 abstract class V086Message : ByteBufferMessage() {
   abstract val messageNumber: Int
   abstract val messageId: Byte
@@ -29,7 +31,7 @@ abstract class V086Message : ByteBufferMessage() {
 
   // TODO(nue): Figure out how to stuff this in the AutoValue toString.
   protected val infoString: String
-    get() = messageNumber.toString() + ":" + EmuUtil.byteToHex(messageId) + "/" + description
+    get() = messageNumber.toString() + ":" + EmuUtil.byteToHex(messageId) + "/" + shortName
 
   override fun writeTo(buffer: ByteBuffer?) {
     val len = length
@@ -54,7 +56,6 @@ abstract class V086Message : ByteBufferMessage() {
   protected abstract fun writeBodyTo(buffer: ByteBuffer)
 
   companion object {
-    private val logger = FluentLogger.forEnclosingClass()
     @JvmStatic
     @Throws(MessageFormatException::class)
     protected fun validateMessageNumber(messageNumber: Int, description: String) {

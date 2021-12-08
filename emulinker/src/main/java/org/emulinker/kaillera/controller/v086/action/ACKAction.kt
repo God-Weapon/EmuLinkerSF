@@ -15,6 +15,12 @@ import org.emulinker.kaillera.model.event.ConnectedEvent
 import org.emulinker.kaillera.model.event.UserEvent
 import org.emulinker.kaillera.model.exception.*
 
+private val logger = FluentLogger.forEnclosingClass()
+
+private const val DESC = "ACKAction"
+
+private const val numAcksForSpeedTest = 3
+
 @Singleton
 class ACKAction @Inject internal constructor() :
     V086Action<ClientACK>, V086UserEventHandler<UserEvent> {
@@ -23,9 +29,7 @@ class ACKAction @Inject internal constructor() :
   override var handledEventCount = 0
     private set
 
-  override fun toString(): String {
-    return DESC
-  }
+  override fun toString() = DESC
 
   @Throws(FatalActionException::class)
   override fun performAction(message: ClientACK, clientHandler: V086ClientHandler) {
@@ -175,11 +179,5 @@ class ACKAction @Inject internal constructor() :
     } catch (e: MessageFormatException) {
       logger.atSevere().withCause(e).log("Failed to construct new ServerStatus for users")
     }
-  }
-
-  companion object {
-    private val logger = FluentLogger.forEnclosingClass()
-    private const val DESC = "ACKAction"
-    private const val numAcksForSpeedTest = 3
   }
 }

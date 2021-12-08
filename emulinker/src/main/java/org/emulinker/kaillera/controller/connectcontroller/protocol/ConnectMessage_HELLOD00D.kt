@@ -9,10 +9,10 @@ import org.emulinker.util.EmuUtil
 class ConnectMessage_HELLOD00D(val port: Int) : ConnectMessage() {
 
   override val iD = ID
-  override val description = DESC
+  override val shortName = "Server Connection Response"
 
   override fun toString(): String {
-    return "$description: port: $port"
+    return "$shortName: port: $port"
   }
 
   override val length = ID.length + port.toString().length + 1
@@ -24,7 +24,6 @@ class ConnectMessage_HELLOD00D(val port: Int) : ConnectMessage() {
 
   companion object {
     const val ID = "HELLOD00D"
-    const val DESC = "Server Connection Response"
 
     @Throws(MessageFormatException::class)
     fun parse(msg: String): ConnectMessage {

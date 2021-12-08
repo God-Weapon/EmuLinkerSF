@@ -51,7 +51,7 @@ class EmuLinkerMasterUpdateTask(
             NameValuePair("maxUsers", kailleraServer.maxUsers.toString()),
             NameValuePair("numGames", kailleraServer.numGames.toString()),
             NameValuePair("maxGames", kailleraServer.maxGames.toString()),
-            NameValuePair("version", "ESF" + releaseInfo.versionString),
+            NameValuePair("version", releaseInfo.shortVersionString),
         )
 
     val meth: HttpMethod = GetMethod(url)
@@ -77,7 +77,7 @@ class EmuLinkerMasterUpdateTask(
       }
     }
 
-    // TODO(nue): Consider adding a server that can give update available notices for the Netosuma
+    // TODO(nue): Consider adding a server that can give update available notices for the netsma
     // build.
     // String updateAvailable = props.getProperty("updateAvailable");
     // if (updateAvailable != null && updateAvailable.equalsIgnoreCase("true")) {

@@ -13,6 +13,10 @@ import org.emulinker.kaillera.model.exception.CloseGameException
 import org.emulinker.kaillera.model.exception.DropGameException
 import org.emulinker.kaillera.model.exception.QuitGameException
 
+private val logger = FluentLogger.forEnclosingClass()
+
+private const val DESC = "QuitGameAction"
+
 @Singleton
 class QuitGameAction
     @Inject
@@ -23,9 +27,7 @@ class QuitGameAction
   override var handledEventCount = 0
     private set
 
-  override fun toString(): String {
-    return DESC
-  }
+  override fun toString() = DESC
 
   @Throws(FatalActionException::class)
   override fun performAction(message: QuitGame_Request, clientHandler: V086ClientHandler) {
@@ -63,10 +65,5 @@ class QuitGameAction
     } catch (e: MessageFormatException) {
       logger.atSevere().withCause(e).log("Failed to construct QuitGame_Notification message")
     }
-  }
-
-  companion object {
-    private val logger = FluentLogger.forEnclosingClass()
-    private const val DESC = "QuitGameAction"
   }
 }

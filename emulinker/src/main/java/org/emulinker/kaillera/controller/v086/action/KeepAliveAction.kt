@@ -10,9 +10,7 @@ class KeepAliveAction @Inject internal constructor() : V086Action<KeepAlive> {
   override var actionPerformedCount = 0
     private set
 
-  override fun toString(): String {
-    return DESC
-  }
+  override fun toString() = DESC
 
   @Throws(FatalActionException::class)
   override fun performAction(message: KeepAlive, clientHandler: V086ClientHandler) {

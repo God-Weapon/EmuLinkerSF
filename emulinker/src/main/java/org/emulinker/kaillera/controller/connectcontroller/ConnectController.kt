@@ -23,6 +23,8 @@ import org.emulinker.net.UDPServer
 import org.emulinker.util.EmuUtil.dumpBuffer
 import org.emulinker.util.EmuUtil.formatSocketAddress
 
+private val logger = FluentLogger.forEnclosingClass()
+
 /** The UDP Server implementation. */
 @Singleton
 class ConnectController
@@ -241,10 +243,6 @@ class ConnectController
   protected fun send(outMessage: ConnectMessage, toSocketAddress: InetSocketAddress?) {
     send(outMessage.toBuffer(), toSocketAddress)
     outMessage.releaseBuffer()
-  }
-
-  companion object {
-    private val logger = FluentLogger.forEnclosingClass()
   }
 
   init {

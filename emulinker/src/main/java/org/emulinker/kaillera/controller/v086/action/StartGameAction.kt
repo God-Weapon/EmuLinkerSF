@@ -24,9 +24,7 @@ class StartGameAction
   override var handledEventCount = 0
     private set
 
-  override fun toString(): String {
-    return DESC
-  }
+  override fun toString() = DESC
 
   override fun performAction(message: StartGame_Request, clientHandler: V086ClientHandler) {
     actionPerformedCount++

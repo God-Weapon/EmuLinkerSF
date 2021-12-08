@@ -9,7 +9,7 @@ data class Quit_Request
   override val username = ""
   override val userId = 0xFFFF
 
-  override val description = DESC
+  override val shortName = DESC
   override val messageId = ID
 
   init {

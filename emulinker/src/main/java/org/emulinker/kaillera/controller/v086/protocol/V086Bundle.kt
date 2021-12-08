@@ -33,11 +33,11 @@ class V086Bundle
       return field
     }
 
-  override val description = DESC
+  override val shortName = DESC
 
   override fun toString(): String {
     val sb = StringBuilder()
-    sb.append("$description ($numMessages messages) ($length bytes)")
+    sb.append("$shortName ($numMessages messages) ($length bytes)")
     sb.append(EmuUtil.LB)
     for (i in 0 until numMessages) {
       if (messages[i] == null) break

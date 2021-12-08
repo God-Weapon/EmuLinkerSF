@@ -4,11 +4,11 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.emulinker</groupId>
-  <artifactId>emulinkersf-netosuma</artifactId>
+  <artifactId>emulinkersf-netsma</artifactId>
   <version>0.3.1</version>
 
-  <name>EmulinkerSF-Netosuma</name>
-  <url>https://github.com/hopskipnfall/EmuLinkerSF-Netosuma</url>
+  <name>EmulinkerSF-netsma</name>
+  <url>https://github.com/hopskipnfall/EmuLinkerSF-netsma</url>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

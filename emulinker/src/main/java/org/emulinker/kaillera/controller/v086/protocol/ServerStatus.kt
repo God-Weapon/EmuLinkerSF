@@ -18,7 +18,7 @@ data class ServerStatus
     constructor(override val messageNumber: Int, val users: List<User>, val games: List<Game>) :
     V086Message() {
 
-  override val description = DESC
+  override val shortName = DESC
   override val messageId = ID
 
   // TODO(nue): Get rid of this.

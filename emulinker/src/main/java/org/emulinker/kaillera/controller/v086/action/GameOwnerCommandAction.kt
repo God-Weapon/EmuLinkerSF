@@ -15,14 +15,45 @@ import org.emulinker.kaillera.model.impl.KailleraGameImpl
 import org.emulinker.kaillera.model.impl.KailleraUserImpl
 import org.emulinker.util.EmuLang
 
+private const val COMMAND_HELP = "/help"
+
+private const val COMMAND_DETECTAUTOFIRE = "/detectautofire"
+
+// SF MOD
+private const val COMMAND_LAGSTAT = "/lag"
+
+private const val COMMAND_MAXUSERS = "/maxusers"
+
+private const val COMMAND_MAXPING = "/maxping"
+
+private const val COMMAND_START = "/start"
+
+private const val COMMAND_STARTN = "/startn"
+
+private const val COMMAND_MUTE = "/mute"
+
+private const val COMMAND_UNMUTE = "/unmute"
+
+private const val COMMAND_SWAP = "/swap"
+
+private const val COMMAND_KICK = "/kick"
+
+private const val COMMAND_EMU = "/setemu"
+
+private const val COMMAND_CONN = "/setconn"
+
+private const val COMMAND_SAMEDELAY = "/samedelay"
+
+private const val COMMAND_NUM = "/num"
+
+private const val DESC = "GameOwnerCommandAction"
+
 private val logger = FluentLogger.forEnclosingClass()
 
 @Singleton
 class GameOwnerCommandAction @Inject internal constructor() : V086Action<GameChat> {
   override val actionPerformedCount = 0
-  override fun toString(): String {
-    return DESC
-  }
+  override fun toString() = DESC
 
   fun isValidCommand(chat: String): Boolean {
     return when {
@@ -560,24 +591,6 @@ class GameOwnerCommandAction @Inject internal constructor() : V086Action<GameCha
   }
 
   companion object {
-    const val COMMAND_HELP = "/help"
-    const val COMMAND_DETECTAUTOFIRE = "/detectautofire"
-
-    // SF MOD
-    const val COMMAND_LAGSTAT = "/lag"
-    const val COMMAND_MAXUSERS = "/maxusers"
-    const val COMMAND_MAXPING = "/maxping"
-    const val COMMAND_START = "/start"
-    const val COMMAND_STARTN = "/startn"
-    const val COMMAND_MUTE = "/mute"
-    const val COMMAND_UNMUTE = "/unmute"
-    const val COMMAND_SWAP = "/swap"
-    const val COMMAND_KICK = "/kick"
-    const val COMMAND_EMU = "/setemu"
-    const val COMMAND_CONN = "/setconn"
-    const val COMMAND_SAMEDELAY = "/samedelay"
-    const val COMMAND_NUM = "/num"
     private var lastMaxUserChange: Long = 0
-    private const val DESC = "GameOwnerCommandAction"
   }
 }

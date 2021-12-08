@@ -8,7 +8,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import org.emulinker.util.EmuUtil
 
-private val logger: FluentLogger = FluentLogger.forEnclosingClass()
+private val logger = FluentLogger.forEnclosingClass()
 
 private val properties = Properties()
 
@@ -21,6 +21,8 @@ class ReleaseInfo @Inject constructor() {
   val productName: String by lazy { properties.getProperty("project.name") }
 
   val versionString: String by lazy { properties.getProperty("project.version") }
+
+  val shortVersionString: String by lazy { "ESFN$versionString" }
 
   val buildDate: Instant by lazy { Instant.parse(properties.getProperty("project.buildDate")) }
 

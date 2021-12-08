@@ -8,7 +8,7 @@ data class QuitGame_Notification
         override val messageNumber: Int, override val username: String, override val userId: Int
     ) : QuitGame() {
 
-  override val description = DESC
+  override val shortName = DESC
 
   init {
     validateMessageNumber(messageNumber, DESC)

@@ -12,7 +12,7 @@ data class Quit_Notification
         override val message: String
     ) : Quit() {
 
-  override val description = DESC
+  override val shortName = DESC
   override val messageId = ID
 
   init {

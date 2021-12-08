@@ -12,6 +12,8 @@ import org.emulinker.kaillera.model.KailleraServer
 import org.emulinker.kaillera.release.ReleaseInfo
 import org.emulinker.util.Executable
 
+private val logger = FluentLogger.forEnclosingClass()
+
 @Singleton
 class MasterListUpdaterImpl
     @Inject
@@ -96,10 +98,6 @@ class MasterListUpdaterImpl
       running = false
       logger.atFine().log("MasterListUpdater thread exiting...")
     }
-  }
-
-  companion object {
-    private val logger = FluentLogger.forEnclosingClass()
   }
 
   init {

@@ -9,7 +9,7 @@ data class KeepAlive
     @Throws(MessageFormatException::class)
     constructor(override val messageNumber: Int, val `val`: Short) : V086Message() {
 
-  override val description = DESC
+  override val shortName = DESC
   override val messageId = ID
   override val bodyLength = 1
 

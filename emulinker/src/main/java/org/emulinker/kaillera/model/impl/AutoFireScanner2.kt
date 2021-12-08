@@ -10,6 +10,8 @@ import org.emulinker.kaillera.model.KailleraUser
 import org.emulinker.util.EmuLang.getString
 import org.emulinker.util.EmuUtil
 
+private val logger = FluentLogger.forEnclosingClass()
+
 class AutoFireScanner2(private var game: KailleraGame, sensitivity: Int) : AutoFireDetector {
   override var sensitivity = 0
     set(value) {
@@ -226,8 +228,6 @@ class AutoFireScanner2(private var game: KailleraGame, sensitivity: Int) : AutoF
   }
 
   companion object {
-    private val logger = FluentLogger.forEnclosingClass()
-
     // MAX DELAY, MIN REPEITIONS
     private val SENSITIVITY_TABLE =
         arrayOf(

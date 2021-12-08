@@ -9,7 +9,7 @@ data class QuitGame_Request
   override val username = ""
   override val userId = 0xFFFF
 
-  override val description = DESC
+  override val shortName = DESC
 
   init {
     validateMessageNumber(messageNumber, DESC)

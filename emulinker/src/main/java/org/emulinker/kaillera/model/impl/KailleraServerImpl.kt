@@ -32,6 +32,8 @@ import org.emulinker.util.EmuLang.hasString
 import org.emulinker.util.EmuUtil.formatSocketAddress
 import org.emulinker.util.Executable
 
+private val logger = FluentLogger.forEnclosingClass()
+
 @Singleton
 class KailleraServerImpl
     @Inject
@@ -899,10 +901,6 @@ class KailleraServerImpl
       running = false
       logger.atFine().log("KailleraServer thread exiting...")
     }
-  }
-
-  companion object {
-    private val logger = FluentLogger.forEnclosingClass()
   }
 
   init {

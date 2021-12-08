@@ -14,6 +14,8 @@ import org.emulinker.net.UDPServer.ShutdownThread
 import org.emulinker.util.EmuUtil.formatSocketAddress
 import org.emulinker.util.Executable
 
+private val logger = FluentLogger.forEnclosingClass()
+
 abstract class UDPServer(shutdownOnExit: Boolean, metrics: MetricRegistry?) : Executable {
   /*
   	private static int		artificalPacketLossPercentage = 0;
@@ -189,10 +191,6 @@ abstract class UDPServer(shutdownOnExit: Boolean, metrics: MetricRegistry?) : Ex
     override fun run() {
       this@UDPServer.stop()
     }
-  }
-
-  companion object {
-    private val logger = FluentLogger.forEnclosingClass()
   }
 
   init {

@@ -6,7 +6,7 @@ data class PlayerDrop_Request
     @Throws(MessageFormatException::class)
     constructor(override val messageNumber: Int) : PlayerDrop() {
 
-  override val description = DESC
+  override val shortName = DESC
   override val messageId = ID
 
   override val username = ""

@@ -111,8 +111,7 @@ abstract class UDPRelay(var listenPort: Int, var serverSocketAddress: InetSocket
             .log(
                 "ClientHandler thread for " +
                     formatSocketAddress(clientSocketAddress) +
-                    " caught exception",
-                e)
+                    " caught exception")
       } finally {
         try {
           clientChannel.close()

@@ -8,7 +8,7 @@ data class GameChat_Notification
         override val messageNumber: Int, override val username: String, override val message: String
     ) : GameChat() {
 
-  override val description = DESC
+  override val shortName = DESC
   override val messageId = ID
 
   init {

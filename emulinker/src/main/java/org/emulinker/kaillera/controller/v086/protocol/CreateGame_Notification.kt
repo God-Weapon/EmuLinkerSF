@@ -15,7 +15,7 @@ data class CreateGame_Notification
     ) : CreateGame() {
 
   override val messageId = ID
-  override val description = DESC
+  override val shortName = DESC
 
   init {
     validateMessageNumber(messageNumber, DESC)

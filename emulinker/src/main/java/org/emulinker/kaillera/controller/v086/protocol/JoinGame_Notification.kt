@@ -15,7 +15,7 @@ data class JoinGame_Notification
         override val connectionType: Byte
     ) : JoinGame() {
 
-  override val description = DESC
+  override val shortName = DESC
   override val messageId = ID
 
   init {

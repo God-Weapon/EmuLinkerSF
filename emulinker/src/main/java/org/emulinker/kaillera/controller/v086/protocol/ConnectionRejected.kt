@@ -14,7 +14,7 @@ data class ConnectionRejected
         override val messageNumber: Int, val username: String, val userId: Int, val message: String
     ) : V086Message() {
 
-  override val description = DESC
+  override val shortName = DESC
   override val messageId = ID
 
   override val bodyLength: Int

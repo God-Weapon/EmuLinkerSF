@@ -8,7 +8,7 @@ data class Chat_Request
         override val messageNumber: Int, override val message: String, override val username: String
     ) : Chat() {
 
-  override val description = DESC
+  override val shortName = DESC
   override val messageId = ID
 
   init {

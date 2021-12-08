@@ -15,7 +15,7 @@ data class ServerACK
   override val val3 = 2L
   override val val4 = 3L
 
-  override val description = DESC
+  override val shortName = DESC
   override val messageId = ID
 
   init {

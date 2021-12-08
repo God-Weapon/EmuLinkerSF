@@ -13,9 +13,7 @@ class GameTimeoutAction @Inject internal constructor() : V086GameEventHandler<Ga
   override var handledEventCount = 0
     private set
 
-  override fun toString(): String {
-    return DESC
-  }
+  override fun toString() = DESC
 
   override fun handleEvent(event: GameTimeoutEvent, clientHandler: V086ClientHandler) {
     handledEventCount++

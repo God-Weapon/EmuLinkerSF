@@ -10,7 +10,7 @@ data class AllReady
     constructor(override val messageNumber: Int) : V086Message() {
   override val bodyLength = 1
 
-  override val description = DESC
+  override val shortName = DESC
   override val messageId = ID
 
   init {

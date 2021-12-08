@@ -14,7 +14,7 @@ data class PlayerInformation
     @Throws(MessageFormatException::class)
     constructor(override val messageNumber: Int, val players: List<Player>) : V086Message() {
 
-  override val description = DESC
+  override val shortName = DESC
   override val messageId = ID
 
   init {

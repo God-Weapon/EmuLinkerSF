@@ -5,14 +5,14 @@ import java.nio.ByteBuffer
 import kotlin.Throws
 import org.emulinker.kaillera.controller.messaging.MessageFormatException
 
+private const val DESC = "Server Pong"
+
 class ConnectMessage_PONG : ConnectMessage() {
   override val iD = ID
-  override val description = DESC
+  override val shortName = DESC
 
   var clientSocketAddress: InetSocketAddress? = null
-  override fun toString(): String {
-    return DESC
-  }
+  override fun toString() = DESC
 
   override val length = ID.length + 1
 
@@ -23,7 +23,6 @@ class ConnectMessage_PONG : ConnectMessage() {
 
   companion object {
     const val ID = "PONG"
-    private const val DESC = "Server Pong"
 
     @Throws(MessageFormatException::class)
     fun parse(msg: String): ConnectMessage {

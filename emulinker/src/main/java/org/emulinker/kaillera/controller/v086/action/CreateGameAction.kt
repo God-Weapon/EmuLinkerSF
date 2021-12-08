@@ -14,6 +14,8 @@ import org.emulinker.kaillera.model.exception.CreateGameException
 import org.emulinker.kaillera.model.exception.FloodException
 import org.emulinker.util.EmuLang
 
+private const val DESC = "CreateGameAction"
+
 private val logger = FluentLogger.forEnclosingClass()
 
 @Singleton
@@ -24,9 +26,7 @@ class CreateGameAction @Inject internal constructor() :
   override var handledEventCount = 0
     private set
 
-  override fun toString(): String {
-    return DESC
-  }
+  override fun toString() = DESC
 
   @Throws(FatalActionException::class)
   override fun performAction(message: CreateGame, clientHandler: V086ClientHandler) {
@@ -90,9 +90,5 @@ class CreateGameAction @Inject internal constructor() :
     } catch (e: MessageFormatException) {
       logger.atSevere().withCause(e).log("Failed to construct CreateGame_Notification message")
     }
-  }
-
-  companion object {
-    private const val DESC = "CreateGameAction"
   }
 }

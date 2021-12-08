@@ -8,7 +8,7 @@ data class Chat_Notification
         override val messageNumber: Int, override val username: String, override val message: String
     ) : Chat() {
 
-  override val description = DESC
+  override val shortName = DESC
 
   override val messageId = ID
 
