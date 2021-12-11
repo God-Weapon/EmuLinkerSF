@@ -15,6 +15,8 @@ private val logger = FluentLogger.forEnclosingClass()
 
 abstract class V086Message : ByteBufferMessage() {
   abstract val messageNumber: Int
+
+  @Deprecated("We should try to use a sealed class instead of relying on this messageId field")
   abstract val messageId: Byte
 
   // return (getBodyLength() + 5);
@@ -67,7 +69,7 @@ abstract class V086Message : ByteBufferMessage() {
 
     @JvmStatic
     @Throws(ParseException::class, MessageFormatException::class)
-    fun parse(messageNumber: Int, messageLength: Int, buffer: ByteBuffer): V086Message? {
+    fun parse(messageNumber: Int, messageLength: Int, buffer: ByteBuffer): V086Message {
 
       // removed to increase speed
       //		if (messageType < 0 || messageType > 0x17)
