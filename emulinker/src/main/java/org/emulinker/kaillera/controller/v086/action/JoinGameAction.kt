@@ -7,7 +7,6 @@ import org.emulinker.kaillera.controller.messaging.MessageFormatException
 import org.emulinker.kaillera.controller.v086.V086ClientHandler
 import org.emulinker.kaillera.controller.v086.protocol.*
 import org.emulinker.kaillera.controller.v086.protocol.PlayerInformation.Player
-import org.emulinker.kaillera.lookingforgame.TwitterBroadcaster
 import org.emulinker.kaillera.model.event.UserJoinedGameEvent
 import org.emulinker.kaillera.model.exception.JoinGameException
 import org.emulinker.util.EmuLang
@@ -15,9 +14,7 @@ import org.emulinker.util.EmuLang
 private val logger = FluentLogger.forEnclosingClass()
 
 @Singleton
-class JoinGameAction
-    @Inject
-    internal constructor(private val lookingForGameReporter: TwitterBroadcaster) :
+class JoinGameAction @Inject internal constructor() :
     V086Action<JoinGame_Request>, V086GameEventHandler<UserJoinedGameEvent> {
   override var actionPerformedCount = 0
     private set
@@ -50,12 +47,12 @@ class JoinGameAction
     }
   }
 
-  override fun handleEvent(userJoinedEvent: UserJoinedGameEvent, clientHandler: V086ClientHandler) {
+  override fun handleEvent(event: UserJoinedGameEvent, clientHandler: V086ClientHandler) {
     handledEventCount++
     val thisUser = clientHandler.user
     try {
-      val game = userJoinedEvent.game
-      val user = userJoinedEvent.user
+      val game = event.game
+      val user = event.user
       if (user == thisUser) {
         val players: MutableList<Player> = ArrayList()
         for (player in game.players) {
@@ -80,9 +77,6 @@ class JoinGameAction
                   user.connectionType))
     } catch (e: MessageFormatException) {
       logger.atSevere().withCause(e).log("Failed to construct JoinGame_Notification message")
-    }
-    if (userJoinedEvent.game.owner!!.id != userJoinedEvent.user.id) {
-      lookingForGameReporter.cancelActionsForGame(userJoinedEvent.game.id)
     }
   }
 

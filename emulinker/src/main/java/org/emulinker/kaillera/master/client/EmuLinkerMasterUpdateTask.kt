@@ -3,7 +3,6 @@ package org.emulinker.kaillera.master.client
 import com.google.common.flogger.FluentLogger
 import java.util.*
 import org.apache.commons.httpclient.HttpClient
-import org.apache.commons.httpclient.HttpMethod
 import org.apache.commons.httpclient.HttpStatus
 import org.apache.commons.httpclient.NameValuePair
 import org.apache.commons.httpclient.methods.GetMethod
@@ -47,14 +46,14 @@ class EmuLinkerMasterUpdateTask(
             NameValuePair("location", publicInfo.location),
             NameValuePair("website", publicInfo.website),
             NameValuePair("port", connectController.bindPort.toString()),
-            NameValuePair("numUsers", kailleraServer.numUsers.toString()),
+            NameValuePair("numUsers", kailleraServer.users.size.toString()),
             NameValuePair("maxUsers", kailleraServer.maxUsers.toString()),
-            NameValuePair("numGames", kailleraServer.numGames.toString()),
+            NameValuePair("numGames", kailleraServer.games.size.toString()),
             NameValuePair("maxGames", kailleraServer.maxGames.toString()),
             NameValuePair("version", releaseInfo.shortVersionString),
         )
 
-    val meth: HttpMethod = GetMethod(url)
+    val meth = GetMethod(url)
     meth.setQueryString(params)
     meth.setRequestHeader("Waiting-games", waitingGames.toString())
     meth.followRedirects = true
@@ -70,11 +69,9 @@ class EmuLinkerMasterUpdateTask(
     } catch (e: Exception) {
       logger.atSevere().withCause(e).log("Failed to touch EmuLinker Master")
     } finally {
-      if (meth != null) {
-        try {
-          meth.releaseConnection()
-        } catch (e: Exception) {}
-      }
+      try {
+        meth.releaseConnection()
+      } catch (e: Exception) {}
     }
 
     // TODO(nue): Consider adding a server that can give update available notices for the netsma

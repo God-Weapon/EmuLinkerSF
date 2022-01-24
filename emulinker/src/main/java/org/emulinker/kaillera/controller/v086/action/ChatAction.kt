@@ -163,7 +163,7 @@ class ChatAction @Inject internal constructor(private val adminCommandAction: Ad
           } catch (e: Exception) {}
           return
         }
-        if (clientHandler.user!!.server.checkMe(clientHandler.user, announcement)) {
+        if (clientHandler.user!!.server.checkMe(clientHandler.user!!, announcement)) {
           val m = announcement
           announcement = "*" + clientHandler.user!!.name + " " + m
           val user1 = clientHandler.user as KailleraUserImpl

@@ -121,7 +121,7 @@ data class RuntimeFlags
           twitterOAuthConsumerSecret =
               config.getString(
                   "twitter.auth.oAuthConsumerSecret", ""), // TODO(nue): Read these from a file
-          twitterPreventBroadcastNameSuffixes = listOf("待", "街", "町", "再起"))
+          twitterPreventBroadcastNameSuffixes = listOf("待", "街", "町", "再起", "侍ち"))
       // ImmutableList.copyOf(config.getString("twitter.preventBroadcastNameSuffixes",
       // "").split(",")))
     }

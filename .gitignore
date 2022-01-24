@@ -27,5 +27,3 @@ logs/
 hs_err_pid*
 
 emulinker/metrics/
-
-.idea/

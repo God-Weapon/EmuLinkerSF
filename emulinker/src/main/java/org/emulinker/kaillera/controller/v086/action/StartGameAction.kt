@@ -52,7 +52,7 @@ class StartGameAction
           } else {
             clientHandler.user!!.delay
           }
-      val playerNumber = game.getPlayerNumber(clientHandler.user)
+      val playerNumber = game.getPlayerNumber(clientHandler.user!!)
       clientHandler.send(
           StartGame_Notification(
               clientHandler.nextMessageNumber,

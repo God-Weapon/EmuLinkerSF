@@ -99,7 +99,7 @@ class ACKAction @Inject internal constructor() :
                 game.id,
                 game.clientType!!,
                 game.owner.name!!,
-                num.toString() + "/" + game.maxUsers,
+                "$num/${game.maxUsers}",
                 game.status.toByte()))
       }
     } catch (e: MessageFormatException) {

@@ -11,8 +11,6 @@ import org.emulinker.kaillera.model.impl.Trivia
 import org.emulinker.kaillera.release.ReleaseInfo
 
 interface KailleraServer {
-  val numUsers: Int
-  val numGames: Int
   val maxUsers: Int
   val maxGames: Int
   val maxPing: Int
@@ -27,7 +25,7 @@ interface KailleraServer {
   fun announce(announcement: String, gamesAlso: Boolean, user: KailleraUserImpl?)
   fun getUser(userID: Int): KailleraUser?
   fun getGame(gameID: Int): KailleraGame?
-  fun checkMe(user: KailleraUser?, message: String?): Boolean
+  fun checkMe(user: KailleraUser, message: String): Boolean
 
   @Throws(ServerFullException::class, NewConnectionException::class)
   fun newConnection(

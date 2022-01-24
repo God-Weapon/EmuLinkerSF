@@ -115,7 +115,11 @@ data class ServerStatus
           val gameId: Int,
           val clientType: String,
           val username: String,
-          val players: String,
+          /**
+           * Formatted like "2/4", showing the number of players present out of the max allowed in
+           * the room.
+           */
+          val playerCountOutOfMax: String,
           val status: Byte
       ) {
 
@@ -136,19 +140,7 @@ data class ServerStatus
 
     // TODO(nue): Get rid of this.
     override fun toString(): String {
-      return ("[romName=" +
-          romName +
-          " gameID=" +
-          gameId +
-          " clientType=" +
-          clientType +
-          " userName=" +
-          username +
-          " players=" +
-          players +
-          " status=" +
-          KailleraGame.STATUS_NAMES[status.toInt()] +
-          "]")
+      return ("[romName=$romName gameID=$gameId clientType=$clientType userName=$username players=$playerCountOutOfMax status=${KailleraGame.STATUS_NAMES[status.toInt()]}]")
     }
 
     val numBytes: Int
@@ -160,7 +152,7 @@ data class ServerStatus
               1 +
               V086Utils.getNumBytes(username) +
               1 +
-              players.length +
+              playerCountOutOfMax.length +
               1 +
               1)
 
@@ -169,7 +161,7 @@ data class ServerStatus
       buffer.putInt(gameId)
       EmuUtil.writeString(buffer, clientType, 0x00, AppModule.charsetDoNotUse)
       EmuUtil.writeString(buffer, username, 0x00, AppModule.charsetDoNotUse)
-      EmuUtil.writeString(buffer, players, 0x00, AppModule.charsetDoNotUse)
+      EmuUtil.writeString(buffer, playerCountOutOfMax, 0x00, AppModule.charsetDoNotUse)
       buffer.put(status)
     }
   }

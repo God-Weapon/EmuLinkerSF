@@ -19,8 +19,6 @@ import org.emulinker.kaillera.controller.KailleraServerController
 import org.emulinker.kaillera.controller.v086.V086Controller
 import org.emulinker.kaillera.master.MasterListStatsCollector
 import org.emulinker.kaillera.master.StatsCollector
-import org.emulinker.kaillera.master.client.MasterListUpdater
-import org.emulinker.kaillera.master.client.MasterListUpdaterImpl
 import org.emulinker.kaillera.model.KailleraServer
 import org.emulinker.kaillera.model.impl.AutoFireDetectorFactory
 import org.emulinker.kaillera.model.impl.AutoFireDetectorFactoryImpl
@@ -56,11 +54,6 @@ abstract class AppModule {
   abstract fun bindStatsCollector(
       masterListStatsCollector: MasterListStatsCollector?
   ): StatsCollector?
-
-  @Binds
-  abstract fun bindMasterListUpdaterImpl(
-      masterListUpdaterImpl: MasterListUpdaterImpl?
-  ): MasterListUpdater?
 
   companion object {
     // TODO(nue): Burn this with fire!!!

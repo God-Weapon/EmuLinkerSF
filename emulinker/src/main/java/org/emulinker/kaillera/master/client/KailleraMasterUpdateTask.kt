@@ -43,16 +43,18 @@ class KailleraMasterUpdateTask(
       waitingGames.append(
           "${game.id}|${game.romName}|${game.owner.name}|${game.owner.clientType}|${game.numPlayers}|")
     }
-    val params = arrayOfNulls<NameValuePair>(9)
-    params[0] = NameValuePair("servername", publicInfo.serverName)
-    params[1] = NameValuePair("port", connectController.bindPort.toString())
-    params[2] = NameValuePair("nbusers", kailleraServer.numUsers.toString())
-    params[3] = NameValuePair("maxconn", kailleraServer.maxUsers.toString())
-    params[4] = NameValuePair("version", "ESF" + releaseInfo.versionString)
-    params[5] = NameValuePair("nbgames", kailleraServer.numGames.toString())
-    params[6] = NameValuePair("location", publicInfo.location)
-    params[7] = NameValuePair("ip", publicInfo.connectAddress)
-    params[8] = NameValuePair("url", publicInfo.website)
+    val params =
+        arrayOf(
+            NameValuePair("servername", publicInfo.serverName),
+            NameValuePair("port", connectController.bindPort.toString()),
+            NameValuePair("nbusers", kailleraServer.users.size.toString()),
+            NameValuePair("maxconn", kailleraServer.maxUsers.toString()),
+            NameValuePair("version", "ESF" + releaseInfo.versionString),
+            NameValuePair("nbgames", kailleraServer.games.size.toString()),
+            NameValuePair("location", publicInfo.location),
+            NameValuePair("ip", publicInfo.connectAddress),
+            NameValuePair("url", publicInfo.website),
+        )
     val kailleraTouch: HttpMethod = GetMethod("http://www.kaillera.com/touch_server.php")
     kailleraTouch.setQueryString(params)
     kailleraTouch.setRequestHeader("Kaillera-games", createdGames.toString())
@@ -65,10 +67,10 @@ class KailleraMasterUpdateTask(
     } catch (e: Exception) {
       logger.atSevere().withCause(e).log("Failed to touch Kaillera Master")
     } finally {
-      if (kailleraTouch != null) {
-        try {
-          kailleraTouch.releaseConnection()
-        } catch (e: Exception) {}
+      try {
+        kailleraTouch.releaseConnection()
+      } catch (e: Exception) {
+        logger.atSevere().withCause(e).log("Failed to release connection")
       }
     }
   }

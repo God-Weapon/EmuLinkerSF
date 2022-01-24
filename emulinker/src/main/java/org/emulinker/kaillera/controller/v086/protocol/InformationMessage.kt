@@ -18,10 +18,10 @@ data class InformationMessage
   init {
     validateMessageNumber(messageNumber, DESC)
     if (Strings.isNullOrEmpty(source)) {
-      throw MessageFormatException("Invalid " + DESC + " format: source.length == 0")
+      throw MessageFormatException("Invalid $DESC format: source.length == 0")
     }
     if (Strings.isNullOrEmpty(message)) {
-      throw MessageFormatException("Invalid " + DESC + " format: message.length == 0")
+      throw MessageFormatException("Invalid $DESC format: message.length == 0")
     }
   }
 

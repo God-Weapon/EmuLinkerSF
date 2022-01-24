@@ -39,14 +39,10 @@ private val logger = FluentLogger.forEnclosingClass()
 class KailleraGameImpl(
     override val id: Int,
     override val romName: String,
-    owner: KailleraUserImpl,
+    override val owner: KailleraUserImpl,
     override val server: KailleraServerImpl,
     bufferSize: Int,
-    timeoutMillis: Int,
-    desynchTimeouts: Int
 ) : KailleraGame {
-
-  override val owner: KailleraUserImpl = owner
 
   private val toString: String
   val startDate: Date
@@ -91,26 +87,18 @@ class KailleraGameImpl(
 
   private val actionsPerMessage: Int
 
-  override var playerActionQueue: Array<PlayerActionQueue?>? = null
+  override var playerActionQueue: Array<PlayerActionQueue>? = null
     private set
 
   val autoFireDetector: AutoFireDetector?
 
-  override fun getPlayerNumber(user: KailleraUser?): Int {
+  override fun getPlayerNumber(user: KailleraUser): Int {
     return players.indexOf(user) + 1
   }
 
   override fun getPlayer(playerNumber: Int): KailleraUser? {
     if (playerNumber > players.size) {
-      logger
-          .atSevere()
-          .log(
-              this.toString() +
-                  ": getPlayer(" +
-                  playerNumber +
-                  ") failed! (size = " +
-                  players.size +
-                  ")")
+      logger.atSevere().log("$this: getPlayer($playerNumber) failed! (size = ${players.size})")
       return null
     }
     return players[playerNumber - 1]
@@ -122,33 +110,23 @@ class KailleraGameImpl(
   override val clientType: String?
     get() = owner.clientType
 
-  override fun toString(): String {
-    return toString
-  }
+  override fun toString() = toString
 
   fun toDetailedString(): String {
     return "KailleraGame[id=$id romName=$romName owner=$owner numPlayers=$numPlayers status=${STATUS_NAMES[status]}]"
   }
 
-  val playingCount: Int
-    get() {
-      var count = 0
-      for (player in players) {
-        if (player.status == KailleraUser.STATUS_PLAYING.toInt()) {
-          count++
-        }
-      }
-      return count
-    }
+  private val playingCount: Int
+    get() = players.asSequence().filter { it.status == KailleraUser.STATUS_PLAYING.toInt() }.count()
 
   // return dataQueues.size();
   //		return readyCount;
-  val synchedCount: Int
+  private val synchedCount: Int
     get() {
       if (playerActionQueue == null) return 0
       var count = 0
       for (i in playerActionQueue!!.indices) {
-        if (playerActionQueue!![i]!!.synched) count++
+        if (playerActionQueue!![i].synched) count++
       }
       return count
 
@@ -162,12 +140,12 @@ class KailleraGameImpl(
 
   @Synchronized
   @Throws(GameChatException::class)
-  override fun chat(user: KailleraUser?, message: String?) {
+  override fun chat(user: KailleraUser, message: String?) {
     if (!players.contains(user)) {
-      logger.atWarning().log(user.toString() + " game chat denied: not in " + this)
+      logger.atWarning().log("$user game chat denied: not in $this")
       throw GameChatException(EmuLang.getString("KailleraGameImpl.GameChatErrorNotInGame"))
     }
-    if (user!!.access == AccessManager.ACCESS_NORMAL) {
+    if (user.access == AccessManager.ACCESS_NORMAL) {
       if (server.maxGameChatLength > 0 && message!!.length > server.maxGameChatLength) {
         logger
             .atWarning()
@@ -189,26 +167,26 @@ class KailleraGameImpl(
 
   @Synchronized
   @Throws(GameKickException::class)
-  override fun kick(user: KailleraUser?, userID: Int) {
-    if (user!!.access < AccessManager.ACCESS_ADMIN) {
-      if (user != owner) {
-        logger.atWarning().log("$user kick denied: not the owner of $this")
+  override fun kick(requester: KailleraUser, userID: Int) {
+    if (requester.access < AccessManager.ACCESS_ADMIN) {
+      if (requester != owner) {
+        logger.atWarning().log("$requester kick denied: not the owner of $this")
         throw GameKickException(EmuLang.getString("KailleraGameImpl.GameKickDeniedNotGameOwner"))
       }
     }
-    if (user.id == userID) {
-      logger.atWarning().log("$user kick denied: attempt to kick self")
+    if (requester.id == userID) {
+      logger.atWarning().log("$requester kick denied: attempt to kick self")
       throw GameKickException(EmuLang.getString("KailleraGameImpl.GameKickDeniedCannotKickSelf"))
     }
     for (player in players) {
       if (player.id == userID) {
         try {
-          if (user.access != AccessManager.ACCESS_SUPERADMIN) {
+          if (requester.access != AccessManager.ACCESS_SUPERADMIN) {
             if (player.access >= AccessManager.ACCESS_ADMIN) {
               return
             }
           }
-          logger.atInfo().log("$user kicked: $userID from $this")
+          logger.atInfo().log("$requester kicked: $userID from $this")
           // SF MOD - Changed to IP rather than ID
           kickedUsers.add(player.connectSocketAddress.address.hostAddress)
           player.quitGame()
@@ -222,20 +200,20 @@ class KailleraGameImpl(
         }
       }
     }
-    logger.atWarning().log("$user kick failed: user $userID not found in: $this")
+    logger.atWarning().log("$requester kick failed: user $userID not found in: $this")
     throw GameKickException(EmuLang.getString("KailleraGameImpl.GameKickErrorUserNotFound"))
   }
 
   @Synchronized
   @Throws(JoinGameException::class)
-  override fun join(user: KailleraUser?): Int {
-    val access = server.accessManager.getAccess(user!!.socketAddress!!.address)
+  override fun join(user: KailleraUser): Int {
+    val access = server.accessManager.getAccess(user.socketAddress!!.address)
 
     // SF MOD - Join room spam protection
     if (lastAddress == user.connectSocketAddress.address.hostAddress) {
       lastAddressCount++
       if (lastAddressCount >= 4) {
-        logger.atInfo().log(user.toString() + " join spam protection: " + user.id + " from " + this)
+        logger.atInfo().log("$user join spam protection: ${user.id} from $this")
         // SF MOD - Changed to IP rather than ID
         if (access < AccessManager.ACCESS_ADMIN) {
           kickedUsers.add(user.connectSocketAddress.address.hostAddress)
@@ -363,8 +341,8 @@ class KailleraGameImpl(
 
   @Synchronized
   @Throws(StartGameException::class)
-  override fun start(user: KailleraUser?) {
-    val access = server.accessManager.getAccess(user!!.socketAddress!!.address)
+  override fun start(user: KailleraUser) {
+    val access = server.accessManager.getAccess(user.socketAddress!!.address)
     if (user != owner && access < AccessManager.ACCESS_ADMIN) {
       logger.atWarning().log("$user start game denied: not the owner of $this")
       throw StartGameException(
@@ -381,14 +359,7 @@ class KailleraGameImpl(
                   STATUS_NAMES[status])
       throw StartGameException(EmuLang.getString("KailleraGameImpl.StartGameErrorSynchronizing"))
     } else if (status == KailleraGame.STATUS_PLAYING.toInt()) {
-      logger
-          .atWarning()
-          .log(
-              user.toString() +
-                  " start game failed: " +
-                  this +
-                  " status is " +
-                  STATUS_NAMES[status])
+      logger.atWarning().log("$user start game failed: $this status is ${STATUS_NAMES[status]}")
       throw StartGameException(EmuLang.getString("KailleraGameImpl.StartGameErrorStatusIsPlaying"))
     }
     if (access == AccessManager.ACCESS_NORMAL && numPlayers < 2 && !server.allowSinglePlayer) {
@@ -404,11 +375,7 @@ class KailleraGameImpl(
         if (player.connectionType != owner.connectionType) {
           logger
               .atWarning()
-              .log(
-                  user.toString() +
-                      " start game denied: " +
-                      this +
-                      ": All players must use the same connection type")
+              .log("$user start game denied: $this: All players must use the same connection type")
           addEvent(
               GameInfoEvent(
                   this,
@@ -436,24 +403,22 @@ class KailleraGameImpl(
     logger.atInfo().log("$user started: $this")
     status = KailleraGame.STATUS_SYNCHRONIZING.toInt()
     autoFireDetector?.start(players.size)
-    playerActionQueue = arrayOfNulls(players.size)
+    val actionQueueBuilder: Array<PlayerActionQueue?> = arrayOfNulls(players.size)
     startTimeout = false
     delay = 1
     if (server.users.size > 60) {
       p2P = true
     }
     var i = 0
-    while (i < playerActionQueue!!.size && i < players.size) {
+    while (i < actionQueueBuilder.size && i < players.size) {
       val player = players[i]
       val playerNumber = i + 1
       if (!swap) player.playerNumber = playerNumber
       player.timeouts = 0
       player.frameCount = 0
-      playerActionQueue!![i] =
+      actionQueueBuilder[i] =
           PlayerActionQueue(
               playerNumber, player as KailleraUserImpl, numPlayers, bufferSize, timeoutMillis, true)
-      // playerActionQueues[i] = new PlayerActionQueue(playerNumber, player, getNumPlayers(),
-      // GAME_BUFFER_SIZE, (player.getPing()*3));
       // SF MOD - player.setPlayerNumber(playerNumber);
       // SF MOD - Delay Value = [(60/connectionType) * (ping/1000)] + 1
       val delayVal = 60 / player.connectionType * (player.ping.toDouble() / 1000) + 1
@@ -474,6 +439,7 @@ class KailleraGameImpl(
       autoFireDetector?.addPlayer(player, playerNumber)
       i++
     }
+    playerActionQueue = actionQueueBuilder.map { it!! }.toTypedArray()
     statsCollector?.markGameAsStarted(server, this)
 
     /*if(user.getConnectionType() > KailleraUser.CONNECTION_TYPE_GOOD || user.getConnectionType() < KailleraUser.CONNECTION_TYPE_GOOD){
@@ -498,15 +464,11 @@ class KailleraGameImpl(
       throw UserReadyException(EmuLang.getString("KailleraGameImpl.ReadyGameErrorIncorrectState"))
     }
     if (playerActionQueue == null) {
-      logger
-          .atSevere()
-          .log(user.toString() + " ready failed: " + this + " playerActionQueues == null!")
+      logger.atSevere().log("$user ready failed: $this playerActionQueues == null!")
       throw UserReadyException(EmuLang.getString("KailleraGameImpl.ReadyGameErrorInternalError"))
     }
-    logger
-        .atInfo()
-        .log(user.toString() + " (player " + playerNumber + ") is ready to play: " + this)
-    playerActionQueue!![playerNumber - 1]!!.synched = true
+    logger.atInfo().log("$user (player $playerNumber) is ready to play: $this")
+    playerActionQueue!![playerNumber - 1].synched = true
     if (synchedCount == numPlayers) {
       logger.atInfo().log("$this all players are ready: starting...")
       status = KailleraGame.STATUS_PLAYING.toInt()
@@ -523,9 +485,7 @@ class KailleraGameImpl(
           // do not show delay if stealth mode
           if (player != null && !player.stealth) {
             frameDelay = (player.delay + 1) * player.connectionType - 1
-            announce(
-                "P" + (i + 1) + " Delay = " + player.delay + " (" + frameDelay + " frame delay)",
-                null)
+            announce("P${i + 1} Delay = ${player.delay} ($frameDelay frame delay)", null)
           }
           i++
         }
@@ -537,21 +497,21 @@ class KailleraGameImpl(
   @Throws(DropGameException::class)
   override fun drop(user: KailleraUser, playerNumber: Int) {
     if (!players.contains(user)) {
-      logger.atWarning().log(user.toString() + " drop game failed: not in " + this)
+      logger.atWarning().log("$user drop game failed: not in $this")
       throw DropGameException(EmuLang.getString("KailleraGameImpl.DropGameErrorNotInGame"))
     }
     if (playerActionQueue == null) {
-      logger
-          .atSevere()
-          .log(user.toString() + " drop failed: " + this + " playerActionQueues == null!")
+      logger.atSevere().log("$user drop failed: $this playerActionQueues == null!")
       throw DropGameException(EmuLang.getString("KailleraGameImpl.DropGameErrorInternalError"))
     }
-    logger.atInfo().log(user.toString() + " dropped: " + this)
+    logger.atInfo().log("$user dropped: $this")
     if (playerNumber - 1 < playerActionQueue!!.size)
-        playerActionQueue!![playerNumber - 1]!!.synched = false
+        playerActionQueue!![playerNumber - 1].synched = false
     if (synchedCount < 2 && isSynched) {
       isSynched = false
-      for (q in playerActionQueue!!) q!!.synched = false
+      for (q in playerActionQueue!!) {
+        q.synched = false
+      }
       logger.atInfo().log("$this: game desynched: less than 2 players playing!")
     }
     autoFireDetector?.stop(playerNumber)
@@ -604,7 +564,7 @@ class KailleraGameImpl(
     }
     if (isSynched) {
       isSynched = false
-      for (q in playerActionQueue!!) q!!.synched = false
+      for (q in playerActionQueue!!) q.synched = false
       logger.atInfo().log("$this: game desynched: game closed!")
     }
     for (player in players) {
@@ -621,20 +581,17 @@ class KailleraGameImpl(
   }
 
   @Synchronized
-  override fun droppedPacket(user: KailleraUser?) {
+  override fun droppedPacket(user: KailleraUser) {
     if (!isSynched) return
-    val playerNumber = user!!.playerNumber
+    val playerNumber = user.playerNumber
     if (user.playerNumber > playerActionQueue!!.size) {
       logger
           .atInfo()
           .log(
-              this.toString() +
-                  ": " +
-                  user +
-                  ": player desynched: dropped a packet! Also left the game already: KailleraGameImpl -> DroppedPacket")
+              "$this: $user: player desynched: dropped a packet! Also left the game already: KailleraGameImpl -> DroppedPacket")
     }
-    if (playerActionQueue != null && playerActionQueue!![playerNumber - 1]!!.synched) {
-      playerActionQueue!![playerNumber - 1]!!.synched = false
+    if (playerActionQueue != null && playerActionQueue!![playerNumber - 1].synched) {
+      playerActionQueue!![playerNumber - 1].synched = false
       logger.atInfo().log("$this: $user: player desynched: dropped a packet!")
       addEvent(
           PlayerDesynchEvent(
@@ -643,15 +600,15 @@ class KailleraGameImpl(
               EmuLang.getString("KailleraGameImpl.DesynchDetectedDroppedPacket", user.name)))
       if (synchedCount < 2 && isSynched) {
         isSynched = false
-        for (q in playerActionQueue!!) q!!.synched = false
+        for (q in playerActionQueue!!) q.synched = false
         logger.atInfo().log("$this: game desynched: less than 2 players synched!")
       }
     }
   }
 
   @Throws(GameDataException::class)
-  override fun addData(user: KailleraUser?, playerNumber: Int, data: ByteArray?) {
-    if (playerActionQueue == null) return
+  override fun addData(user: KailleraUser, playerNumber: Int, data: ByteArray?) {
+    val playerActionQueueCopy = playerActionQueue ?: return
 
     // int bytesPerAction = (data.length / actionsPerMessage);
     var timeoutCounter = 0
@@ -662,19 +619,19 @@ class KailleraGameImpl(
           data!!,
           actionsPerMessage,
           playerNumber,
-          playerActionQueue!!.size)
+          playerActionQueueCopy.size)
     }
-    playerActionQueue!![playerNumber - 1]!!.addActions(data!!)
-    autoFireDetector?.addData(playerNumber, data, user!!.bytesPerAction)
-    val response = ByteArray(user!!.arraySize)
+    playerActionQueueCopy[playerNumber - 1].addActions(data!!)
+    autoFireDetector?.addData(playerNumber, data, user.bytesPerAction)
+    val response = ByteArray(user.arraySize)
     for (actionCounter in 0 until actionsPerMessage) {
-      for (playerCounter in playerActionQueue!!.indices) {
+      for (playerCounter in playerActionQueueCopy.indices) {
         while (isSynched) {
           try {
-            playerActionQueue!![playerCounter]!!.getAction(
+            playerActionQueueCopy[playerCounter].getAction(
                 playerNumber,
                 response,
-                actionCounter * (playerActionQueue!!.size * user.bytesPerAction) +
+                actionCounter * (playerActionQueueCopy.size * user.bytesPerAction) +
                     playerCounter * user.bytesPerAction,
                 user.bytesPerAction)
             break
@@ -691,7 +648,7 @@ class KailleraGameImpl(
             data,
             user.bytesPerAction,
             playerNumber,
-            playerActionQueue!!.size)
+            playerActionQueueCopy.size)
     (user as KailleraUserImpl?)!!.addEvent(GameDataEvent(this, response))
   }
 
@@ -702,7 +659,7 @@ class KailleraGameImpl(
     val playerNumber = e.playerNumber
     val timeoutNumber = e.timeoutNumber
     val playerActionQueue = playerActionQueue!![playerNumber - 1]
-    if (!playerActionQueue!!.synched || e == playerActionQueue.lastTimeout) return
+    if (!playerActionQueue.synched || e == playerActionQueue.lastTimeout) return
     playerActionQueue.lastTimeout = e
     val player: KailleraUser = e.player!!
     if (timeoutNumber < desynchTimeouts) {
@@ -722,7 +679,7 @@ class KailleraGameImpl(
               EmuLang.getString("KailleraGameImpl.DesynchDetectedPlayerLagged", player.name)))
       if (synchedCount < 2) {
         isSynched = false
-        for (q in this.playerActionQueue!!) q!!.synched = false
+        for (q in this.playerActionQueue!!) q.synched = false
         logger.atInfo().log("$this: game desynched: less than 2 players synched!")
       }
     }

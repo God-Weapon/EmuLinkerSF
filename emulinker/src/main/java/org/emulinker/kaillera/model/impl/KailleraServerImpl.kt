@@ -12,7 +12,6 @@ import java.util.concurrent.ThreadPoolExecutor
 import java.util.function.Consumer
 import javax.inject.Inject
 import javax.inject.Singleton
-import org.apache.commons.configuration.Configuration
 import org.emulinker.config.RuntimeFlags
 import org.emulinker.kaillera.access.AccessManager
 import org.emulinker.kaillera.access.AccessManager.Companion.ACCESS_NAMES
@@ -40,7 +39,6 @@ class KailleraServerImpl
     internal constructor(
         private val threadPool: ThreadPoolExecutor,
         override val accessManager: AccessManager,
-        config: Configuration?,
         private val flags: RuntimeFlags,
         statsCollector: StatsCollector?,
         override val releaseInfo: ReleaseInfo,
@@ -79,9 +77,6 @@ class KailleraServerImpl
     return gamesMap[gameID]
   }
 
-  override val numUsers = usersMap.size
-  override val numGames = gamesMap.size
-
   fun getNumGamesPlaying(): Int {
     var count = 0
     for (game in games) {
@@ -107,7 +102,7 @@ class KailleraServerImpl
 
   override fun toString(): String {
     return String.format(
-        "KailleraServerImpl[numUsers=%d numGames=%d isRunning=%b]", numUsers, numGames, running)
+        "KailleraServerImpl[numUsers=%d numGames=%d isRunning=%b]", users.size, games.size, running)
   }
 
   @Synchronized
@@ -157,7 +152,7 @@ class KailleraServerImpl
   @Throws(ServerFullException::class, NewConnectionException::class)
   override fun newConnection(
       clientSocketAddress: InetSocketAddress?, protocol: String?, listener: KailleraEventListener?
-  ): KailleraUser? {
+  ): KailleraUser {
     // we'll assume at this point that ConnectController has already asked AccessManager if this IP
     // is banned, so no need to do it again here
     logger
@@ -260,7 +255,7 @@ class KailleraServerImpl
               "KailleraServerImpl.LoginDeniedPingTooHigh", user.ping.toString() + " > " + maxPing))
     }
     if (access == AccessManager.ACCESS_NORMAL &&
-        allowedConnectionTypes[user.connectionType.toInt()] == false) {
+        !allowedConnectionTypes[user.connectionType.toInt()]) {
       logger
           .atInfo()
           .log(
@@ -312,9 +307,7 @@ class KailleraServerImpl
     if (access == AccessManager.ACCESS_NORMAL &&
         flags.maxClientNameLength > 0 &&
         user.clientType!!.length > maxClientNameLength) {
-      logger
-          .atInfo()
-          .log(user.toString() + " login denied: Client Name Length > " + maxClientNameLength)
+      logger.atInfo().log("$user login denied: Client Name Length > $maxClientNameLength")
       usersMap.remove(userListKey)
       throw UserNameException(getString("KailleraServerImpl.LoginDeniedEmulatorNameTooLong"))
     }
@@ -614,7 +607,7 @@ class KailleraServerImpl
         logger.atWarning().log("$user create game denied: Flood: $romName")
         throw FloodException(getString("KailleraServerImpl.CreateGameDeniedFloodControl"))
       }
-      if (flags.maxGames > 0 && numGames >= flags.maxGames) {
+      if (flags.maxGames > 0 && games.size >= flags.maxGames) {
         logger
             .atWarning()
             .log(
@@ -645,14 +638,7 @@ class KailleraServerImpl
     var game: KailleraGameImpl? = null
     val gameID = getNextGameID()
     game =
-        KailleraGameImpl(
-            gameID,
-            romName,
-            (user as KailleraUserImpl?)!!,
-            this,
-            flags.gameBufferSize,
-            flags.gameTimeoutMillis,
-            flags.gameDesynchTimeouts)
+        KailleraGameImpl(gameID, romName, (user as KailleraUserImpl?)!!, this, flags.gameBufferSize)
     gamesMap[gameID] = game
     addEvent(GameCreatedEvent(this, game))
     logger.atInfo().log(user.toString() + " created: " + game + ": " + game.romName)
@@ -697,10 +683,10 @@ class KailleraServerImpl
     addEvent(GameClosedEvent(this, game))
   }
 
-  override fun checkMe(user: KailleraUser?, message: String?): Boolean {
+  override fun checkMe(user: KailleraUser, message: String): Boolean {
     // >>>>>>>>>>>>>>>>>>>>
     var message = message
-    if (!user!!.loggedIn) {
+    if (!user.loggedIn) {
       logger.atSevere().log("$user chat failed: Not logged in")
       return false
     }
@@ -721,7 +707,7 @@ class KailleraServerImpl
     if (message == ":USER_COMMAND") {
       return false
     }
-    message = message!!.trim { it <= ' ' }
+    message = message.trim { it <= ' ' }
     if (Strings.isNullOrEmpty(message)) return false
     if (access == AccessManager.ACCESS_NORMAL) {
       val chars = message.toCharArray()

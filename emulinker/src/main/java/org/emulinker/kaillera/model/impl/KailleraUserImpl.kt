@@ -68,8 +68,6 @@ class KailleraUserImpl(
     private set
   var lastCreateGameTime: Long = 0
     private set
-  private var lastTimeout: Long = 0
-    private set
   override var frameCount = 0
   override var delay = 0
 
@@ -82,7 +80,6 @@ class KailleraUserImpl(
 
   override var p2P = false
 
-  // protected
   override var playerNumber = -1
   override var ignoreAll = false
   override var msg = true
@@ -259,10 +256,10 @@ class KailleraUserImpl(
       logger.atSevere().log("$this create game failed: User don't exist!")
       return null
     }
-    if (status == KailleraUser.Companion.STATUS_PLAYING.toInt()) {
+    if (status == KailleraUser.STATUS_PLAYING.toInt()) {
       logger.atWarning().log("$this create game failed: User status is Playing!")
       throw CreateGameException(EmuLang.getString("KailleraUserImpl.CreateGameErrorAlreadyInGame"))
-    } else if (status == KailleraUser.Companion.STATUS_CONNECTING.toInt()) {
+    } else if (status == KailleraUser.STATUS_CONNECTING.toInt()) {
       logger.atWarning().log("$this create game failed: User status is Connecting!")
       throw CreateGameException(
           EmuLang.getString("KailleraUserImpl.CreateGameErrorNotFullyConnected"))
@@ -292,10 +289,10 @@ class KailleraUserImpl(
       logger.atWarning().log("$this join game failed: Already in: $game")
       throw JoinGameException(EmuLang.getString("KailleraUserImpl.JoinGameErrorAlreadyInGame"))
     }
-    if (status == KailleraUser.Companion.STATUS_PLAYING.toInt()) {
+    if (status == KailleraUser.STATUS_PLAYING.toInt()) {
       logger.atWarning().log("$this join game failed: User status is Playing!")
       throw JoinGameException(EmuLang.getString("KailleraUserImpl.JoinGameErrorAnotherGameRunning"))
-    } else if (status == KailleraUser.Companion.STATUS_CONNECTING.toInt()) {
+    } else if (status == KailleraUser.STATUS_CONNECTING.toInt()) {
       logger.atWarning().log("$this join game failed: User status is Connecting!")
       throw JoinGameException(EmuLang.getString("KailleraUserImpl.JoinGameErrorNotFullConnected"))
     }
@@ -349,10 +346,10 @@ class KailleraUserImpl(
   @Throws(DropGameException::class)
   override fun dropGame() {
     updateLastActivity()
-    if (status == KailleraUser.Companion.STATUS_IDLE.toInt()) {
+    if (status == KailleraUser.STATUS_IDLE.toInt()) {
       return
     }
-    status = KailleraUser.Companion.STATUS_IDLE.toInt()
+    status = KailleraUser.STATUS_IDLE.toInt()
     if (game != null) {
       game!!.drop(this, playerNumber)
       // not necessary to show it twice
@@ -371,15 +368,15 @@ class KailleraUserImpl(
       // throw new QuitGameException("You are not in a game!");
       return
     }
-    if (status == KailleraUser.Companion.STATUS_PLAYING.toInt()) {
+    if (status == KailleraUser.STATUS_PLAYING.toInt()) {
       // first set STATUS_IDLE and then call game.drop, otherwise if someone
       // quit game whitout drop - game status will not change to STATUS_WAITING
-      status = KailleraUser.Companion.STATUS_IDLE.toInt()
+      status = KailleraUser.STATUS_IDLE.toInt()
       game!!.drop(this, playerNumber)
     }
     game!!.quit(this, playerNumber)
-    if (status != KailleraUser.Companion.STATUS_IDLE.toInt()) {
-      status = KailleraUser.Companion.STATUS_IDLE.toInt()
+    if (status != KailleraUser.STATUS_IDLE.toInt()) {
+      status = KailleraUser.STATUS_IDLE.toInt()
     }
     mute = false
     game = null
@@ -406,7 +403,7 @@ class KailleraUserImpl(
       throw UserReadyException(EmuLang.getString("KailleraUserImpl.PlayerReadyErrorNotInGame"))
     }
     if (playerNumber > game!!.playerActionQueue!!.size ||
-        game!!.playerActionQueue!![playerNumber - 1]!!.synched) {
+        game!!.playerActionQueue!![playerNumber - 1].synched) {
       return
     }
     totalDelay = game!!.delay + tempDelay + 5
@@ -479,7 +476,7 @@ class KailleraUserImpl(
     }
     if (status != KailleraUser.STATUS_IDLE.toInt()) {
       if (p2P) {
-        if (event.toString() === "InfoMessageEvent") return
+        if (event.toString() == "InfoMessageEvent") return
       }
     }
     eventQueue.offer(event)
@@ -494,7 +491,7 @@ class KailleraUserImpl(
         if (event == null) continue else if (event is StopFlagEvent) break
         listener.actionPerformed(event)
         if (event is GameStartedEvent) {
-          status = KailleraUser.Companion.STATUS_PLAYING.toInt()
+          status = KailleraUser.STATUS_PLAYING.toInt()
         } else if (event is UserQuitEvent && event.user == this) {
           stop()
         }

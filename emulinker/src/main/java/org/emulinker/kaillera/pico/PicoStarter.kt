@@ -39,7 +39,7 @@ object PicoStarter {
     component.kailleraServerController.start()
     component.server.start()
     component.kailleraServer.start()
-    component.masterListUpdaterImpl.start()
+    component.masterListUpdater.start()
     val metrics = component.metricRegistry
     metrics.registerAll(ThreadStatesGaugeSet())
     metrics.registerAll(MemoryUsageGaugeSet())

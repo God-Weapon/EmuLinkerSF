@@ -92,7 +92,7 @@ class GameChatAction
       } else if (message.message.startsWith("/p2p")) {
         val user = clientHandler.user as KailleraUserImpl
         if (message.message == "/p2pon") {
-          if (clientHandler.user!!.game!!.owner.equals(clientHandler.user)) {
+          if (clientHandler.user!!.game!!.owner == clientHandler.user) {
             clientHandler.user!!.game!!.p2P = true
             for (u in clientHandler.user!!.game!!.players) {
               u.p2P = true
@@ -204,21 +204,12 @@ class GameChatAction
           // clientHandler.getUser().getID() + "): " + m, false, user);
           if (user1.game != null) {
             user1.game!!.announce(
-                "TO: <" +
-                    user.name +
-                    ">(" +
-                    user.id +
-                    ") <" +
-                    clientHandler.user!!.name +
-                    "> (" +
-                    clientHandler.user!!.id +
-                    "): " +
-                    m,
+                "TO: <${user.name}>(${user.id}) <${clientHandler.user!!.name}> (${clientHandler.user!!.id}): $m",
                 user1)
           }
           if (user.game != null) {
             user.game!!.announce(
-                "<" + clientHandler.user!!.name + "> (" + clientHandler.user!!.id + "): " + m, user)
+                "<${clientHandler.user!!.name}> (${clientHandler.user!!.id}): $m", user)
           }
           return
         } catch (e: NoSuchElementException) {
@@ -406,7 +397,7 @@ class GameChatAction
           clientHandler.user!!.game!!.announce("You are silenced!", clientHandler.user)
           return
         }
-        if (clientHandler.user!!.server.checkMe(clientHandler.user, announcement)) {
+        if (clientHandler.user!!.server.checkMe(clientHandler.user!!, announcement)) {
           val m = announcement
           announcement = "*" + clientHandler.user!!.name + " " + m
           for (user in clientHandler.user!!.game!!.players) {

@@ -18,7 +18,7 @@ interface KailleraGame {
   val id: Int
   val numPlayers: Int
   val owner: KailleraUser?
-  val playerActionQueue: Array<PlayerActionQueue?>?
+  val playerActionQueue: Array<PlayerActionQueue>?
   val players: MutableList<KailleraUser>
   val romName: String
   val server: KailleraServer?
@@ -33,29 +33,29 @@ interface KailleraGame {
   var startN: Int
   var startTimeout: Boolean
 
-  fun getPlayerNumber(user: KailleraUser?): Int
+  fun getPlayerNumber(user: KailleraUser): Int
 
   fun getPlayer(playerNumber: Int): KailleraUser?
 
-  fun droppedPacket(user: KailleraUser?)
+  fun droppedPacket(user: KailleraUser)
 
   @Throws(JoinGameException::class)
-  fun join(user: KailleraUser?): Int
+  fun join(user: KailleraUser): Int
 
   @Throws(GameChatException::class)
-  fun chat(user: KailleraUser?, message: String?)
+  fun chat(user: KailleraUser, message: String?)
 
   @Throws(GameKickException::class)
-  fun kick(requester: KailleraUser?, userID: Int)
+  fun kick(requester: KailleraUser, userID: Int)
 
   @Throws(StartGameException::class)
-  fun start(user: KailleraUser?)
+  fun start(user: KailleraUser)
 
   @Throws(UserReadyException::class)
   fun ready(user: KailleraUser?, playerNumber: Int)
 
   @Throws(GameDataException::class)
-  fun addData(user: KailleraUser?, playerNumber: Int, data: ByteArray?)
+  fun addData(user: KailleraUser, playerNumber: Int, data: ByteArray?)
 
   @Throws(DropGameException::class)
   fun drop(user: KailleraUser, playerNumber: Int)
