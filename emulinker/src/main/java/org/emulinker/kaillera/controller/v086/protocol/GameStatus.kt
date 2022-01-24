@@ -3,7 +3,6 @@ package org.emulinker.kaillera.controller.v086.protocol
 import java.nio.ByteBuffer
 import org.emulinker.kaillera.controller.messaging.MessageFormatException
 import org.emulinker.kaillera.controller.messaging.ParseException
-import org.emulinker.kaillera.model.KailleraGame.Companion.STATUS_NAMES
 import org.emulinker.util.EmuUtil
 import org.emulinker.util.UnsignedUtil
 
@@ -20,17 +19,6 @@ data class GameStatus
 
   override val shortName = DESC
   override val messageId = ID
-
-  // TODO(nue): See if we can remove this.
-  override fun toString(): String {
-    return (infoString +
-        String.format(
-            "[gameID=%d gameStatus=%s numPlayers=%d maxPlayers=%d]",
-            gameId,
-            STATUS_NAMES[gameStatus.toInt()],
-            numPlayers,
-            maxPlayers))
-  }
 
   override val bodyLength = 8
 

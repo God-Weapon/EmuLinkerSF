@@ -31,7 +31,7 @@ class GameStatusAction @Inject internal constructor() :
               clientHandler.nextMessageNumber,
               game.id,
               0.toShort().toInt(),
-              game.status.toByte(),
+              game.status.byteValue,
               num.toByte(),
               game.maxUsers.toByte()))
     } catch (e: MessageFormatException) {

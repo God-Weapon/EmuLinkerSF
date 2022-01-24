@@ -2,13 +2,12 @@ package org.emulinker.kaillera.controller.v086.protocol
 
 import com.google.common.base.Strings
 import java.nio.ByteBuffer
-import java.util.function.Consumer
 import org.emulinker.kaillera.controller.messaging.MessageFormatException
 import org.emulinker.kaillera.controller.messaging.ParseException
 import org.emulinker.kaillera.controller.v086.V086Utils
-import org.emulinker.kaillera.model.KailleraGame
-import org.emulinker.kaillera.model.KailleraUser
-import org.emulinker.kaillera.model.KailleraUser.Companion.CONNECTION_TYPE_NAMES
+import org.emulinker.kaillera.model.ConnectionType
+import org.emulinker.kaillera.model.GameStatus
+import org.emulinker.kaillera.model.UserStatus
 import org.emulinker.kaillera.pico.AppModule
 import org.emulinker.util.EmuUtil
 import org.emulinker.util.UnsignedUtil
@@ -55,8 +54,8 @@ data class ServerStatus
     buffer.put(0x00.toByte())
     buffer.putInt(users.size)
     buffer.putInt(games.size)
-    users.forEach(Consumer { u: User -> u.writeTo(buffer) })
-    games.forEach(Consumer { g: Game -> g.writeTo(buffer) })
+    users.forEach { it.writeTo(buffer) }
+    games.forEach { it.writeTo(buffer) }
   }
 
   // TODO(nue): this User and Game class should not be here.
@@ -64,37 +63,17 @@ data class ServerStatus
       constructor(
           val username: String,
           val ping: Long,
-          val status: Byte,
+          val status: UserStatus,
           val userId: Int,
-          val connectionType: Byte
+          val connectionType: ConnectionType
       ) {
 
     init {
       if (ping < 0 || ping > 2048)
           throw MessageFormatException("Invalid $DESC format: ping out of acceptable range: $ping")
-      if (status < 0 || status > 2)
-          throw MessageFormatException(
-              "Invalid $DESC format: status out of acceptable range: $status")
       if (userId < 0 || userId > 65535)
           throw MessageFormatException(
               "Invalid $DESC format: userID out of acceptable range: $userId")
-      if (connectionType < 1 || connectionType > 6)
-          throw MessageFormatException(
-              "Invalid " +
-                  DESC +
-                  " format: connectionType out of acceptable range: " +
-                  connectionType)
-    }
-
-    // TODO(nue): Get rid of this.
-    override fun toString(): String {
-      return String.format(
-          "[userName=%s ping=%d status=%s userID=%d connectionType=%s]",
-          username,
-          ping,
-          KailleraUser.STATUS_NAMES[status.toInt()],
-          userId,
-          CONNECTION_TYPE_NAMES[connectionType.toInt()])
     }
 
     val numBytes: Int
@@ -103,9 +82,9 @@ data class ServerStatus
     fun writeTo(buffer: ByteBuffer) {
       EmuUtil.writeString(buffer, username, 0x00, AppModule.charsetDoNotUse)
       UnsignedUtil.putUnsignedInt(buffer, ping)
-      buffer.put(status)
+      buffer.put(status.byteValue)
       UnsignedUtil.putUnsignedShort(buffer, userId)
-      buffer.put(connectionType)
+      buffer.put(connectionType.byteValue)
     }
   }
 
@@ -120,7 +99,7 @@ data class ServerStatus
            * the room.
            */
           val playerCountOutOfMax: String,
-          val status: Byte
+          val status: GameStatus
       ) {
 
     init {
@@ -133,14 +112,11 @@ data class ServerStatus
           throw MessageFormatException("Invalid $DESC format: clientType.length == 0")
       if (Strings.isNullOrEmpty(username))
           throw MessageFormatException("Invalid $DESC format: userName.length == 0")
-      if (status < 0 || status > 2)
-          throw MessageFormatException(
-              "Invalid $DESC format: gameStatus out of acceptable range: $status")
     }
 
     // TODO(nue): Get rid of this.
     override fun toString(): String {
-      return ("[romName=$romName gameID=$gameId clientType=$clientType userName=$username players=$playerCountOutOfMax status=${KailleraGame.STATUS_NAMES[status.toInt()]}]")
+      return ("[romName=$romName gameID=$gameId clientType=$clientType userName=$username players=$playerCountOutOfMax status=$status]")
     }
 
     val numBytes: Int
@@ -162,7 +138,7 @@ data class ServerStatus
       EmuUtil.writeString(buffer, clientType, 0x00, AppModule.charsetDoNotUse)
       EmuUtil.writeString(buffer, username, 0x00, AppModule.charsetDoNotUse)
       EmuUtil.writeString(buffer, playerCountOutOfMax, 0x00, AppModule.charsetDoNotUse)
-      buffer.put(status)
+      buffer.put(status.byteValue)
     }
   }
 
@@ -197,7 +173,13 @@ data class ServerStatus
         val status = buffer.get()
         val userID = UnsignedUtil.getUnsignedShort(buffer)
         val connectionType = buffer.get()
-        users.add(User(userName, ping, status, userID, connectionType))
+        users.add(
+            User(
+                userName,
+                ping,
+                UserStatus.fromByteValue(status),
+                userID,
+                ConnectionType.fromByteValue(connectionType)))
       }
       val games: MutableList<Game> = ArrayList(numGames)
       for (j in 0 until numGames) {
@@ -212,7 +194,8 @@ data class ServerStatus
         val players = EmuUtil.readString(buffer, 0x00, AppModule.charsetDoNotUse)
         if (buffer.remaining() < 1) throw ParseException("Failed byte count validation!")
         val status = buffer.get()
-        games.add(Game(romName.toString(), gameID, clientType, userName, players, status))
+        games.add(
+            Game(romName, gameID, clientType, userName, players, GameStatus.fromByteValue(status)))
       }
       return ServerStatus(messageNumber, users, games)
     }

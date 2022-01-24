@@ -1,7 +1,7 @@
 package org.emulinker.kaillera.controller.v086.protocol
 
-import com.google.common.base.Strings
 import org.emulinker.kaillera.controller.messaging.MessageFormatException
+import org.emulinker.kaillera.model.ConnectionType
 
 data class JoinGame_Notification
     @Throws(MessageFormatException::class)
@@ -12,7 +12,7 @@ data class JoinGame_Notification
         override val username: String,
         override val ping: Long,
         override val userId: Int,
-        override val connectionType: Byte
+        override val connectionType: ConnectionType
     ) : JoinGame() {
 
   override val shortName = DESC
@@ -29,11 +29,7 @@ data class JoinGame_Notification
     if (userId < 0 || userId > 0xFFFF) {
       throw MessageFormatException("Invalid $DESC format: userID out of acceptable range: $userId")
     }
-    if (connectionType < 1 || connectionType > 6) {
-      throw MessageFormatException(
-          "Invalid $DESC format: connectionType out of acceptable range: $connectionType")
-    }
-    if (Strings.isNullOrEmpty(username)) {
+    if (username.isEmpty()) {
       throw MessageFormatException("Invalid $DESC format: Strings.isNullOrEmpty(userName)")
     }
   }

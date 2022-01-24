@@ -4,6 +4,7 @@ import com.google.common.base.Strings
 import java.nio.ByteBuffer
 import org.emulinker.kaillera.controller.messaging.MessageFormatException
 import org.emulinker.kaillera.controller.messaging.ParseException
+import org.emulinker.kaillera.model.ConnectionType
 import org.emulinker.kaillera.pico.AppModule
 import org.emulinker.util.EmuUtil
 import org.emulinker.util.UnsignedUtil
@@ -14,7 +15,7 @@ abstract class JoinGame : V086Message() {
   abstract val username: String
   abstract val ping: Long
   abstract val userId: Int
-  abstract val connectionType: Byte
+  abstract val connectionType: ConnectionType
 
   override val bodyLength: Int
     get() = getNumBytes(username) + 13
@@ -26,7 +27,7 @@ abstract class JoinGame : V086Message() {
     EmuUtil.writeString(buffer, username, 0x00, AppModule.charsetDoNotUse)
     UnsignedUtil.putUnsignedInt(buffer, ping)
     UnsignedUtil.putUnsignedShort(buffer, userId)
-    buffer.put(connectionType)
+    buffer.put(connectionType.byteValue)
   }
 
   companion object {
@@ -45,9 +46,16 @@ abstract class JoinGame : V086Message() {
       val userID = UnsignedUtil.getUnsignedShort(buffer)
       val connectionType = buffer.get()
       return if (Strings.isNullOrEmpty(userName) && ping == 0L && userID == 0xFFFF)
-          JoinGame_Request(messageNumber, gameID, connectionType)
+          JoinGame_Request(messageNumber, gameID, ConnectionType.fromByteValue(connectionType))
       else
-          JoinGame_Notification(messageNumber, gameID, val1, userName, ping, userID, connectionType)
+          JoinGame_Notification(
+              messageNumber,
+              gameID,
+              val1,
+              userName,
+              ping,
+              userID,
+              ConnectionType.fromByteValue(connectionType))
     }
   }
 }

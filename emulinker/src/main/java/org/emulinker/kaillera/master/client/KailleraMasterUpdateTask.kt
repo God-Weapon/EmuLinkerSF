@@ -9,7 +9,7 @@ import org.apache.commons.httpclient.methods.GetMethod
 import org.emulinker.kaillera.controller.connectcontroller.ConnectController
 import org.emulinker.kaillera.master.PublicServerInformation
 import org.emulinker.kaillera.master.StatsCollector
-import org.emulinker.kaillera.model.KailleraGame
+import org.emulinker.kaillera.model.GameStatus
 import org.emulinker.kaillera.model.KailleraServer
 import org.emulinker.kaillera.release.ReleaseInfo
 
@@ -39,7 +39,7 @@ class KailleraMasterUpdateTask(
     }
     val waitingGames = StringBuilder()
     for (game in kailleraServer.games) {
-      if (game.status != KailleraGame.STATUS_WAITING.toInt()) continue
+      if (game.status != GameStatus.WAITING) continue
       waitingGames.append(
           "${game.id}|${game.romName}|${game.owner.name}|${game.owner.clientType}|${game.numPlayers}|")
     }

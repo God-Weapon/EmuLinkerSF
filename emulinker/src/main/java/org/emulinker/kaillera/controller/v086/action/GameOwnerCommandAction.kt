@@ -8,8 +8,7 @@ import org.emulinker.kaillera.access.AccessManager
 import org.emulinker.kaillera.controller.messaging.MessageFormatException
 import org.emulinker.kaillera.controller.v086.V086ClientHandler
 import org.emulinker.kaillera.controller.v086.protocol.GameChat
-import org.emulinker.kaillera.model.KailleraGame
-import org.emulinker.kaillera.model.KailleraUser.Companion.CONNECTION_TYPE_NAMES
+import org.emulinker.kaillera.model.GameStatus
 import org.emulinker.kaillera.model.exception.ActionException
 import org.emulinker.kaillera.model.impl.KailleraGameImpl
 import org.emulinker.kaillera.model.impl.KailleraUserImpl
@@ -204,7 +203,7 @@ class GameOwnerCommandAction @Inject internal constructor() : V086Action<GameCha
       admin: KailleraUserImpl,
       clientHandler: V086ClientHandler
   ) {
-    if (game.status != KailleraGame.STATUS_WAITING.toInt()) {
+    if (game.status != GameStatus.WAITING) {
       game.announce(EmuLang.getString("GameOwnerCommandAction.AutoFireChangeDeniedInGame"), admin)
       return
     }
@@ -254,7 +253,7 @@ class GameOwnerCommandAction @Inject internal constructor() : V086Action<GameCha
       admin: KailleraUserImpl,
       clientHandler: V086ClientHandler
   ) {
-    var conn = CONNECTION_TYPE_NAMES[game.owner.connectionType.toInt()]
+    var conn = game.owner.connectionType.readableName
     if (message == "/setconn any") {
       conn = "any"
     }
@@ -280,7 +279,7 @@ class GameOwnerCommandAction @Inject internal constructor() : V086Action<GameCha
       admin: KailleraUserImpl,
       clientHandler: V086ClientHandler
   ) {
-    if (game.status != KailleraGame.STATUS_PLAYING.toInt())
+    if (game.status != GameStatus.PLAYING)
         game.announce("Lagstat is only available during gameplay!", admin)
     if (message == "/lagstat") {
       var str = ""

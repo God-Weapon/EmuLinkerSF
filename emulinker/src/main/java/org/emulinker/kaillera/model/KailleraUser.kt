@@ -24,12 +24,12 @@ interface KailleraUser {
   val loggedIn: Boolean
   val protocol: String
   val server: KailleraServer
-  val status: Int
+  val status: UserStatus
   val users: Collection<KailleraUserImpl?>?
 
   // Fields with public getters and setters.
   var clientType: String?
-  var connectionType: Byte
+  var connectionType: ConnectionType
   var frameCount: Int
   var ignoreAll: Boolean
   var lastMsgID: Int
@@ -107,22 +107,4 @@ interface KailleraUser {
   fun droppedPacket()
 
   fun stop()
-
-  companion object {
-    const val CONNECTION_TYPE_LAN: Byte = 1
-    const val CONNECTION_TYPE_EXCELLENT: Byte = 2
-    const val CONNECTION_TYPE_GOOD: Byte = 3
-    const val CONNECTION_TYPE_AVERAGE: Byte = 4
-    const val CONNECTION_TYPE_LOW: Byte = 5
-    const val CONNECTION_TYPE_BAD: Byte = 6
-
-    const val STATUS_PLAYING: Byte = 0
-    const val STATUS_IDLE: Byte = 1
-    const val STATUS_CONNECTING: Byte = 2
-
-    val CONNECTION_TYPE_NAMES =
-        arrayOf("DISABLED", "LAN", "Excellent", "Good", "Average", "Low", "Bad")
-
-    val STATUS_NAMES = arrayOf("Playing", "Idle", "Connecting")
-  }
 }

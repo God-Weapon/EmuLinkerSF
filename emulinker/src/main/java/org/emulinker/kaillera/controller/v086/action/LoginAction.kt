@@ -74,7 +74,7 @@ class LoginAction @Inject internal constructor() :
           sb.append(0x02.toChar())
           sb.append(user.status)
           sb.append(0x02.toChar())
-          sb.append(user.connectionType.toInt())
+          sb.append(user.connectionType.byteValue.toInt())
           clientHandler.send(
               InformationMessage(clientHandler.nextMessageNumber, "server", sb.toString()))
         }

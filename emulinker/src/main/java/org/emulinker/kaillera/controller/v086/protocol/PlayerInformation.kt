@@ -5,7 +5,7 @@ import java.util.function.Consumer
 import org.emulinker.kaillera.controller.messaging.MessageFormatException
 import org.emulinker.kaillera.controller.messaging.ParseException
 import org.emulinker.kaillera.controller.v086.V086Utils
-import org.emulinker.kaillera.model.KailleraUser.Companion.CONNECTION_TYPE_NAMES
+import org.emulinker.kaillera.model.ConnectionType
 import org.emulinker.kaillera.pico.AppModule
 import org.emulinker.util.EmuUtil
 import org.emulinker.util.UnsignedUtil
@@ -48,7 +48,9 @@ data class PlayerInformation
   }
 
   data class Player
-      constructor(val username: String, val ping: Long, val userId: Int, val connectionType: Byte) {
+      constructor(
+          val username: String, val ping: Long, val userId: Int, val connectionType: ConnectionType
+      ) {
 
     init {
       if (ping < 0 || ping > 2048) { // what should max ping be?
@@ -58,26 +60,6 @@ data class PlayerInformation
         throw MessageFormatException(
             "Invalid $DESC format: userID out of acceptable range: $userId")
       }
-      if (connectionType < 1 || connectionType > 6) {
-        throw MessageFormatException(
-            "Invalid " +
-                DESC +
-                " format: connectionType out of acceptable range: " +
-                connectionType)
-      }
-    }
-
-    // TODO(nue): Try to get rid of this.
-    override fun toString(): String {
-      return ("[userName=" +
-          username +
-          " ping=" +
-          ping +
-          " userID=" +
-          userId +
-          " connectionType=" +
-          CONNECTION_TYPE_NAMES[connectionType.toInt()] +
-          "]")
     }
 
     val numBytes: Int
@@ -87,7 +69,7 @@ data class PlayerInformation
       EmuUtil.writeString(buffer, username, 0x00, AppModule.charsetDoNotUse)
       UnsignedUtil.putUnsignedInt(buffer, ping)
       UnsignedUtil.putUnsignedShort(buffer, userId)
-      buffer.put(connectionType)
+      buffer.put(connectionType.byteValue)
     }
   }
 
@@ -113,7 +95,7 @@ data class PlayerInformation
         val ping = UnsignedUtil.getUnsignedInt(buffer)
         val userID = UnsignedUtil.getUnsignedShort(buffer)
         val connectionType = buffer.get()
-        players.add(Player(userName, ping, userID, connectionType))
+        players.add(Player(userName, ping, userID, ConnectionType.fromByteValue(connectionType)))
       }
       return PlayerInformation(messageNumber, players)
     }

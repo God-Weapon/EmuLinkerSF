@@ -10,8 +10,10 @@ import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeUnit
 import kotlin.Throws
 import org.emulinker.kaillera.access.AccessManager
+import org.emulinker.kaillera.model.ConnectionType
 import org.emulinker.kaillera.model.KailleraGame
 import org.emulinker.kaillera.model.KailleraUser
+import org.emulinker.kaillera.model.UserStatus
 import org.emulinker.kaillera.model.event.GameDataEvent
 import org.emulinker.kaillera.model.event.GameStartedEvent
 import org.emulinker.kaillera.model.event.KailleraEvent
@@ -45,10 +47,12 @@ class KailleraUserImpl(
 
   private val initTime = System.currentTimeMillis()
 
-  override var connectionType: Byte = 0
+  override var connectionType: ConnectionType =
+      ConnectionType.DISABLED // TODO(nue): This probably shouldn't have a default.
   override var ping = 0
   override var socketAddress: InetSocketAddress? = null
-  override var status = 0
+  override var status =
+      UserStatus.PLAYING // TODO(nue): This probably shouldn't have a default value..
   override var access = 0
   override var isEmuLinkerClient = false
     private set
@@ -182,7 +186,7 @@ class KailleraUserImpl(
   }
 
   fun toDetailedString(): String {
-    return ("KailleraUserImpl[id=$id protocol=$protocol status=${KailleraUser.STATUS_NAMES[status]} name=$name clientType=$clientType ping=$ping connectionType=${KailleraUser.CONNECTION_TYPE_NAMES[connectionType.toInt()]} remoteAddress=" +
+    return ("KailleraUserImpl[id=$id protocol=$protocol status=$status name=$name clientType=$clientType ping=$ping connectionType=$connectionType remoteAddress=" +
         (if (socketAddress == null) EmuUtil.formatSocketAddress(connectSocketAddress)
         else EmuUtil.formatSocketAddress(socketAddress!!)) +
         "]")
@@ -256,10 +260,10 @@ class KailleraUserImpl(
       logger.atSevere().log("$this create game failed: User don't exist!")
       return null
     }
-    if (status == KailleraUser.STATUS_PLAYING.toInt()) {
+    if (status == UserStatus.PLAYING) {
       logger.atWarning().log("$this create game failed: User status is Playing!")
       throw CreateGameException(EmuLang.getString("KailleraUserImpl.CreateGameErrorAlreadyInGame"))
-    } else if (status == KailleraUser.STATUS_CONNECTING.toInt()) {
+    } else if (status == UserStatus.CONNECTING) {
       logger.atWarning().log("$this create game failed: User status is Connecting!")
       throw CreateGameException(
           EmuLang.getString("KailleraUserImpl.CreateGameErrorNotFullyConnected"))
@@ -289,10 +293,10 @@ class KailleraUserImpl(
       logger.atWarning().log("$this join game failed: Already in: $game")
       throw JoinGameException(EmuLang.getString("KailleraUserImpl.JoinGameErrorAlreadyInGame"))
     }
-    if (status == KailleraUser.STATUS_PLAYING.toInt()) {
+    if (status == UserStatus.PLAYING) {
       logger.atWarning().log("$this join game failed: User status is Playing!")
       throw JoinGameException(EmuLang.getString("KailleraUserImpl.JoinGameErrorAnotherGameRunning"))
-    } else if (status == KailleraUser.STATUS_CONNECTING.toInt()) {
+    } else if (status == UserStatus.CONNECTING) {
       logger.atWarning().log("$this join game failed: User status is Connecting!")
       throw JoinGameException(EmuLang.getString("KailleraUserImpl.JoinGameErrorNotFullConnected"))
     }
@@ -346,10 +350,10 @@ class KailleraUserImpl(
   @Throws(DropGameException::class)
   override fun dropGame() {
     updateLastActivity()
-    if (status == KailleraUser.STATUS_IDLE.toInt()) {
+    if (status == UserStatus.IDLE) {
       return
     }
-    status = KailleraUser.STATUS_IDLE.toInt()
+    status = UserStatus.IDLE
     if (game != null) {
       game!!.drop(this, playerNumber)
       // not necessary to show it twice
@@ -368,15 +372,15 @@ class KailleraUserImpl(
       // throw new QuitGameException("You are not in a game!");
       return
     }
-    if (status == KailleraUser.STATUS_PLAYING.toInt()) {
+    if (status == UserStatus.PLAYING) {
       // first set STATUS_IDLE and then call game.drop, otherwise if someone
       // quit game whitout drop - game status will not change to STATUS_WAITING
-      status = KailleraUser.STATUS_IDLE.toInt()
+      status = UserStatus.IDLE
       game!!.drop(this, playerNumber)
     }
     game!!.quit(this, playerNumber)
-    if (status != KailleraUser.STATUS_IDLE.toInt()) {
-      status = KailleraUser.STATUS_IDLE.toInt()
+    if (status != UserStatus.IDLE) {
+      status = UserStatus.IDLE
     }
     mute = false
     game = null
@@ -418,15 +422,15 @@ class KailleraUserImpl(
           throw GameDataException(
               EmuLang.getString("KailleraUserImpl.GameDataErrorNotInGame"),
               data,
-              connectionType.toInt(),
+              connectionType.byteValue.toInt(),
               1,
               1)
 
       // Initial Delay
       // totalDelay = (game.getDelay() + tempDelay + 5)
       if (frameCount < totalDelay) {
-        bytesPerAction = data.size / connectionType
-        arraySize = game!!.playerActionQueue!!.size * connectionType * bytesPerAction
+        bytesPerAction = data.size / connectionType.byteValue
+        arraySize = game!!.playerActionQueue!!.size * connectionType.byteValue * bytesPerAction
         val response = ByteArray(arraySize)
         for (i in response.indices) {
           response[i] = 0
@@ -474,7 +478,7 @@ class KailleraUserImpl(
       logger.atSevere().log("$this: ignoring null event!")
       return
     }
-    if (status != KailleraUser.STATUS_IDLE.toInt()) {
+    if (status != UserStatus.IDLE) {
       if (p2P) {
         if (event.toString() == "InfoMessageEvent") return
       }
@@ -491,7 +495,7 @@ class KailleraUserImpl(
         if (event == null) continue else if (event is StopFlagEvent) break
         listener.actionPerformed(event)
         if (event is GameStartedEvent) {
-          status = KailleraUser.STATUS_PLAYING.toInt()
+          status = UserStatus.PLAYING
         } else if (event is UserQuitEvent && event.user == this) {
           stop()
         }

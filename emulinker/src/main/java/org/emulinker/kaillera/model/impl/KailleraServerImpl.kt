@@ -18,11 +18,11 @@ import org.emulinker.kaillera.access.AccessManager.Companion.ACCESS_NAMES
 import org.emulinker.kaillera.lookingforgame.LookingForGameEvent
 import org.emulinker.kaillera.lookingforgame.TwitterBroadcaster
 import org.emulinker.kaillera.master.StatsCollector
+import org.emulinker.kaillera.model.GameStatus
 import org.emulinker.kaillera.model.KailleraGame
 import org.emulinker.kaillera.model.KailleraServer
 import org.emulinker.kaillera.model.KailleraUser
-import org.emulinker.kaillera.model.KailleraUser.Companion.CONNECTION_TYPE_NAMES
-import org.emulinker.kaillera.model.KailleraUser.Companion.STATUS_NAMES
+import org.emulinker.kaillera.model.UserStatus
 import org.emulinker.kaillera.model.event.*
 import org.emulinker.kaillera.model.exception.*
 import org.emulinker.kaillera.release.ReleaseInfo
@@ -80,7 +80,7 @@ class KailleraServerImpl
   fun getNumGamesPlaying(): Int {
     var count = 0
     for (game in games) {
-      if (game.status != KailleraGame.STATUS_WAITING.toInt()) count++
+      if (game.status != GameStatus.WAITING) count++
     }
     return count
   }
@@ -172,7 +172,7 @@ class KailleraServerImpl
     }
     val userID = getNextUserID()
     val user = KailleraUserImpl(userID, protocol!!, clientSocketAddress, listener!!, this)
-    user.status = KailleraUser.STATUS_CONNECTING.toInt()
+    user.status = UserStatus.CONNECTING
     logger
         .atInfo()
         .log(
@@ -230,7 +230,7 @@ class KailleraServerImpl
                 ", client=" +
                 user.clientType +
                 ", connection=" +
-                CONNECTION_TYPE_NAMES[user.connectionType.toInt()])
+                user.connectionType)
     if (user.loggedIn) {
       logger.atWarning().log("$user login denied: Already logged in!")
       throw LoginException(getString("KailleraServerImpl.LoginDeniedAlreadyLoggedIn"))
@@ -255,19 +255,14 @@ class KailleraServerImpl
               "KailleraServerImpl.LoginDeniedPingTooHigh", user.ping.toString() + " > " + maxPing))
     }
     if (access == AccessManager.ACCESS_NORMAL &&
-        !allowedConnectionTypes[user.connectionType.toInt()]) {
+        !allowedConnectionTypes[user.connectionType.byteValue.toInt()]) {
       logger
           .atInfo()
           .log(
-              user.toString() +
-                  " login denied: Connection " +
-                  CONNECTION_TYPE_NAMES[user.connectionType.toInt()] +
-                  " Not Allowed")
+              user.toString() + " login denied: Connection " + user.connectionType + " Not Allowed")
       usersMap.remove(userListKey)
       throw LoginException(
-          getString(
-              "KailleraServerImpl.LoginDeniedConnectionTypeDenied",
-              CONNECTION_TYPE_NAMES[user.connectionType.toInt()]))
+          getString("KailleraServerImpl.LoginDeniedConnectionTypeDenied", user.connectionType))
     }
     if (user.ping < 0) {
       logger.atWarning().log(user.toString() + " login denied: Invalid ping: " + user.ping)
@@ -327,11 +322,9 @@ class KailleraServerImpl
         }
       }
     }
-    if (u.status != KailleraUser.STATUS_CONNECTING.toInt()) {
+    if (u.status != UserStatus.CONNECTING) {
       usersMap.remove(userListKey)
-      logger
-          .atWarning()
-          .log(user.toString() + " login denied: Invalid status=" + STATUS_NAMES[u.status])
+      logger.atWarning().log(user.toString() + " login denied: Invalid status=" + u.status)
       throw LoginException(getString("KailleraServerImpl.LoginErrorInvalidStatus", u.status))
     }
     if (u.connectSocketAddress.address != user.socketAddress!!.address) {
@@ -393,7 +386,7 @@ class KailleraServerImpl
 
     // passed all checks
     userImpl!!.access = access
-    userImpl.status = KailleraUser.STATUS_IDLE.toInt()
+    userImpl.status = UserStatus.IDLE
     userImpl.loggedIn = true
     usersMap[userListKey] = userImpl
     userImpl.addEvent(ConnectedEvent(this, user))
@@ -439,7 +432,7 @@ class KailleraServerImpl
           sb.append(0x02.toChar())
           sb.append(u3.status)
           sb.append(0x02.toChar())
-          sb.append(u3.connectionType.toInt())
+          sb.append(u3.connectionType.byteValue.toInt())
           sb.append(0x03.toChar())
           sbCount++
           if (sb.length > 300) {
@@ -777,7 +770,7 @@ class KailleraServerImpl
   fun addEvent(event: ServerEvent) {
     for (user in usersMap.values) {
       if (user.loggedIn) {
-        if (user.status != KailleraUser.STATUS_IDLE.toInt()) {
+        if (user.status != UserStatus.IDLE) {
           if (user.p2P) {
             if (event.toString() == "GameDataEvent") user.addEvent(event)
             else if (event.toString() == "ChatEvent") continue
@@ -820,7 +813,7 @@ class KailleraServerImpl
             // LagStat
             if (user.loggedIn) {
               if (user.game != null &&
-                  user.game!!.status == KailleraGame.STATUS_PLAYING.toInt() &&
+                  user.game!!.status == GameStatus.PLAYING &&
                   !user.game!!.startTimeout) {
                 if (System.currentTimeMillis() - user.game!!.startTimeoutTime > 15000) {
                   user.game!!.startTimeout = true
@@ -907,51 +900,15 @@ class KailleraServerImpl
     }
     metrics.register(
         MetricRegistry.name(this.javaClass, "users", "idle"),
-        Gauge {
-          usersMap
-              .values
-              .stream()
-              .filter { user: KailleraUserImpl? ->
-                user!!.status == KailleraUser.STATUS_IDLE.toInt()
-              }
-              .count()
-              .toInt()
-        })
+        Gauge { usersMap.values.count { it!!.status == UserStatus.IDLE } })
     metrics.register(
         MetricRegistry.name(this.javaClass, "users", "playing"),
-        Gauge {
-          usersMap
-              .values
-              .stream()
-              .filter { user: KailleraUserImpl? ->
-                user!!.status == KailleraUser.STATUS_PLAYING.toInt()
-              }
-              .count()
-              .toInt()
-        })
+        Gauge { usersMap.values.count { it!!.status == UserStatus.PLAYING } })
     metrics.register(
         MetricRegistry.name(this.javaClass, "games", "waiting"),
-        Gauge {
-          gamesMap
-              .values
-              .stream()
-              .filter { game: KailleraGameImpl ->
-                game.status == KailleraGame.STATUS_WAITING.toInt()
-              }
-              .count()
-              .toInt()
-        })
+        Gauge { gamesMap.values.count { it.status == GameStatus.WAITING } })
     metrics.register(
         MetricRegistry.name(this.javaClass, "games", "playing"),
-        Gauge {
-          gamesMap
-              .values
-              .stream()
-              .filter { game: KailleraGameImpl ->
-                game.status == KailleraGame.STATUS_PLAYING.toInt()
-              }
-              .count()
-              .toInt()
-        })
+        Gauge { gamesMap.values.count { it.status == GameStatus.PLAYING } })
   }
 }

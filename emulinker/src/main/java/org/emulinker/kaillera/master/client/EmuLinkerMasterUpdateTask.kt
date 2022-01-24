@@ -8,7 +8,7 @@ import org.apache.commons.httpclient.NameValuePair
 import org.apache.commons.httpclient.methods.GetMethod
 import org.emulinker.kaillera.controller.connectcontroller.ConnectController
 import org.emulinker.kaillera.master.PublicServerInformation
-import org.emulinker.kaillera.model.KailleraGame
+import org.emulinker.kaillera.model.GameStatus
 import org.emulinker.kaillera.model.KailleraServer
 import org.emulinker.kaillera.release.ReleaseInfo
 
@@ -33,7 +33,7 @@ class EmuLinkerMasterUpdateTask(
   override fun touchMaster() {
     val waitingGames = StringBuilder()
     for (game in kailleraServer.games) {
-      if (game.status != KailleraGame.STATUS_WAITING.toInt()) {
+      if (game.status != GameStatus.WAITING) {
         continue
       }
       waitingGames.append(

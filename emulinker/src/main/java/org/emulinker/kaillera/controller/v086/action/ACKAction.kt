@@ -10,7 +10,7 @@ import org.emulinker.kaillera.controller.v086.protocol.ConnectionRejected
 import org.emulinker.kaillera.controller.v086.protocol.ServerACK
 import org.emulinker.kaillera.controller.v086.protocol.ServerStatus
 import org.emulinker.kaillera.controller.v086.protocol.ServerStatus.Game
-import org.emulinker.kaillera.model.KailleraUser
+import org.emulinker.kaillera.model.UserStatus
 import org.emulinker.kaillera.model.event.ConnectedEvent
 import org.emulinker.kaillera.model.event.UserEvent
 import org.emulinker.kaillera.model.exception.*
@@ -74,14 +74,10 @@ class ACKAction @Inject internal constructor() :
     val games: MutableList<ServerStatus.Game> = ArrayList()
     try {
       for (user in server.users) {
-        if (user.status != KailleraUser.STATUS_CONNECTING.toInt() && user != thisUser)
+        if (user.status != UserStatus.CONNECTING && user != thisUser)
             users.add(
                 ServerStatus.User(
-                    user.name!!,
-                    user.ping.toLong(),
-                    user.status.toByte(),
-                    user.id,
-                    user.connectionType))
+                    user.name!!, user.ping.toLong(), user.status, user.id, user.connectionType))
       }
     } catch (e: MessageFormatException) {
       logger.atSevere().withCause(e).log("Failed to construct new ServerStatus.User")
@@ -100,7 +96,7 @@ class ACKAction @Inject internal constructor() :
                 game.clientType!!,
                 game.owner.name!!,
                 "$num/${game.maxUsers}",
-                game.status.toByte()))
+                game.status))
       }
     } catch (e: MessageFormatException) {
       logger.atSevere().withCause(e).log("Failed to construct new ServerStatus.User")

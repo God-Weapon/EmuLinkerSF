@@ -4,7 +4,7 @@ import com.google.common.base.Strings
 import java.nio.ByteBuffer
 import org.emulinker.kaillera.controller.messaging.MessageFormatException
 import org.emulinker.kaillera.controller.messaging.ParseException
-import org.emulinker.kaillera.model.KailleraUser.Companion.CONNECTION_TYPE_NAMES
+import org.emulinker.kaillera.model.ConnectionType
 import org.emulinker.kaillera.pico.AppModule
 import org.emulinker.util.EmuUtil
 import org.emulinker.util.UnsignedUtil
@@ -16,7 +16,7 @@ data class UserJoined
         val username: String,
         val userId: Int,
         val ping: Long,
-        val connectionType: Byte
+        val connectionType: ConnectionType
     ) : V086Message() {
 
   override val shortName = DESC
@@ -32,14 +32,11 @@ data class UserJoined
             "Invalid $DESC format: userID out of acceptable range: $userId")
     if (ping < 0 || ping > 2048)
         throw MessageFormatException("Invalid $DESC format: ping out of acceptable range: $ping")
-    if (connectionType < 1 || connectionType > 6)
-        throw MessageFormatException(
-            "Invalid $DESC format: connectionType out of acceptable range: $connectionType")
   }
 
   // TODO(nue): Get rid of this.
   override fun toString(): String {
-    return "$infoString[userName=$username userID=$userId ping=$ping connectionType=${CONNECTION_TYPE_NAMES[connectionType.toInt()]}]"
+    return "$infoString[userName=$username userID=$userId ping=$ping connectionType=$connectionType]"
   }
 
   override val bodyLength = getNumBytes(username) + 8
@@ -48,7 +45,7 @@ data class UserJoined
     EmuUtil.writeString(buffer, username, 0x00, AppModule.charsetDoNotUse)
     UnsignedUtil.putUnsignedShort(buffer, userId)
     UnsignedUtil.putUnsignedInt(buffer, ping)
-    buffer.put(connectionType)
+    buffer.put(connectionType.byteValue)
   }
 
   companion object {
@@ -63,7 +60,8 @@ data class UserJoined
       val userID = UnsignedUtil.getUnsignedShort(buffer)
       val ping = UnsignedUtil.getUnsignedInt(buffer)
       val connectionType = buffer.get()
-      return UserJoined(messageNumber, userName, userID, ping, connectionType)
+      return UserJoined(
+          messageNumber, userName, userID, ping, ConnectionType.fromByteValue(connectionType))
     }
   }
 }

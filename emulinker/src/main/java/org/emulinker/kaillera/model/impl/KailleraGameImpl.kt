@@ -7,10 +7,10 @@ import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.Throws
 import org.emulinker.kaillera.access.AccessManager
 import org.emulinker.kaillera.master.StatsCollector
+import org.emulinker.kaillera.model.GameStatus
 import org.emulinker.kaillera.model.KailleraGame
-import org.emulinker.kaillera.model.KailleraGame.Companion.STATUS_NAMES
 import org.emulinker.kaillera.model.KailleraUser
-import org.emulinker.kaillera.model.KailleraUser.Companion.CONNECTION_TYPE_NAMES
+import org.emulinker.kaillera.model.UserStatus
 import org.emulinker.kaillera.model.event.AllReadyEvent
 import org.emulinker.kaillera.model.event.GameChatEvent
 import org.emulinker.kaillera.model.event.GameDataEvent
@@ -76,7 +76,7 @@ class KailleraGameImpl(
   private val kickedUsers: MutableList<String> = ArrayList()
   val mutedUsers: MutableList<String> = mutableListOf()
 
-  override var status = KailleraGame.STATUS_WAITING.toInt()
+  override var status = GameStatus.WAITING
     private set(status) {
       field = status
       server.addEvent(GameStatusChangedEvent(server, this))
@@ -113,11 +113,11 @@ class KailleraGameImpl(
   override fun toString() = toString
 
   fun toDetailedString(): String {
-    return "KailleraGame[id=$id romName=$romName owner=$owner numPlayers=$numPlayers status=${STATUS_NAMES[status]}]"
+    return "KailleraGame[id=$id romName=$romName owner=$owner numPlayers=$numPlayers status=$status]"
   }
 
   private val playingCount: Int
-    get() = players.asSequence().filter { it.status == KailleraUser.STATUS_PLAYING.toInt() }.count()
+    get() = players.asSequence().filter { it.status == UserStatus.PLAYING }.count()
 
   // return dataQueues.size();
   //		return readyCount;
@@ -257,10 +257,8 @@ class KailleraGameImpl(
             .log(
                 user.toString() +
                     "join game denied: owner doesn't allow that connection type: " +
-                    CONNECTION_TYPE_NAMES[user.connectionType.toInt()])
-        throw JoinGameException(
-            "Owner only allows connection type: " +
-                CONNECTION_TYPE_NAMES[owner.connectionType.toInt()])
+                    user.connectionType)
+        throw JoinGameException("Owner only allows connection type: " + owner.connectionType)
       }
     }
     if (access < AccessManager.ACCESS_ADMIN &&
@@ -268,7 +266,7 @@ class KailleraGameImpl(
       logger.atWarning().log("$user join game denied: previously kicked: $this")
       throw JoinGameException(EmuLang.getString("KailleraGameImpl.JoinGameDeniedPreviouslyKicked"))
     }
-    if (access == AccessManager.ACCESS_NORMAL && status != KailleraGame.STATUS_WAITING.toInt()) {
+    if (access == AccessManager.ACCESS_NORMAL && status != GameStatus.WAITING) {
       logger.atWarning().log("$user join game denied: attempt to join game in progress: $this")
       throw JoinGameException(EmuLang.getString("KailleraGameImpl.JoinGameDeniedGameIsInProgress"))
     }
@@ -348,18 +346,11 @@ class KailleraGameImpl(
       throw StartGameException(
           EmuLang.getString("KailleraGameImpl.StartGameDeniedOnlyOwnerMayStart"))
     }
-    if (status == KailleraGame.STATUS_SYNCHRONIZING.toInt()) {
-      logger
-          .atWarning()
-          .log(
-              user.toString() +
-                  " start game failed: " +
-                  this +
-                  " status is " +
-                  STATUS_NAMES[status])
+    if (status == GameStatus.SYNCHRONIZING) {
+      logger.atWarning().log("$user start game failed: $this status is $status")
       throw StartGameException(EmuLang.getString("KailleraGameImpl.StartGameErrorSynchronizing"))
-    } else if (status == KailleraGame.STATUS_PLAYING.toInt()) {
-      logger.atWarning().log("$user start game failed: $this status is ${STATUS_NAMES[status]}")
+    } else if (status == GameStatus.PLAYING) {
+      logger.atWarning().log("$user start game failed: $this status is $status")
       throw StartGameException(EmuLang.getString("KailleraGameImpl.StartGameErrorStatusIsPlaying"))
     }
     if (access == AccessManager.ACCESS_NORMAL && numPlayers < 2 && !server.allowSinglePlayer) {
@@ -380,8 +371,7 @@ class KailleraGameImpl(
               GameInfoEvent(
                   this,
                   EmuLang.getString(
-                      "KailleraGameImpl.StartGameConnectionTypeMismatchInfo",
-                      CONNECTION_TYPE_NAMES[owner.connectionType.toInt()]),
+                      "KailleraGameImpl.StartGameConnectionTypeMismatchInfo", owner.connectionType),
                   null))
           throw StartGameException(
               EmuLang.getString("KailleraGameImpl.StartGameDeniedConnectionTypeMismatch"))
@@ -401,7 +391,7 @@ class KailleraGameImpl(
       }
     }
     logger.atInfo().log("$user started: $this")
-    status = KailleraGame.STATUS_SYNCHRONIZING.toInt()
+    status = GameStatus.SYNCHRONIZING
     autoFireDetector?.start(players.size)
     val actionQueueBuilder: Array<PlayerActionQueue?> = arrayOfNulls(players.size)
     startTimeout = false
@@ -421,7 +411,7 @@ class KailleraGameImpl(
               playerNumber, player as KailleraUserImpl, numPlayers, bufferSize, timeoutMillis, true)
       // SF MOD - player.setPlayerNumber(playerNumber);
       // SF MOD - Delay Value = [(60/connectionType) * (ping/1000)] + 1
-      val delayVal = 60 / player.connectionType * (player.ping.toDouble() / 1000) + 1
+      val delayVal = 60 / player.connectionType.byteValue * (player.ping.toDouble() / 1000) + 1
       player.delay = delayVal.toInt()
       if (delayVal.toInt() > delay) {
         delay = delayVal.toInt()
@@ -457,10 +447,8 @@ class KailleraGameImpl(
       logger.atWarning().log(user.toString() + " ready game failed: not in " + this)
       throw UserReadyException(EmuLang.getString("KailleraGameImpl.ReadyGameErrorNotInGame"))
     }
-    if (status != KailleraGame.STATUS_SYNCHRONIZING.toInt()) {
-      logger
-          .atWarning()
-          .log(user.toString() + " ready failed: " + this + " status is " + STATUS_NAMES[status])
+    if (status != GameStatus.SYNCHRONIZING) {
+      logger.atWarning().log(user.toString() + " ready failed: " + this + " status is " + status)
       throw UserReadyException(EmuLang.getString("KailleraGameImpl.ReadyGameErrorIncorrectState"))
     }
     if (playerActionQueue == null) {
@@ -471,11 +459,11 @@ class KailleraGameImpl(
     playerActionQueue!![playerNumber - 1].synched = true
     if (synchedCount == numPlayers) {
       logger.atInfo().log("$this all players are ready: starting...")
-      status = KailleraGame.STATUS_PLAYING.toInt()
+      status = GameStatus.PLAYING
       isSynched = true
       startTimeoutTime = System.currentTimeMillis()
       addEvent(AllReadyEvent(this))
-      var frameDelay = (delay + 1) * owner.connectionType - 1
+      var frameDelay = (delay + 1) * owner.connectionType.byteValue - 1
       if (sameDelay) {
         announce("This game's delay is: $delay ($frameDelay frame delay)", null)
       } else {
@@ -484,7 +472,7 @@ class KailleraGameImpl(
           val player = players[i]
           // do not show delay if stealth mode
           if (player != null && !player.stealth) {
-            frameDelay = (player.delay + 1) * player.connectionType - 1
+            frameDelay = (player.delay + 1) * player.connectionType.byteValue - 1
             announce("P${i + 1} Delay = ${player.delay} ($frameDelay frame delay)", null)
           }
           i++
@@ -520,7 +508,7 @@ class KailleraGameImpl(
         startN = -1
         announce("StartN is now off.", null)
       }
-      status = KailleraGame.STATUS_WAITING.toInt()
+      status = GameStatus.WAITING
     }
     addEvent(UserDroppedGameEvent(this, user, playerNumber))
     if (user.p2P) {
@@ -544,7 +532,7 @@ class KailleraGameImpl(
       addEvent(UserQuitGameEvent(this, user))
       user.p2P = false
       swap = false
-      if (status == KailleraGame.STATUS_WAITING.toInt()) {
+      if (status == GameStatus.WAITING) {
         for (i in 0 until numPlayers) {
           getPlayer(i + 1)!!.playerNumber = i + 1
           logger.atFine().log(getPlayer(i + 1)!!.name + ":::" + getPlayer(i + 1)!!.playerNumber)
@@ -569,7 +557,7 @@ class KailleraGameImpl(
     }
     for (player in players) {
       (player as KailleraUserImpl).apply {
-        status = KailleraUser.STATUS_IDLE.toInt()
+        status = UserStatus.IDLE
         mute = false
         p2P = false
         p2P = false
@@ -686,7 +674,7 @@ class KailleraGameImpl(
   }
 
   init {
-    actionsPerMessage = owner.connectionType.toInt()
+    actionsPerMessage = owner.connectionType.byteValue.toInt()
     this.bufferSize = bufferSize
     this.timeoutMillis = 100 // timeoutMillis;
     this.desynchTimeouts = 120 // desynchTimeouts;
