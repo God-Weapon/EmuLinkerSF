@@ -165,7 +165,7 @@ public class PlayerInformation extends V086Message
 		public int getLength()
 		{
 			//return (charset.encode(userName).remaining() + 2);
-			return (userName.length() + 8);
+			return (getNumBytes(userName) + 8);
 		}
 
 		public void writeTo(ByteBuffer buffer)
