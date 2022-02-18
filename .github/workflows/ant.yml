@@ -2,7 +2,7 @@ name: Java CI
 
 on:
   push:
-    branches: [ master, add-instructions ]
+    branches: [ master ]
   pull_request:
     branches: [ master ]
 
