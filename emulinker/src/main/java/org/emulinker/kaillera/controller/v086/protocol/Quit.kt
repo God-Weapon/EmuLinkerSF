@@ -1,6 +1,5 @@
 package org.emulinker.kaillera.controller.v086.protocol
 
-import com.google.common.base.Strings
 import java.nio.ByteBuffer
 import org.emulinker.kaillera.controller.messaging.MessageFormatException
 import org.emulinker.kaillera.controller.messaging.ParseException
@@ -32,7 +31,7 @@ abstract class Quit : V086Message() {
       if (buffer.remaining() < 3) throw ParseException("Failed byte count validation!")
       val userID = UnsignedUtil.getUnsignedShort(buffer)
       val message = EmuUtil.readString(buffer, 0x00, AppModule.charsetDoNotUse)
-      return if (Strings.isNullOrEmpty(userName) && userID == 0xFFFF) {
+      return if (userName.isNullOrBlank() && userID == 0xFFFF) {
         Quit_Request(messageNumber, message)
       } else {
         Quit_Notification(messageNumber, userName, userID, message)

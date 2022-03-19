@@ -1,7 +1,7 @@
 package org.emulinker.kaillera.controller.v086.protocol
 
-import com.google.common.base.Strings
 import org.emulinker.kaillera.controller.messaging.MessageFormatException
+import org.emulinker.kaillera.controller.v086.protocol.V086Message.Companion.validateMessageNumber
 
 data class PlayerDrop_Notification
     @Throws(MessageFormatException::class)
@@ -11,21 +11,11 @@ data class PlayerDrop_Notification
         override val playerNumber: Byte
     ) : PlayerDrop() {
 
-  override val shortName = DESC
   override val messageId = ID
 
   init {
-    validateMessageNumber(messageNumber, DESC)
-    if (playerNumber < 0 || playerNumber > 255) {
-      throw MessageFormatException(
-          "Invalid $DESC format: playerNumber out of acceptable range: $playerNumber")
-    }
-    if (Strings.isNullOrEmpty(username)) {
-      throw MessageFormatException("Invalid $DESC format: userName.length == 0")
-    }
-  }
-
-  companion object {
-    private const val DESC = "Player Drop Notification"
+    validateMessageNumber(messageNumber)
+    require(playerNumber in 0..255) { "playerNumber out of acceptable range: $playerNumber" }
+    require(username.isNotBlank()) { "Username cannot be blank" }
   }
 }

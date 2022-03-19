@@ -10,7 +10,6 @@ data class CloseGame
     @Throws(MessageFormatException::class)
     constructor(override val messageNumber: Int, val gameId: Int, val val1: Int) : V086Message() {
 
-  override val shortName = DESC
   override val messageId = ID
 
   override val bodyLength = 5
@@ -22,18 +21,13 @@ data class CloseGame
   }
 
   init {
-    validateMessageNumber(messageNumber, DESC)
-    if (gameId < 0 || gameId > 0xFFFF) {
-      throw MessageFormatException("Invalid $DESC format: gameID out of acceptable range: $gameId")
-    }
-    if (val1 < 0 || val1 > 0xFFFF) {
-      throw MessageFormatException("Invalid $DESC format: val1 out of acceptable range: $val1")
-    }
+    validateMessageNumber(messageNumber)
+    require(gameId in 0..0xFFFF) { "gameID out of acceptable range: $gameId" }
+    require(val1 in 0..0xFFFF) { "val1 out of acceptable range: $val1" }
   }
 
   companion object {
     const val ID: Byte = 0x10
-    private const val DESC = "Close Game"
 
     @Throws(ParseException::class, MessageFormatException::class)
     fun parse(messageNumber: Int, buffer: ByteBuffer): CloseGame {
@@ -41,7 +35,7 @@ data class CloseGame
       val b = buffer.get()
       if (b.toInt() != 0x00)
           throw MessageFormatException(
-              "Invalid " + DESC + " format: byte 0 = " + EmuUtil.byteToHex(b))
+              "Invalid Close Game format: byte 0 = " + EmuUtil.byteToHex(b))
       val gameID = UnsignedUtil.getUnsignedShort(buffer)
       val val1 = UnsignedUtil.getUnsignedShort(buffer)
       return CloseGame(messageNumber, gameID, val1)

@@ -1,7 +1,6 @@
 package org.emulinker.kaillera.access
 
 import com.google.common.base.Preconditions.checkArgument
-import com.google.common.base.Strings
 import com.google.common.flogger.FluentLogger
 import java.io.*
 import java.net.InetAddress
@@ -138,8 +137,7 @@ class AccessManager2
       val reader = BufferedReader(temp)
       var line: String?
       while (reader.readLine().also { line = it } != null) {
-        if (Strings.isNullOrEmpty(line) || line!!.startsWith("#") || line!!.startsWith("//"))
-            continue
+        if (line.isNullOrBlank() || line!!.startsWith("#") || line!!.startsWith("//")) continue
         val st = StringTokenizer(line, ",")
         if (st.countTokens() < 3) {
           logger.atSevere().log("Failed to load access line, too few tokens: $line")

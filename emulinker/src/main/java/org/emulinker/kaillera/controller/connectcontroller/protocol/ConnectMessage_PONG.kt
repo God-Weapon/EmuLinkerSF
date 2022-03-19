@@ -5,14 +5,12 @@ import java.nio.ByteBuffer
 import kotlin.Throws
 import org.emulinker.kaillera.controller.messaging.MessageFormatException
 
-private const val DESC = "Server Pong"
-
+// TODO(nue): Turn into a data class?
 class ConnectMessage_PONG : ConnectMessage() {
   override val iD = ID
-  override val shortName = DESC
 
   var clientSocketAddress: InetSocketAddress? = null
-  override fun toString() = DESC
+  override fun toString() = "Server Pong"
 
   override val length = ID.length + 1
 

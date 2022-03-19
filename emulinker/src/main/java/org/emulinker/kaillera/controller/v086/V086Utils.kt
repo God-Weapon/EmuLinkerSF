@@ -8,6 +8,13 @@ import org.emulinker.kaillera.pico.AppModule
 /** Util methods mostly for dealing ByteBuffers. */
 object V086Utils {
   private const val HEX_STRING = "0123456789abcdef"
+
+  object Bytes {
+    const val SHORT = 2
+    const val INTEGER = 4
+    const val SINGLE_BYTE = 1
+  }
+
   fun hexStringToByteBuffer(hex: String): ByteBuffer {
     var hex = hex
     hex = hex.replace(" ", "")
@@ -61,7 +68,16 @@ object V086Utils {
   }
 
   /** Gets the number of bytes to represent the string in the charset defined in emulinker.config */
+  @Deprecated("You probably want getNumBytesPlusStopByte instead")
   fun getNumBytes(s: String): Int {
     return s.toByteArray(AppModule.charsetDoNotUse).size
+  }
+
+  /**
+   * Gets the number of bytes to represent the string in the charset defined in emulinker.config,
+   * plus one for the stop byte.
+   */
+  fun getNumBytesPlusStopByte(s: String): Int {
+    return s.toByteArray(AppModule.charsetDoNotUse).size + 1
   }
 }

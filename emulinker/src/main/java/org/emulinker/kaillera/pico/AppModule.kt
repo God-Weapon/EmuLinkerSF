@@ -70,13 +70,11 @@ abstract class AppModule {
         return field
       }
 
-    @JvmStatic
     @Provides
     fun provideTwitter(twitterFactory: TwitterFactory): Twitter {
       return twitterFactory.instance
     }
 
-    @JvmStatic
     @Provides
     @Singleton
     fun provideTwitterFactory(flags: RuntimeFlags): TwitterFactory {
@@ -90,14 +88,12 @@ abstract class AppModule {
               .build())
     }
 
-    @JvmStatic
     @Provides
     @Singleton
     fun provideConfiguration(): Configuration {
       return EmuLinkerPropertiesConfig()
     }
 
-    @JvmStatic
     @Provides
     @Singleton
     fun provideRuntimeFlags(configuration: Configuration?): RuntimeFlags {
@@ -106,14 +102,12 @@ abstract class AppModule {
       return flags
     }
 
-    @JvmStatic
     @Provides
     fun provideThreadPoolExecutor(flags: RuntimeFlags): ThreadPoolExecutor {
       return ThreadPoolExecutor(
           flags.coreThreadPoolSize, Int.MAX_VALUE, 60L, TimeUnit.SECONDS, SynchronousQueue())
     }
 
-    @JvmStatic
     @Provides
     @Singleton
     fun provideMetricRegistry(): MetricRegistry {

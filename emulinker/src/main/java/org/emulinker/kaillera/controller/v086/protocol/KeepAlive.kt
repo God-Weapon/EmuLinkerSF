@@ -7,26 +7,22 @@ import org.emulinker.util.UnsignedUtil
 
 data class KeepAlive
     @Throws(MessageFormatException::class)
-    constructor(override val messageNumber: Int, val `val`: Short) : V086Message() {
+    constructor(override val messageNumber: Int, val value: Short) : V086Message() {
 
-  override val shortName = DESC
   override val messageId = ID
   override val bodyLength = 1
 
   init {
-    validateMessageNumber(messageNumber, DESC)
-    if (`val` < 0 || `val` > 0xFF) {
-      throw MessageFormatException("Invalid $DESC format: val out of acceptable range: $`val`")
-    }
+    validateMessageNumber(messageNumber)
+    require(value in 0..0xFF) { "val out of acceptable range: $value" }
   }
 
   public override fun writeBodyTo(buffer: ByteBuffer) {
-    UnsignedUtil.putUnsignedByte(buffer, `val`.toInt())
+    UnsignedUtil.putUnsignedByte(buffer, value.toInt())
   }
 
   companion object {
     const val ID: Byte = 0x09
-    private const val DESC = "KeepAlive"
 
     @Throws(ParseException::class, MessageFormatException::class)
     fun parse(messageNumber: Int, buffer: ByteBuffer): KeepAlive {

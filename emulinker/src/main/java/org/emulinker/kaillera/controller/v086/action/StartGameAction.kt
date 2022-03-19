@@ -24,7 +24,7 @@ class StartGameAction
   override var handledEventCount = 0
     private set
 
-  override fun toString() = DESC
+  override fun toString() = "StartGameAction"
 
   override fun performAction(message: StartGame_Request, clientHandler: V086ClientHandler) {
     actionPerformedCount++
@@ -63,9 +63,5 @@ class StartGameAction
       logger.atSevere().withCause(e).log("Failed to construct StartGame_Notification message")
     }
     lookingForGameReporter.cancelActionsForGame(event.game.id)
-  }
-
-  companion object {
-    private const val DESC = "StartGameAction"
   }
 }

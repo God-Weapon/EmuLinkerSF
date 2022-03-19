@@ -10,8 +10,6 @@ import org.emulinker.kaillera.controller.v086.protocol.GameData
 import org.emulinker.kaillera.model.event.GameDataEvent
 import org.emulinker.kaillera.model.exception.GameDataException
 
-private const val DESC = "GameDataAction"
-
 private val logger = FluentLogger.forEnclosingClass()
 
 @Singleton
@@ -20,7 +18,7 @@ class GameDataAction @Inject internal constructor() :
   override val actionPerformedCount = 0
   override val handledEventCount = 0
 
-  override fun toString() = DESC
+  override fun toString() = "GameDataAction"
 
   @Throws(FatalActionException::class)
   override fun performAction(message: GameData, clientHandler: V086ClientHandler) {

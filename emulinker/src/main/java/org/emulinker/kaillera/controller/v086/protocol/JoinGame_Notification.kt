@@ -1,6 +1,7 @@
 package org.emulinker.kaillera.controller.v086.protocol
 
 import org.emulinker.kaillera.controller.messaging.MessageFormatException
+import org.emulinker.kaillera.controller.v086.protocol.V086Message.Companion.validateMessageNumber
 import org.emulinker.kaillera.model.ConnectionType
 
 data class JoinGame_Notification
@@ -15,26 +16,13 @@ data class JoinGame_Notification
         override val connectionType: ConnectionType
     ) : JoinGame() {
 
-  override val shortName = DESC
   override val messageId = ID
 
   init {
-    validateMessageNumber(messageNumber, DESC)
-    if (gameId < 0 || gameId > 0xFFFF) {
-      throw MessageFormatException("Invalid $DESC format: gameID out of acceptable range: $gameId")
-    }
-    if (ping < 0 || ping > 0xFFFF) {
-      throw MessageFormatException("Invalid $DESC format: ping out of acceptable range: $ping")
-    }
-    if (userId < 0 || userId > 0xFFFF) {
-      throw MessageFormatException("Invalid $DESC format: userID out of acceptable range: $userId")
-    }
-    if (username.isEmpty()) {
-      throw MessageFormatException("Invalid $DESC format: Strings.isNullOrEmpty(userName)")
-    }
-  }
-
-  companion object {
-    private const val DESC = "Join Game Notification"
+    validateMessageNumber(messageNumber)
+    require(gameId in 0..0xFFFF) { "gameID out of acceptable range: $gameId" }
+    require(ping in 0..0xFFFF) { "ping out of acceptable range: $ping" }
+    require(userId in 0..0xFFFF) { "UserID out of acceptable range: $userId" }
+    require(username.isNotBlank()) { "Username cannot be empty" }
   }
 }

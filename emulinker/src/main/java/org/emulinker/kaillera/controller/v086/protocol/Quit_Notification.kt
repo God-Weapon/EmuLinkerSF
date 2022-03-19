@@ -1,7 +1,7 @@
 package org.emulinker.kaillera.controller.v086.protocol
 
-import com.google.common.base.Strings
 import org.emulinker.kaillera.controller.messaging.MessageFormatException
+import org.emulinker.kaillera.controller.v086.protocol.V086Message.Companion.validateMessageNumber
 
 data class Quit_Notification
     @Throws(MessageFormatException::class)
@@ -12,21 +12,11 @@ data class Quit_Notification
         override val message: String
     ) : Quit() {
 
-  override val shortName = DESC
   override val messageId = ID
 
   init {
-    validateMessageNumber(messageNumber, DESC)
-    if (userId < 0 || userId > 0xFFFF) {
-      throw MessageFormatException("Invalid $DESC format: userID out of acceptable range: $userId")
-    }
-    if (message == null) throw MessageFormatException("Invalid $DESC format: message == null!")
-    if (Strings.isNullOrEmpty(username)) {
-      throw MessageFormatException("Invalid $DESC format: userName.length == 0, (userID = $userId)")
-    }
-  }
-
-  companion object {
-    private const val DESC = "User Quit Notification"
+    validateMessageNumber(messageNumber)
+    require(userId in 0..0xFFFF) { "UserID out of acceptable range: $userId" }
+    require(username.isNotBlank()) { "Username cannot be empty" }
   }
 }

@@ -6,14 +6,9 @@ import kotlin.Throws
 import org.emulinker.kaillera.controller.messaging.MessageFormatException
 import org.emulinker.util.EmuUtil
 
-class ConnectMessage_HELLOD00D(val port: Int) : ConnectMessage() {
-
+/** Server Connection Response. */
+data class ConnectMessage_HELLOD00D(val port: Int) : ConnectMessage() {
   override val iD = ID
-  override val shortName = "Server Connection Response"
-
-  override fun toString(): String {
-    return "$shortName: port: $port"
-  }
 
   override val length = ID.length + port.toString().length + 1
 
@@ -27,10 +22,10 @@ class ConnectMessage_HELLOD00D(val port: Int) : ConnectMessage() {
 
     @Throws(MessageFormatException::class)
     fun parse(msg: String): ConnectMessage {
-      if (msg.length < ID.length + 2) throw MessageFormatException("Invalid message length!")
-      if (!msg.startsWith(ID)) throw MessageFormatException("Invalid message identifier!")
-      if (msg[msg.length - 1].code != 0x00)
-          throw MessageFormatException("Invalid message stop byte!")
+
+      require(msg.length >= ID.length + 2) { "Invalid message length: ${msg.length}" }
+      require(msg.startsWith(ID)) { "Message ($msg) must start with ID ($ID)" }
+      require(msg.last().code == 0x00) { "Missing stop byte 0x00!" }
       return try {
         val port = msg.substring(ID.length, msg.length - 1).toInt()
         ConnectMessage_HELLOD00D(port)

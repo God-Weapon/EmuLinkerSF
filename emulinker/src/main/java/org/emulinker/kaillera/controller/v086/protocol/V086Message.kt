@@ -8,7 +8,6 @@ import org.emulinker.kaillera.controller.messaging.ByteBufferMessage
 import org.emulinker.kaillera.controller.messaging.MessageFormatException
 import org.emulinker.kaillera.controller.messaging.ParseException
 import org.emulinker.kaillera.pico.AppModule
-import org.emulinker.util.EmuUtil
 import org.emulinker.util.UnsignedUtil
 
 private val logger = FluentLogger.forEnclosingClass()
@@ -30,10 +29,6 @@ abstract class V086Message : ByteBufferMessage() {
   }
 
   abstract val bodyLength: Int
-
-  // TODO(nue): Figure out how to stuff this in the AutoValue toString.
-  protected val infoString: String
-    get() = messageNumber.toString() + ":" + EmuUtil.byteToHex(messageId) + "/" + shortName
 
   override fun writeTo(buffer: ByteBuffer?) {
     val len = length
@@ -59,15 +54,10 @@ abstract class V086Message : ByteBufferMessage() {
 
   companion object {
     @JvmStatic
-    @Throws(MessageFormatException::class)
-    protected fun validateMessageNumber(messageNumber: Int, description: String) {
-      if (messageNumber < 0 || messageNumber > 0xFFFF) {
-        throw MessageFormatException(
-            "Invalid $description format: Invalid message number: $messageNumber")
-      }
+    protected fun validateMessageNumber(messageNumber: Int) {
+      require(messageNumber in 0..0xFFFF) { "Invalid message number: $messageNumber" }
     }
 
-    @JvmStatic
     @Throws(ParseException::class, MessageFormatException::class)
     fun parse(messageNumber: Int, messageLength: Int, buffer: ByteBuffer): V086Message {
 

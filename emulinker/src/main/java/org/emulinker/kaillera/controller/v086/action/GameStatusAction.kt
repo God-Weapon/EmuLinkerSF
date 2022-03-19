@@ -16,30 +16,23 @@ class GameStatusAction @Inject internal constructor() :
   override var handledEventCount = 0
     private set
 
-  override fun toString() = DESC
+  override fun toString() = "GameStatusAction"
 
   override fun handleEvent(event: GameStatusChangedEvent, clientHandler: V086ClientHandler) {
     handledEventCount++
     try {
       val game = event.game
-      var num = 0
-      for (user in game.players) {
-        if (!user.stealth) num++
-      }
+      val visiblePlayers = game.players.count { !it.stealth }
       clientHandler.send(
           GameStatus(
               clientHandler.nextMessageNumber,
               game.id,
               0.toShort().toInt(),
-              game.status.byteValue,
-              num.toByte(),
+              game.status,
+              visiblePlayers.toByte(),
               game.maxUsers.toByte()))
     } catch (e: MessageFormatException) {
       logger.atSevere().withCause(e).log("Failed to construct CreateGame_Notification message")
     }
-  }
-
-  companion object {
-    private const val DESC = "GameStatusAction"
   }
 }

@@ -9,10 +9,4 @@ data class StartGame_Request
   override val val1 = 0xFFFF
   override val playerNumber = 0xFF.toShort()
   override val numPlayers = 0xFF.toShort()
-
-  override val shortName = DESC
-
-  companion object {
-    private const val DESC = "Start Game Request"
-  }
 }

@@ -1,6 +1,5 @@
 package org.emulinker.kaillera.admin
 
-import com.google.common.base.Strings
 import com.google.common.flogger.FluentLogger
 import java.io.IOException
 import java.util.concurrent.ThreadPoolExecutor
@@ -40,11 +39,11 @@ class KailleraAdminHttpServer(
     if (isSecurity) {
       logger.atInfo().log("Configuring admin server security.")
       var realmName = config.getString("adminserver.realmname")
-      if (Strings.isNullOrEmpty(realmName) || realmName.isBlank()) {
+      if (realmName.isNullOrBlank() || realmName.isBlank()) {
         realmName = "Emulinker"
       }
       var userFile = config.getString("adminserver.userfile")
-      if (Strings.isNullOrEmpty(userFile) || userFile.isBlank()) {
+      if (userFile.isNullOrBlank() || userFile.isBlank()) {
         userFile = "conf/user.properties"
       }
       logger.atInfo().log("Establishing realm $realmName")

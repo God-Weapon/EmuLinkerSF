@@ -15,8 +15,6 @@ import org.emulinker.kaillera.model.exception.QuitGameException
 
 private val logger = FluentLogger.forEnclosingClass()
 
-private const val DESC = "QuitGameAction"
-
 @Singleton
 class QuitGameAction
     @Inject
@@ -27,7 +25,7 @@ class QuitGameAction
   override var handledEventCount = 0
     private set
 
-  override fun toString() = DESC
+  override fun toString() = "QuitGameAction"
 
   @Throws(FatalActionException::class)
   override fun performAction(message: QuitGame_Request, clientHandler: V086ClientHandler) {

@@ -3,6 +3,7 @@ package org.emulinker.kaillera.controller.v086.protocol
 import java.nio.ByteBuffer
 import org.emulinker.kaillera.controller.messaging.MessageFormatException
 import org.emulinker.kaillera.controller.messaging.ParseException
+import org.emulinker.kaillera.controller.v086.protocol.V086Message.Companion.validateMessageNumber
 import org.emulinker.kaillera.model.ConnectionType
 import org.emulinker.kaillera.pico.AppModule
 import org.emulinker.util.EmuUtil
@@ -16,11 +17,10 @@ data class UserInformation
         val connectionType: ConnectionType
     ) : V086Message() {
 
-  override val shortName = DESC
   override val messageId = ID
 
   init {
-    validateMessageNumber(messageNumber, DESC)
+    validateMessageNumber(messageNumber)
   }
 
   override val bodyLength: Int
@@ -34,7 +34,6 @@ data class UserInformation
 
   companion object {
     const val ID: Byte = 0x03
-    private const val DESC = "User Information"
 
     @Throws(ParseException::class, MessageFormatException::class)
     fun parse(messageNumber: Int, buffer: ByteBuffer): UserInformation {

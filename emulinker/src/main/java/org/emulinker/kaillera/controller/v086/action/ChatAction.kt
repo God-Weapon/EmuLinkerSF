@@ -1,6 +1,5 @@
 package org.emulinker.kaillera.controller.v086.action
 
-import com.google.common.base.Strings
 import com.google.common.flogger.FluentLogger
 import java.lang.Exception
 import java.lang.StringBuilder
@@ -24,8 +23,6 @@ private val logger = FluentLogger.forEnclosingClass()
 
 private const val ADMIN_COMMAND_ESCAPE_STRING = "/"
 
-private const val DESC = "ChatAction"
-
 @Singleton
 class ChatAction @Inject internal constructor(private val adminCommandAction: AdminCommandAction) :
     V086Action<Chat_Request>, V086ServerEventHandler<ChatEvent> {
@@ -34,7 +31,7 @@ class ChatAction @Inject internal constructor(private val adminCommandAction: Ad
   override var handledEventCount = 0
     private set
 
-  override fun toString() = DESC
+  override fun toString() = "ChatAction"
 
   @Throws(FatalActionException::class)
   override fun performAction(message: Chat_Request, clientHandler: V086ClientHandler) {
@@ -224,7 +221,7 @@ class ChatAction @Inject internal constructor(private val adminCommandAction: Ad
           }
           var m = sb.toString()
           m = m.trim { it <= ' ' }
-          if (Strings.isNullOrEmpty(m) || m.startsWith("�") || m.startsWith("�")) return
+          if (m.isNullOrBlank() || m.startsWith("�") || m.startsWith("�")) return
           if (access == AccessManager.ACCESS_NORMAL) {
             val chars = m.toCharArray()
             for (i in chars.indices) {
@@ -318,7 +315,7 @@ class ChatAction @Inject internal constructor(private val adminCommandAction: Ad
               }
               var m = sb.toString()
               m = m.trim { it <= ' ' }
-              if (Strings.isNullOrEmpty(m) || m.startsWith("�") || m.startsWith("�")) return
+              if (m.isNullOrBlank() || m.startsWith("�") || m.startsWith("�")) return
               if (access == AccessManager.ACCESS_NORMAL) {
                 val chars = m.toCharArray()
                 var i = 0

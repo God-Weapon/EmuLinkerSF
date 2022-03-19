@@ -1,9 +1,9 @@
 package org.emulinker.kaillera.controller.v086.protocol
 
-import com.google.common.base.Strings
 import java.nio.ByteBuffer
 import org.emulinker.kaillera.controller.messaging.MessageFormatException
 import org.emulinker.kaillera.controller.messaging.ParseException
+import org.emulinker.kaillera.controller.v086.protocol.V086Message.Companion.validateMessageNumber
 import org.emulinker.kaillera.model.ConnectionType
 import org.emulinker.kaillera.pico.AppModule
 import org.emulinker.util.EmuUtil
@@ -19,24 +19,13 @@ data class UserJoined
         val connectionType: ConnectionType
     ) : V086Message() {
 
-  override val shortName = DESC
   override val messageId = ID
 
   init {
-    validateMessageNumber(messageNumber, DESC)
-    if (Strings.isNullOrEmpty(username))
-        throw MessageFormatException(
-            "Invalid $DESC format: userName.length == 0, (userID = $userId)")
-    if (userId < 0 || userId > 65535)
-        throw MessageFormatException(
-            "Invalid $DESC format: userID out of acceptable range: $userId")
-    if (ping < 0 || ping > 2048)
-        throw MessageFormatException("Invalid $DESC format: ping out of acceptable range: $ping")
-  }
-
-  // TODO(nue): Get rid of this.
-  override fun toString(): String {
-    return "$infoString[userName=$username userID=$userId ping=$ping connectionType=$connectionType]"
+    validateMessageNumber(messageNumber)
+    if (username.isBlank()) throw MessageFormatException("Empty username: $username")
+    require(userId in 0..65535) { "UserID out of acceptable range: $userId" }
+    require(ping in 0..2048) { "Ping out of acceptable range: $ping" }
   }
 
   override val bodyLength = getNumBytes(username) + 8
@@ -50,7 +39,6 @@ data class UserJoined
 
   companion object {
     const val ID: Byte = 0x02
-    private const val DESC = "User Joined"
 
     @Throws(ParseException::class, MessageFormatException::class)
     fun parse(messageNumber: Int, buffer: ByteBuffer): UserJoined {

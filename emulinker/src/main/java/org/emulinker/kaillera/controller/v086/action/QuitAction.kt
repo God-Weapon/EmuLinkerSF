@@ -12,8 +12,6 @@ import org.emulinker.kaillera.model.exception.ActionException
 
 private val logger = FluentLogger.forEnclosingClass()
 
-private const val DESC = "QuitAction"
-
 @Singleton
 class QuitAction @Inject internal constructor() :
     V086Action<Quit_Request>, V086ServerEventHandler<UserQuitEvent> {
@@ -22,7 +20,7 @@ class QuitAction @Inject internal constructor() :
   override var handledEventCount = 0
     private set
 
-  override fun toString() = DESC
+  override fun toString() = "QuitAction"
 
   @Throws(FatalActionException::class)
   override fun performAction(message: Quit_Request, clientHandler: V086ClientHandler) {

@@ -500,7 +500,7 @@ class KailleraServerImpl
     val userGame = (user as KailleraUserImpl?)!!.game
     if (userGame != null) user.quitGame()
     var quitMsg = message!!.trim { it <= ' ' }
-    if (Strings.isNullOrEmpty(quitMsg) ||
+    if (quitMsg.isNullOrBlank() ||
         (flags.maxQuitMessageLength > 0 && quitMsg.length > flags.maxQuitMessageLength))
         quitMsg = getString("KailleraServerImpl.StandardQuitMessage")
     val access = user.server.accessManager.getAccess(user.socketAddress!!.address)
@@ -539,7 +539,7 @@ class KailleraServerImpl
       return
     }
     message = message!!.trim { it <= ' ' }
-    if (Strings.isNullOrEmpty(message) || message.startsWith("�") || message.startsWith("�")) return
+    if (message.isNullOrBlank() || message.startsWith("�") || message.startsWith("�")) return
     if (access == AccessManager.ACCESS_NORMAL) {
       val chars = message.toCharArray()
       for (i in chars.indices) {
@@ -701,7 +701,7 @@ class KailleraServerImpl
       return false
     }
     message = message.trim { it <= ' ' }
-    if (Strings.isNullOrEmpty(message)) return false
+    if (message.isNullOrBlank()) return false
     if (access == AccessManager.ACCESS_NORMAL) {
       val chars = message.toCharArray()
       for (i in chars.indices) {

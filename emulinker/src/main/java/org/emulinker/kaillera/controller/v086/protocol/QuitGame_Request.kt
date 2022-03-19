@@ -1,6 +1,7 @@
 package org.emulinker.kaillera.controller.v086.protocol
 
 import org.emulinker.kaillera.controller.messaging.MessageFormatException
+import org.emulinker.kaillera.controller.v086.protocol.V086Message.Companion.validateMessageNumber
 
 data class QuitGame_Request
     @Throws(MessageFormatException::class)
@@ -9,13 +10,7 @@ data class QuitGame_Request
   override val username = ""
   override val userId = 0xFFFF
 
-  override val shortName = DESC
-
   init {
-    validateMessageNumber(messageNumber, DESC)
-  }
-
-  companion object {
-    private const val DESC = "Quit Game Request"
+    validateMessageNumber(messageNumber)
   }
 }

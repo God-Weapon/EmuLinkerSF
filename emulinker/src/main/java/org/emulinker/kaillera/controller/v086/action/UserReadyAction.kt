@@ -19,7 +19,7 @@ class UserReadyAction @Inject internal constructor() :
   override var handledEventCount = 0
     private set
 
-  override fun toString() = DESC
+  override fun toString() = "UserReadyAction"
 
   @Throws(FatalActionException::class)
   override fun performAction(message: AllReady, clientHandler: V086ClientHandler) {
@@ -39,9 +39,5 @@ class UserReadyAction @Inject internal constructor() :
     } catch (e: MessageFormatException) {
       logger.atSevere().withCause(e).log("Failed to construct AllReady message")
     }
-  }
-
-  companion object {
-    private const val DESC = "UserReadyAction"
   }
 }

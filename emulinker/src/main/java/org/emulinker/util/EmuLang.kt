@@ -31,7 +31,7 @@ object EmuLang {
   		}
   	}
   */
-  @JvmStatic
+
   fun hasString(key: String): Boolean {
     if (RESOURCE_BUNDLE.containsKey(key)) {
       try {
@@ -54,7 +54,6 @@ object EmuLang {
     }
   }
 
-  @JvmStatic
   fun getString(key: String, vararg messageArgs: Any?): String {
     return try {
       val str = RESOURCE_BUNDLE.getString(key)

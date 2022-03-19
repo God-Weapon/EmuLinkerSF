@@ -9,8 +9,6 @@ import org.emulinker.kaillera.controller.v086.protocol.GameChat_Notification
 import org.emulinker.kaillera.model.event.GameDesynchEvent
 import org.emulinker.util.EmuLang
 
-private const val DESC = "GameDesynchAction"
-
 private val logger = FluentLogger.forEnclosingClass()
 
 @Singleton
@@ -18,7 +16,7 @@ class GameDesynchAction @Inject internal constructor() : V086GameEventHandler<Ga
   override var handledEventCount = 0
     private set
 
-  override fun toString() = DESC
+  override fun toString() = "GameDesynchAction"
 
   override fun handleEvent(event: GameDesynchEvent, clientHandler: V086ClientHandler) {
     handledEventCount++

@@ -14,12 +14,10 @@ import org.emulinker.kaillera.model.exception.GameDataException
 
 private val logger = FluentLogger.forEnclosingClass()
 
-private const val DESC = "CachedGameDataAction"
-
 @Singleton
 class CachedGameDataAction @Inject internal constructor() : V086Action<CachedGameData> {
   override val actionPerformedCount = 0
-  override fun toString() = DESC
+  override fun toString() = "CachedGameDataAction"
 
   @Throws(FatalActionException::class)
   override fun performAction(message: CachedGameData, clientHandler: V086ClientHandler) {

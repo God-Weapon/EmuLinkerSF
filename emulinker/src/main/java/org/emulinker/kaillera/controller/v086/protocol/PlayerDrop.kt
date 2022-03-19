@@ -1,6 +1,5 @@
 package org.emulinker.kaillera.controller.v086.protocol
 
-import com.google.common.base.Strings
 import java.nio.ByteBuffer
 import org.emulinker.kaillera.controller.messaging.MessageFormatException
 import org.emulinker.kaillera.controller.messaging.ParseException
@@ -38,7 +37,7 @@ abstract class PlayerDrop : V086Message() {
       if (buffer.remaining() < 2) throw ParseException("Failed byte count validation!")
       val userName = EmuUtil.readString(buffer, 0x00, AppModule.charsetDoNotUse)
       val playerNumber = buffer.get()
-      return if (Strings.isNullOrEmpty(userName) && playerNumber.toInt() == 0) {
+      return if (userName.isBlank() && playerNumber.toInt() == 0) {
         PlayerDrop_Request(messageNumber)
       } else PlayerDrop_Notification(messageNumber, userName, playerNumber)
     }

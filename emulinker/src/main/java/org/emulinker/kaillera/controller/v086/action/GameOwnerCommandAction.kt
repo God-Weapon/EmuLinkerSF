@@ -45,14 +45,12 @@ private const val COMMAND_SAMEDELAY = "/samedelay"
 
 private const val COMMAND_NUM = "/num"
 
-private const val DESC = "GameOwnerCommandAction"
-
 private val logger = FluentLogger.forEnclosingClass()
 
 @Singleton
 class GameOwnerCommandAction @Inject internal constructor() : V086Action<GameChat> {
   override val actionPerformedCount = 0
-  override fun toString() = DESC
+  override fun toString() = "GameOwnerCommandAction"
 
   fun isValidCommand(chat: String): Boolean {
     return when {

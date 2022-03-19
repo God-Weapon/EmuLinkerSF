@@ -163,7 +163,6 @@ object EmuUtil {
     return sb.toString()
   }
 
-  @JvmStatic
   fun formatSocketAddress(sa: SocketAddress): String {
     return ((sa as InetSocketAddress).address.hostAddress + ":" + sa.port)
   }

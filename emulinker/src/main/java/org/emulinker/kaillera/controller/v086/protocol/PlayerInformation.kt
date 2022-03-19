@@ -14,29 +14,14 @@ data class PlayerInformation
     @Throws(MessageFormatException::class)
     constructor(override val messageNumber: Int, val players: List<Player>) : V086Message() {
 
-  override val shortName = DESC
   override val messageId = ID
 
   init {
-    validateMessageNumber(messageNumber, DESC)
+    validateMessageNumber(messageNumber)
   }
 
   val numPlayers: Int
     get() = players.size
-
-  // TODO(nue): Get rid of this.
-  override fun toString(): String {
-    val sb = StringBuilder()
-    sb.append(infoString + "[players=" + players.size + "]")
-    if (players.isNotEmpty()) {
-      sb.append(EmuUtil.LB)
-    }
-    for (p in players) {
-      sb.append("\t" + p)
-      sb.append(EmuUtil.LB)
-    }
-    return sb.toString()
-  }
 
   override val bodyLength: Int
     get() = 5 + players.stream().mapToInt { p: Player -> p.numBytes }.sum()
@@ -54,11 +39,12 @@ data class PlayerInformation
 
     init {
       if (ping < 0 || ping > 2048) { // what should max ping be?
-        throw MessageFormatException("Invalid $DESC format: ping out of acceptable range: $ping")
+        throw MessageFormatException(
+            "Invalid Player Information format: ping out of acceptable range: $ping")
       }
       if (userId < 0 || userId > 65535) {
         throw MessageFormatException(
-            "Invalid $DESC format: userID out of acceptable range: $userId")
+            "Invalid Player Information format: userID out of acceptable range: $userId")
       }
     }
 
@@ -75,7 +61,6 @@ data class PlayerInformation
 
   companion object {
     const val ID: Byte = 0x0D
-    private const val DESC = "Player Information"
 
     @Throws(ParseException::class, MessageFormatException::class)
     fun parse(messageNumber: Int, buffer: ByteBuffer): PlayerInformation {
@@ -83,7 +68,7 @@ data class PlayerInformation
       val b = buffer.get()
       if (b.toInt() != 0x00)
           throw MessageFormatException(
-              "Invalid " + DESC + " format: byte 0 = " + EmuUtil.byteToHex(b))
+              "Invalid " + "Player Information" + " format: byte 0 = " + EmuUtil.byteToHex(b))
       val numPlayers = buffer.int
       val minLen = numPlayers * 9
       if (buffer.remaining() < minLen) throw ParseException("Failed byte count validation!")

@@ -1,6 +1,5 @@
 package org.emulinker.kaillera.controller.v086.protocol
 
-import com.google.common.base.Strings
 import java.nio.ByteBuffer
 import org.emulinker.kaillera.controller.messaging.MessageFormatException
 import org.emulinker.kaillera.controller.messaging.ParseException
@@ -38,7 +37,7 @@ abstract class CreateGame : V086Message() {
       if (buffer.remaining() < 4) throw ParseException("Failed byte count validation!")
       val gameID = UnsignedUtil.getUnsignedShort(buffer)
       val val1 = UnsignedUtil.getUnsignedShort(buffer)
-      return if (Strings.isNullOrEmpty(userName) && gameID == 0xFFFF && val1 == 0xFFFF)
+      return if (userName.isNullOrBlank() && gameID == 0xFFFF && val1 == 0xFFFF)
           CreateGame_Request(messageNumber, romName)
       else CreateGame_Notification(messageNumber, userName, romName, clientType, gameID, val1)
     }

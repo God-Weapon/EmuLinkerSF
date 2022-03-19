@@ -3,6 +3,7 @@ package org.emulinker.kaillera.controller.v086.protocol
 import java.nio.ByteBuffer
 import org.emulinker.kaillera.controller.messaging.MessageFormatException
 import org.emulinker.kaillera.controller.messaging.ParseException
+import org.emulinker.kaillera.controller.v086.protocol.V086Message.Companion.validateMessageNumber
 import org.emulinker.util.UnsignedUtil
 
 data class GameKick
@@ -10,15 +11,11 @@ data class GameKick
     constructor(override val messageNumber: Int, val userId: Int) : V086Message() {
 
   override val bodyLength = 3
-  override val shortName = DESC
   override val messageId = ID
 
   init {
-    validateMessageNumber(messageNumber, DESC)
-    if (userId < 0 || userId > 0xFFFF) {
-      throw MessageFormatException(
-          "Invalid " + DESC + " format: userID out of acceptable range: " + userId)
-    }
+    validateMessageNumber(messageNumber)
+    require(userId in 0..0xFFFF) { "UserID out of acceptable range: $userId" }
   }
 
   public override fun writeBodyTo(buffer: ByteBuffer) {
@@ -28,7 +25,6 @@ data class GameKick
 
   companion object {
     const val ID: Byte = 0x0F
-    private const val DESC = "Game Kick Request"
 
     @Throws(ParseException::class, MessageFormatException::class)
     fun parse(messageNumber: Int, buffer: ByteBuffer): GameKick {

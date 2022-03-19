@@ -14,7 +14,6 @@ abstract class ConnectMessage : ByteBufferMessage() {
     // TODO(nue): Check if this can be made a constant.
     @JvmField var charset = Charsets.ISO_8859_1
 
-    @JvmStatic
     @Throws(MessageFormatException::class)
     fun parse(buffer: ByteBuffer): ConnectMessage {
       val messageStr =

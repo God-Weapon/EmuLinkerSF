@@ -1,5 +1,4 @@
 package org.emulinker.kaillera.controller.messaging
 
-import java.lang.Exception
-
-class MessageFormatException(msg: String? = null, cause: Throwable? = null) : Exception(msg, cause)
+class MessageFormatException(msg: String? = null, cause: Throwable? = null) :
+    IllegalArgumentException(msg, cause)

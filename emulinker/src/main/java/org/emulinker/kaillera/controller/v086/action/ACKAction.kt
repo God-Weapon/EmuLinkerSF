@@ -17,8 +17,6 @@ import org.emulinker.kaillera.model.exception.*
 
 private val logger = FluentLogger.forEnclosingClass()
 
-private const val DESC = "ACKAction"
-
 private const val numAcksForSpeedTest = 3
 
 @Singleton
@@ -29,7 +27,7 @@ class ACKAction @Inject internal constructor() :
   override var handledEventCount = 0
     private set
 
-  override fun toString() = DESC
+  override fun toString() = "ACKAction"
 
   @Throws(FatalActionException::class)
   override fun performAction(message: ClientACK, clientHandler: V086ClientHandler) {

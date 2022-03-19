@@ -1,9 +1,9 @@
 package org.emulinker.kaillera.controller.v086.protocol
 
-import com.google.common.base.Strings
 import java.nio.ByteBuffer
 import org.emulinker.kaillera.controller.messaging.MessageFormatException
 import org.emulinker.kaillera.controller.messaging.ParseException
+import org.emulinker.kaillera.controller.v086.protocol.V086Message.Companion.validateMessageNumber
 import org.emulinker.kaillera.pico.AppModule
 import org.emulinker.util.EmuUtil
 import org.emulinker.util.UnsignedUtil
@@ -14,7 +14,6 @@ data class ConnectionRejected
         override val messageNumber: Int, val username: String, val userId: Int, val message: String
     ) : V086Message() {
 
-  override val shortName = DESC
   override val messageId = ID
 
   override val bodyLength: Int
@@ -27,21 +26,14 @@ data class ConnectionRejected
   }
 
   init {
-    validateMessageNumber(messageNumber, DESC)
-    if (Strings.isNullOrEmpty(username)) {
-      throw MessageFormatException("Invalid $DESC format: userName.length == 0")
-    }
-    if (userId < 0 || userId > 0xFFFF) {
-      throw MessageFormatException("Invalid $DESC format: userID out of acceptable range: $userId")
-    }
-    if (Strings.isNullOrEmpty(message)) {
-      throw MessageFormatException("Invalid $DESC format: message.length == 0")
-    }
+    validateMessageNumber(messageNumber)
+    require(username.isNotBlank()) { "Username cannot be empty" }
+    require(userId in 0..0xFFFF) { "UserID out of acceptable range: $userId" }
+    require(message.isNotBlank()) { "Message cannot be empty" }
   }
 
   companion object {
     const val ID: Byte = 0x16
-    private const val DESC = "Connection Rejected"
 
     @Throws(ParseException::class, MessageFormatException::class)
     fun parse(messageNumber: Int, buffer: ByteBuffer): ConnectionRejected {

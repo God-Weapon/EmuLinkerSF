@@ -1,6 +1,5 @@
 package org.emulinker.kaillera.controller.v086.action
 
-import com.google.common.base.Strings
 import com.google.common.flogger.FluentLogger
 import java.util.*
 import javax.inject.Inject
@@ -17,8 +16,6 @@ import org.emulinker.kaillera.model.impl.KailleraUserImpl
 
 private const val ADMIN_COMMAND_ESCAPE_STRING = "/"
 
-private const val DESC = "GameChatAction"
-
 private val logger = FluentLogger.forEnclosingClass()
 
 @Singleton
@@ -33,7 +30,7 @@ class GameChatAction
   override var handledEventCount = 0
     private set
 
-  override fun toString() = DESC
+  override fun toString() = "GameChatAction"
 
   @Throws(FatalActionException::class)
   override fun performAction(message: GameChat_Request, clientHandler: V086ClientHandler) {
@@ -177,7 +174,7 @@ class GameChatAction
           }
           var m = sb.toString()
           m = m.trim { it <= ' ' }
-          if (Strings.isNullOrEmpty(m) || m.startsWith("�") || m.startsWith("�")) return
+          if (m.isNullOrBlank() || m.startsWith("�") || m.startsWith("�")) return
           if (access == AccessManager.ACCESS_NORMAL) {
             val chars = m.toCharArray()
             for (i in chars.indices) {
@@ -239,7 +236,7 @@ class GameChatAction
               }
               var m = sb.toString()
               m = m.trim { it <= ' ' }
-              if (Strings.isNullOrEmpty(m) || m.startsWith("�") || m.startsWith("�")) return
+              if (m.isNullOrBlank() || m.startsWith("�") || m.startsWith("�")) return
               if (access == AccessManager.ACCESS_NORMAL) {
                 val chars = m.toCharArray()
                 var i = 0

@@ -17,7 +17,7 @@ class PlayerDesynchAction @Inject internal constructor() :
   override var handledEventCount = 0
     private set
 
-  override fun toString() = DESC
+  override fun toString() = PlayerDesynchAction::class.java.simpleName
 
   override fun handleEvent(event: PlayerDesynchEvent, clientHandler: V086ClientHandler) {
     handledEventCount++
@@ -36,9 +36,5 @@ class PlayerDesynchAction @Inject internal constructor() :
     // {
     //	logger.atSevere().withCause(e).log("Failed to drop game during desynch");
     // }
-  }
-
-  companion object {
-    private val DESC = PlayerDesynchAction::class.java.simpleName
   }
 }

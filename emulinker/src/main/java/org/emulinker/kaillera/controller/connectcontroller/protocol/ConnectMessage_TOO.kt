@@ -4,13 +4,12 @@ import java.nio.ByteBuffer
 import kotlin.Throws
 import org.emulinker.kaillera.controller.messaging.MessageFormatException
 
-private const val DESC = "Server Full Response"
-
+// TODO(nue): Turn into a data class?
+/** Server Full Response. */
 class ConnectMessage_TOO : ConnectMessage() {
   override val iD = ID
-  override val shortName = DESC
 
-  override fun toString() = DESC
+  override fun toString() = "Server Full Response"
 
   override val length: Int
     get() = ID.length + 1

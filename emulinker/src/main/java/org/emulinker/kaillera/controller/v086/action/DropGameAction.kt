@@ -10,8 +10,6 @@ import org.emulinker.kaillera.controller.v086.protocol.PlayerDrop_Request
 import org.emulinker.kaillera.model.event.UserDroppedGameEvent
 import org.emulinker.kaillera.model.exception.DropGameException
 
-private const val DESC = "DropGameAction"
-
 private val logger = FluentLogger.forEnclosingClass()
 
 @Singleton
@@ -22,7 +20,7 @@ class DropGameAction @Inject internal constructor() :
   override var handledEventCount = 0
     private set
 
-  override fun toString() = DESC
+  override fun toString() = "DropGameAction"
 
   @Throws(FatalActionException::class)
   override fun performAction(message: PlayerDrop_Request, clientHandler: V086ClientHandler) {

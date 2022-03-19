@@ -62,12 +62,10 @@ private const val COMMAND_TEMPELEVATED = "/tempelevated"
 
 private const val COMMAND_TEMPMODERATOR = "/tempmoderator"
 
-private const val DESC = "AdminCommandAction"
-
 @Singleton
 class AdminCommandAction @Inject internal constructor() : V086Action<Chat> {
   override val actionPerformedCount = 0
-  override fun toString() = DESC
+  override fun toString() = "AdminCommandAction"
 
   fun isValidCommand(chat: String): Boolean {
     return when {

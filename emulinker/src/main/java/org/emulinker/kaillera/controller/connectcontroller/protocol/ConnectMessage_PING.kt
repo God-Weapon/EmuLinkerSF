@@ -5,13 +5,13 @@ import java.nio.ByteBuffer
 import kotlin.Throws
 import org.emulinker.kaillera.controller.messaging.MessageFormatException
 
+// TODO(nue): Turn into a data class?
 class ConnectMessage_PING : ConnectMessage() {
 
   override val iD = ID
-  override val shortName = "Client Ping"
 
   var clientSocketAddress: InetSocketAddress? = null
-  override fun toString() = shortName
+  override fun toString() = "Client Ping"
 
   override val length: Int
     get() = ID.length + 1

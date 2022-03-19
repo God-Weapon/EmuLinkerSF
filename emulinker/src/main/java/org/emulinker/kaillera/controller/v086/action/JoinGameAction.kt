@@ -21,7 +21,7 @@ class JoinGameAction @Inject internal constructor() :
   override var handledEventCount = 0
     private set
 
-  override fun toString() = DESC
+  override fun toString() = "JoinGameAction"
 
   @Throws(FatalActionException::class)
   override fun performAction(message: JoinGame_Request, clientHandler: V086ClientHandler) {
@@ -78,9 +78,5 @@ class JoinGameAction @Inject internal constructor() :
     } catch (e: MessageFormatException) {
       logger.atSevere().withCause(e).log("Failed to construct JoinGame_Notification message")
     }
-  }
-
-  companion object {
-    private const val DESC = "JoinGameAction"
   }
 }

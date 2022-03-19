@@ -10,7 +10,7 @@ class KeepAliveAction @Inject internal constructor() : V086Action<KeepAlive> {
   override var actionPerformedCount = 0
     private set
 
-  override fun toString() = DESC
+  override fun toString() = "KeepAliveAction"
 
   @Throws(FatalActionException::class)
   override fun performAction(message: KeepAlive, clientHandler: V086ClientHandler) {
@@ -18,9 +18,5 @@ class KeepAliveAction @Inject internal constructor() : V086Action<KeepAlive> {
     if (clientHandler.user == null)
         throw FatalActionException("User does not exist: KeepAliveAction!")
     clientHandler.user!!.updateLastKeepAlive()
-  }
-
-  companion object {
-    private const val DESC = "KeepAliveAction"
   }
 }

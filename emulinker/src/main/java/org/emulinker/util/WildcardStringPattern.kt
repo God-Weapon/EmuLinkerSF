@@ -2,7 +2,6 @@ package org.emulinker.util
 
 import java.util.LinkedList
 import java.util.StringTokenizer
-import kotlin.jvm.JvmStatic
 
 class WildcardStringPattern(pattern: String?) {
   protected var equals = false
@@ -55,7 +54,7 @@ class WildcardStringPattern(pattern: String?) {
   }
 
   companion object {
-    @JvmStatic
+
     fun main(args: Array<String>) {
       val test = WildcardStringPattern(args[0])
       for (i in 1 until args.size) {

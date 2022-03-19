@@ -1,9 +1,9 @@
 package org.emulinker.kaillera.controller.v086.protocol
 
-import com.google.common.base.Strings
 import java.nio.ByteBuffer
 import org.emulinker.kaillera.controller.messaging.MessageFormatException
 import org.emulinker.kaillera.controller.messaging.ParseException
+import org.emulinker.kaillera.controller.v086.protocol.V086Message.Companion.validateMessageNumber
 import org.emulinker.kaillera.pico.AppModule
 import org.emulinker.util.EmuUtil
 
@@ -12,17 +12,12 @@ data class InformationMessage
     constructor(override val messageNumber: Int, val source: String, val message: String) :
     V086Message() {
 
-  override val shortName = DESC
   override val messageId = ID
 
   init {
-    validateMessageNumber(messageNumber, DESC)
-    if (Strings.isNullOrEmpty(source)) {
-      throw MessageFormatException("Invalid $DESC format: source.length == 0")
-    }
-    if (Strings.isNullOrEmpty(message)) {
-      throw MessageFormatException("Invalid $DESC format: message.length == 0")
-    }
+    validateMessageNumber(messageNumber)
+    require(source.isNotBlank()) { "source cannot be blank" }
+    require(message.isNotBlank()) { "message cannot be blank" }
   }
 
   override val bodyLength: Int
@@ -35,7 +30,6 @@ data class InformationMessage
 
   companion object {
     const val ID: Byte = 0x17
-    private const val DESC = "Information Message"
 
     @Throws(ParseException::class, MessageFormatException::class)
     fun parse(messageNumber: Int, buffer: ByteBuffer): InformationMessage {

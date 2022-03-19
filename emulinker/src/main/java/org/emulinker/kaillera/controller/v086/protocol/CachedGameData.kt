@@ -8,7 +8,7 @@ import org.emulinker.util.UnsignedUtil
 data class CachedGameData
     @Throws(MessageFormatException::class)
     constructor(override val messageNumber: Int, val key: Int) : V086Message() {
-  override val shortName = DESC
+
   override val messageId = ID
 
   override val bodyLength: Int
@@ -21,7 +21,6 @@ data class CachedGameData
 
   companion object {
     const val ID: Byte = 0x13
-    private const val DESC = "Cached Game Data"
 
     @Throws(ParseException::class, MessageFormatException::class)
     fun parse(messageNumber: Int, buffer: ByteBuffer): CachedGameData {

@@ -13,7 +13,7 @@ class GameTimeoutAction @Inject internal constructor() : V086GameEventHandler<Ga
   override var handledEventCount = 0
     private set
 
-  override fun toString() = DESC
+  override fun toString() = "GameTimeoutAction"
 
   override fun handleEvent(event: GameTimeoutEvent, clientHandler: V086ClientHandler) {
     handledEventCount++
@@ -31,9 +31,5 @@ class GameTimeoutAction @Inject internal constructor() : V086GameEventHandler<Ga
           .log(
               "${user.toString()} received timeout event ${event.timeoutNumber} from $player for ${event.game}")
     }
-  }
-
-  companion object {
-    private const val DESC = "GameTimeoutAction"
   }
 }

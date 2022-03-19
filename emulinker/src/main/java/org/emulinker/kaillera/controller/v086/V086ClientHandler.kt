@@ -74,7 +74,7 @@ class V086ClientHandler
   interface Factory {
     fun create(
         remoteSocketAddress: InetSocketAddress?, v086Controller: V086Controller?
-    ): V086ClientHandler?
+    ): V086ClientHandler
   }
 
   override fun toString(): String {

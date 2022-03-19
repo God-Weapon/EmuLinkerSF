@@ -14,12 +14,7 @@ import org.emulinker.kaillera.model.ConnectionType
 import org.emulinker.kaillera.model.KailleraGame
 import org.emulinker.kaillera.model.KailleraUser
 import org.emulinker.kaillera.model.UserStatus
-import org.emulinker.kaillera.model.event.GameDataEvent
-import org.emulinker.kaillera.model.event.GameStartedEvent
-import org.emulinker.kaillera.model.event.KailleraEvent
-import org.emulinker.kaillera.model.event.KailleraEventListener
-import org.emulinker.kaillera.model.event.UserQuitEvent
-import org.emulinker.kaillera.model.event.UserQuitGameEvent
+import org.emulinker.kaillera.model.event.*
 import org.emulinker.kaillera.model.exception.*
 import org.emulinker.util.EmuLang
 import org.emulinker.util.EmuUtil
@@ -507,12 +502,6 @@ class KailleraUserImpl(
     } finally {
       running = false
       logger.atFine().log("$this thread exiting...")
-    }
-  }
-
-  private class StopFlagEvent : KailleraEvent {
-    override fun toString(): String {
-      return "StopFlagEvent"
     }
   }
 }

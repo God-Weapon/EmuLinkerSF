@@ -1,6 +1,5 @@
 package org.emulinker.kaillera.controller.v086.protocol
 
-import com.google.common.base.Strings
 import java.nio.ByteBuffer
 import org.emulinker.kaillera.controller.messaging.MessageFormatException
 import org.emulinker.kaillera.controller.messaging.ParseException
@@ -45,7 +44,7 @@ abstract class JoinGame : V086Message() {
       val ping = UnsignedUtil.getUnsignedInt(buffer)
       val userID = UnsignedUtil.getUnsignedShort(buffer)
       val connectionType = buffer.get()
-      return if (Strings.isNullOrEmpty(userName) && ping == 0L && userID == 0xFFFF)
+      return if (userName.isNullOrBlank() && ping == 0L && userID == 0xFFFF)
           JoinGame_Request(messageNumber, gameID, ConnectionType.fromByteValue(connectionType))
       else
           JoinGame_Notification(

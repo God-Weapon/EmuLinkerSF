@@ -16,8 +16,6 @@ import org.emulinker.kaillera.model.impl.KailleraUserImpl
 
 private val logger = FluentLogger.forEnclosingClass()
 
-private const val DESC = "LoginAction"
-
 @Singleton
 class LoginAction @Inject internal constructor() :
     V086Action<UserInformation>, V086ServerEventHandler<UserJoinedEvent> {
@@ -26,16 +24,16 @@ class LoginAction @Inject internal constructor() :
   override var handledEventCount = 0
     private set
 
-  override fun toString() = DESC
+  override fun toString() = "LoginAction"
 
   @Throws(FatalActionException::class)
-  override fun performAction(userInfo: UserInformation, clientHandler: V086ClientHandler) {
+  override fun performAction(message: UserInformation, clientHandler: V086ClientHandler) {
     actionPerformedCount++
     val user: KailleraUser = clientHandler.user!!
-    user.name = userInfo.username
-    user.clientType = userInfo.clientType
+    user.name = message.username
+    user.clientType = message.clientType
     user.socketAddress = clientHandler.remoteSocketAddress
-    user.connectionType = userInfo.connectionType
+    user.connectionType = message.connectionType
     clientHandler.startSpeedTest()
     try {
       clientHandler.send(ServerACK(clientHandler.nextMessageNumber))

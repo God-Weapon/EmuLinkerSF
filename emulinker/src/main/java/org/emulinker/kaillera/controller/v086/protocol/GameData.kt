@@ -10,7 +10,6 @@ data class GameData
     @Throws(MessageFormatException::class)
     private constructor(override val messageNumber: Int, val gameData: ByteArray) : V086Message() {
 
-  override val shortName = DESC
   override val messageId = ID
 
   override val bodyLength: Int
@@ -23,20 +22,16 @@ data class GameData
   }
 
   init {
-    validateMessageNumber(messageNumber, DESC)
-    if (gameData.isEmpty() || gameData.size > 0xFFFF) {
-      throw MessageFormatException(
-          "Invalid " + DESC + " format: gameData.remaining() = " + gameData.size)
-    }
+    validateMessageNumber(messageNumber)
+    require(gameData.isNotEmpty()) { "gameData is empty" }
+    require(gameData.size in 0..0xFFFF) { "gameData size out of range: ${gameData.size}" }
   }
 
   companion object {
     const val ID: Byte = 0x12
-    const val DESC = "Game Data"
 
     // TODO(nue): Get rid of this.
     @Throws(Exception::class)
-    @JvmStatic
     fun main(args: Array<String>) {
       val data = ByteArray(9)
       val st = System.currentTimeMillis()
@@ -52,7 +47,6 @@ data class GameData
     }
 
     /** Same as the constructor, but it makes a deep copy of the array. */
-    @JvmStatic
     @Throws(MessageFormatException::class)
     fun create(messageNumber: Int, gameData: ByteArray): GameData {
       return GameData(messageNumber, gameData.copyOf(gameData.size))
@@ -68,7 +62,7 @@ data class GameData
       // EmuUtil.byteToHex(b));
       val dataSize = UnsignedUtil.getUnsignedShort(buffer)
       if (dataSize <= 0 || dataSize > buffer.remaining())
-          throw MessageFormatException("Invalid $DESC format: dataSize = $dataSize")
+          throw MessageFormatException("Invalid Game Data format: dataSize = $dataSize")
       val gameData = ByteArray(dataSize)
       buffer[gameData]
       return create(messageNumber, gameData)

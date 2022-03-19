@@ -9,8 +9,6 @@ import org.emulinker.kaillera.controller.v086.protocol.GameChat_Notification
 import org.emulinker.kaillera.controller.v086.protocol.GameKick
 import org.emulinker.kaillera.model.exception.GameKickException
 
-private const val DESC = "GameKickAction"
-
 private val logger = FluentLogger.forEnclosingClass()
 
 @Singleton
@@ -18,7 +16,7 @@ class GameKickAction @Inject internal constructor() : V086Action<GameKick> {
   override var actionPerformedCount = 0
     private set
 
-  override fun toString() = DESC
+  override fun toString() = "GameKickAction"
 
   @Throws(FatalActionException::class)
   override fun performAction(message: GameKick, clientHandler: V086ClientHandler) {

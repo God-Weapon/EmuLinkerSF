@@ -341,7 +341,7 @@
         <artifactId>exec-maven-plugin</artifactId>
         <version>1.4.0</version>
         <configuration>
-          <mainClass>org.emulinker.kaillera.pico.PicoStarter</mainClass>
+          <mainClass>org.emulinker.kaillera.pico.ServerMainKt</mainClass>
         </configuration>
       </plugin>
 
@@ -352,7 +352,7 @@
           <appendAssemblyId>false</appendAssemblyId>
           <archive>
             <manifest>
-              <mainClass>org.emulinker.kaillera.pico.PicoStarter</mainClass>
+              <mainClass>org.emulinker.kaillera.pico.ServerMainKt</mainClass>
             </manifest>
           </archive>
           <descriptorRefs>

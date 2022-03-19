@@ -10,14 +10,12 @@ import org.emulinker.kaillera.model.event.GameClosedEvent
 
 private val logger = FluentLogger.forEnclosingClass()
 
-private const val DESC = "CloseGameAction"
-
 @Singleton
 class CloseGameAction @Inject internal constructor() : V086ServerEventHandler<GameClosedEvent> {
   override var handledEventCount = 0
     private set
 
-  override fun toString() = DESC
+  override fun toString() = "CloseGameAction"
 
   override fun handleEvent(event: GameClosedEvent, clientHandler: V086ClientHandler) {
     handledEventCount++

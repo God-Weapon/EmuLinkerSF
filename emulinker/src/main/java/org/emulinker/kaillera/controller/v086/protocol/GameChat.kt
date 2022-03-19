@@ -1,6 +1,5 @@
 package org.emulinker.kaillera.controller.v086.protocol
 
-import com.google.common.base.Strings
 import java.nio.ByteBuffer
 import org.emulinker.kaillera.controller.messaging.MessageFormatException
 import org.emulinker.kaillera.controller.messaging.ParseException
@@ -28,7 +27,7 @@ abstract class GameChat : V086Message() {
       val userName = EmuUtil.readString(buffer, 0x00, AppModule.charsetDoNotUse)
       if (buffer.remaining() < 2) throw ParseException("Failed byte count validation!")
       val message = EmuUtil.readString(buffer, 0x00, AppModule.charsetDoNotUse)
-      return if (Strings.isNullOrEmpty(userName)) {
+      return if (userName.isNullOrBlank()) {
         GameChat_Request(messageNumber, message)
       } else GameChat_Notification(messageNumber, userName, message)
     }

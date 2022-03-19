@@ -15,7 +15,7 @@ class InfoMessageAction @Inject internal constructor() : V086UserEventHandler<In
   override var handledEventCount = 0
     private set
 
-  override fun toString() = DESC
+  override fun toString() = "InfoMessageAction"
 
   override fun handleEvent(event: InfoMessageEvent, clientHandler: V086ClientHandler) {
     handledEventCount++
@@ -25,9 +25,5 @@ class InfoMessageAction @Inject internal constructor() : V086UserEventHandler<In
     } catch (e: MessageFormatException) {
       logger.atSevere().withCause(e).log("Failed to construct InformationMessage message")
     }
-  }
-
-  companion object {
-    private const val DESC = "InfoMessageAction"
   }
 }

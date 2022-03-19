@@ -118,17 +118,22 @@ class ConnectController
     inMessage =
         try {
           parse(buffer)
-        } catch (e: MessageFormatException) {
-          messageFormatErrorCount++
-          buffer.rewind()
-          logger
-              .atWarning()
-              .log(
-                  "Received invalid message from " +
-                      formatSocketAddress(fromSocketAddress) +
-                      ": " +
-                      dumpBuffer(buffer))
-          return
+        } catch (e: Exception) {
+          when (e) {
+            is MessageFormatException, is IllegalArgumentException -> {
+              messageFormatErrorCount++
+              buffer.rewind()
+              logger
+                  .atWarning()
+                  .log(
+                      "Received invalid message from " +
+                          formatSocketAddress(fromSocketAddress) +
+                          ": " +
+                          dumpBuffer(buffer))
+              return
+            }
+            else -> throw e
+          }
         }
 
     // the message set of the ConnectController isn't really complex enough to warrant a complicated

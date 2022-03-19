@@ -10,11 +10,10 @@ data class AllReady
     constructor(override val messageNumber: Int) : V086Message() {
   override val bodyLength = 1
 
-  override val shortName = DESC
   override val messageId = ID
 
   init {
-    validateMessageNumber(messageNumber, DESC)
+    validateMessageNumber(messageNumber)
   }
 
   public override fun writeBodyTo(buffer: ByteBuffer) {
@@ -23,7 +22,6 @@ data class AllReady
 
   companion object {
     const val ID: Byte = 0x15
-    private const val DESC = "All Ready Signal"
 
     @Throws(ParseException::class, MessageFormatException::class)
     fun parse(messageNumber: Int, buffer: ByteBuffer): AllReady {
@@ -31,7 +29,7 @@ data class AllReady
       val b = buffer.get()
       if (b.toInt() != 0x00)
           throw MessageFormatException(
-              "Invalid " + DESC + " format: byte 0 = " + EmuUtil.byteToHex(b))
+              "Invalid All Ready Signal format: byte 0 = " + EmuUtil.byteToHex(b))
       return AllReady(messageNumber)
     }
   }
