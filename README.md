@@ -15,20 +15,20 @@ The aim of this repository is to:
  - Add new features useful to SSB64 netplay.
  - Modernize the codebase and fix vulnerabilities while maintaining or increasing the level of performance.
 
-EmuLinkerSF-netsma is maintained by [鵺 (nue)](https://twitter.com/nuenuessb).
+EmuLinkerSF-netsma is maintained by [jonnjonn](https://twitter.com/6kRt62r2zvKp5Rh).
 
 ## Development
 
 From the emulinker/ directory, the following commands are supported:
 
-| Command               | Description                                                                                             |
-| --------------------  | ------------------------------------------------------------------------------------------------------- |
-| `mvn compile`         | Compile the code. Running this command also patches [ErrorProne](https://errorprone.info/) suggestions. |
-| `mvn spotless:apply`  | Run the formatter.                                                                                      |
-| `mvn spotless:check`  | Run the linter.                                                                                         |
-| `mvn test`            | Run tests.                                                                                              |
-| `mvn assembly:single` | Build the jar.                                                                                          |
-| `mvn exec:java`       | Run the server locally.                                                                                 |
+| Command               | Description             |
+| --------------------- | ----------------------- |
+| `mvn compile`         | Compile the code.       |
+| `mvn spotless:apply`  | Run the formatter.      |
+| `mvn spotless:check`  | Run the linter.         |
+| `mvn test`            | Run tests.              |
+| `mvn assembly:single` | Build the jar.          |
+| `mvn exec:java`       | Run the server locally. |
 
 Note: You will need to have Maven installed.
 
