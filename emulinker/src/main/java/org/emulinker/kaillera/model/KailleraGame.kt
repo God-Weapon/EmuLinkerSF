@@ -14,9 +14,7 @@ import org.emulinker.kaillera.model.impl.PlayerActionQueue
 
 interface KailleraGame {
   val clientType: String?
-  val highestPing: Int
   val id: Int
-  val numPlayers: Int
   val owner: KailleraUser?
   val playerActionQueue: Array<PlayerActionQueue>?
   val players: MutableList<KailleraUser>
@@ -25,10 +23,11 @@ interface KailleraGame {
   val startTimeoutTime: Long
   val status: GameStatus
 
-  var delay: Int
+  var highestUserFrameDelay: Int
   var maxPing: Int
   var maxUsers: Int
   var p2P: Boolean
+  /** Frame delay is synced with others users in the same game (see /samedelay). */
   var sameDelay: Boolean
   var startN: Int
   var startTimeout: Boolean
@@ -55,7 +54,7 @@ interface KailleraGame {
   fun ready(user: KailleraUser?, playerNumber: Int)
 
   @Throws(GameDataException::class)
-  fun addData(user: KailleraUser, playerNumber: Int, data: ByteArray?)
+  fun addData(user: KailleraUser, playerNumber: Int, data: ByteArray)
 
   @Throws(DropGameException::class)
   fun drop(user: KailleraUser, playerNumber: Int)

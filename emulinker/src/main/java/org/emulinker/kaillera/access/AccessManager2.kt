@@ -6,6 +6,7 @@ import java.io.*
 import java.net.InetAddress
 import java.net.URISyntaxException
 import java.security.Security
+import java.time.Duration
 import java.util.*
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.ThreadPoolExecutor
@@ -78,33 +79,19 @@ class AccessManager2
     try {
       while (!stopFlag) {
         try {
-          Thread.sleep((60 * 1000).toLong())
+          Thread.sleep(Duration.ofMinutes(1).toMillis())
         } catch (e: InterruptedException) {
           logger.atSevere().withCause(e).log("Sleep Interrupted!")
         }
         if (stopFlag) break
         synchronized(this) {
-          for (tempBan in tempBanList) {
-            if (tempBan.isExpired) tempBanList.remove(tempBan)
-          }
-          for (tempAdmin in tempAdminList) {
-            if (tempAdmin.isExpired) tempAdminList.remove(tempAdmin)
-          }
-          for (tempModerator in tempModeratorList) {
-            if (tempModerator.isExpired) tempModeratorList.remove(tempModerator)
-          }
-          for (tempElevated in tempElevatedList) {
-            if (tempElevated.isExpired) tempElevatedList.remove(tempElevated)
-          }
-          for (silence in silenceList) {
-            if (silence.isExpired) silenceList.remove(silence)
-          }
-          for (userAccess in userList) {
-            userAccess.refreshDNS()
-          }
-          for (addressAccess in addressList) {
-            addressAccess.refreshDNS()
-          }
+          tempBanList.removeIf { it.isExpired }
+          tempAdminList.removeIf { it.isExpired }
+          tempModeratorList.removeIf { it.isExpired }
+          tempElevatedList.removeIf { it.isExpired }
+          silenceList.removeIf { it.isExpired }
+          userList.forEach { it.refreshDNS() }
+          addressList.forEach { it.refreshDNS() }
         }
       }
     } catch (e: Throwable) {
@@ -161,23 +148,23 @@ class AccessManager2
   }
 
   override fun addTempBan(addressPattern: String, minutes: Int) {
-    tempBanList.add(TempBan(addressPattern, minutes))
+    tempBanList.add(TempBan(addressPattern, Duration.ofMinutes(minutes.toLong())))
   }
 
   override fun addTempAdmin(addressPattern: String, minutes: Int) {
-    tempAdminList.add(TempAdmin(addressPattern, minutes))
+    tempAdminList.add(TempAdmin(addressPattern, Duration.ofMinutes(minutes.toLong())))
   }
 
   override fun addTempModerator(addressPattern: String, minutes: Int) {
-    tempModeratorList.add(TempModerator(addressPattern, minutes))
+    tempModeratorList.add(TempModerator(addressPattern, Duration.ofMinutes(minutes.toLong())))
   }
 
   override fun addTempElevated(addressPattern: String, minutes: Int) {
-    tempElevatedList.add(TempElevated(addressPattern, minutes))
+    tempElevatedList.add(TempElevated(addressPattern, Duration.ofMinutes(minutes.toLong())))
   }
 
   override fun addSilenced(addressPattern: String, minutes: Int) {
-    silenceList.add(Silence(addressPattern, minutes))
+    silenceList.add(Silence(addressPattern, Duration.ofMinutes(minutes.toLong())))
   }
 
   @Synchronized
@@ -291,18 +278,18 @@ class AccessManager2
     return true
   }
 
-  protected inner class UserAccess(st: StringTokenizer) {
-    protected var hostNames: MutableList<String>
-    protected var resolvedAddresses: MutableList<String>
+  private class UserAccess(st: StringTokenizer) {
+    private var hostNames: MutableList<String>
+    private var resolvedAddresses: MutableList<String>
     var access = 0
-      protected set
+      private set
     var message: String? = null
-      protected set
+      private set
 
     @Synchronized
     fun refreshDNS() {
       resolvedAddresses.clear()
-      for (hostName in hostNames) {
+      hostNames.forEach { hostName ->
         try {
           val address = InetAddress.getByName(hostName)
           resolvedAddresses.add(address.hostAddress)
@@ -313,19 +300,10 @@ class AccessManager2
     }
 
     private var patterns: MutableList<WildcardStringPattern>
-    protected fun getPatterns(): List<WildcardStringPattern> {
-      return patterns
-    }
 
     @Synchronized
     fun matches(address: String): Boolean {
-      for (pattern in patterns) {
-        if (pattern.match(address)) return true
-      }
-      for (resolvedAddress in resolvedAddresses) {
-        if (resolvedAddress == address) return true
-      }
-      return false
+      return patterns.any { it.match(address) } || resolvedAddresses.any { it == address }
     }
 
     init {
@@ -333,12 +311,14 @@ class AccessManager2
           throw Exception("Wrong number of tokens: " + st.countTokens())
       val accessStr = st.nextToken().lowercase(Locale.getDefault())
       access =
-          if (accessStr == "normal") AccessManager.ACCESS_NORMAL
-          else if (accessStr == "elevated") AccessManager.ACCESS_ELEVATED
-          else if (accessStr == "moderator") AccessManager.ACCESS_MODERATOR
-          else if (accessStr == "admin") AccessManager.ACCESS_ADMIN
-          else if (accessStr == "superadmin") AccessManager.ACCESS_SUPERADMIN
-          else throw AccessException("Unrecognized access token: $accessStr")
+          when (accessStr) {
+            "normal" -> AccessManager.ACCESS_NORMAL
+            "elevated" -> AccessManager.ACCESS_ELEVATED
+            "moderator" -> AccessManager.ACCESS_MODERATOR
+            "admin" -> AccessManager.ACCESS_ADMIN
+            "superadmin" -> AccessManager.ACCESS_SUPERADMIN
+            else -> throw AccessException("Unrecognized access token: $accessStr")
+          }
       hostNames = ArrayList()
       resolvedAddresses = ArrayList()
       patterns = ArrayList()
@@ -368,11 +348,11 @@ class AccessManager2
     }
   }
 
-  protected inner class AddressAccess(st: StringTokenizer) {
-    protected var hostNames: MutableList<String>
-    protected var resolvedAddresses: MutableList<String>
+  private class AddressAccess(st: StringTokenizer) {
+    private var hostNames: MutableList<String>
+    private var resolvedAddresses: MutableList<String>
     var access = false
-      protected set
+      private set
 
     @Synchronized
     fun refreshDNS() {
@@ -388,9 +368,6 @@ class AccessManager2
     }
 
     private var patterns: MutableList<WildcardStringPattern>
-    protected fun getPatterns(): List<WildcardStringPattern> {
-      return patterns
-    }
 
     @Synchronized
     fun matches(address: String): Boolean {
@@ -407,9 +384,11 @@ class AccessManager2
       if (st.countTokens() != 2) throw Exception("Wrong number of tokens: " + st.countTokens())
       val accessStr = st.nextToken().lowercase(Locale.getDefault())
       access =
-          if (accessStr == "allow") true
-          else if (accessStr == "deny") false
-          else throw AccessException("Unrecognized access token: $accessStr")
+          when (accessStr) {
+            "allow" -> true
+            "deny" -> false
+            else -> throw AccessException("Unrecognized access token: $accessStr")
+          }
       hostNames = ArrayList()
       resolvedAddresses = ArrayList()
       patterns = ArrayList()
@@ -438,14 +417,11 @@ class AccessManager2
     }
   }
 
-  protected inner class EmulatorAccess(st: StringTokenizer) {
+  private class EmulatorAccess(st: StringTokenizer) {
     var access = false
-      protected set
+      private set
 
     private var patterns: MutableList<WildcardStringPattern>
-    protected fun getPatterns(): List<WildcardStringPattern> {
-      return patterns
-    }
 
     fun matches(emulator: String?): Boolean {
       for (pattern in patterns) {
@@ -458,9 +434,11 @@ class AccessManager2
       if (st.countTokens() != 2) throw Exception("Wrong number of tokens: " + st.countTokens())
       val accessStr = st.nextToken().lowercase(Locale.getDefault())
       access =
-          if (accessStr == "allow") true
-          else if (accessStr == "deny") false
-          else throw AccessException("Unrecognized access token: $accessStr")
+          when (accessStr) {
+            "allow" -> true
+            "deny" -> false
+            else -> throw AccessException("Unrecognized access token: $accessStr")
+          }
       patterns = ArrayList()
       val s = st.nextToken().lowercase(Locale.getDefault())
       val pt = StringTokenizer(s, "|")
@@ -470,14 +448,11 @@ class AccessManager2
     }
   }
 
-  protected inner class GameAccess(st: StringTokenizer) {
+  private class GameAccess(st: StringTokenizer) {
     var access = false
-      protected set
+      private set
 
     private var patterns: MutableList<WildcardStringPattern>
-    protected fun getPatterns(): List<WildcardStringPattern> {
-      return patterns
-    }
 
     fun matches(game: String?): Boolean {
       for (pattern in patterns) {
@@ -490,170 +465,17 @@ class AccessManager2
       if (st.countTokens() != 2) throw Exception("Wrong number of tokens: " + st.countTokens())
       val accessStr = st.nextToken().lowercase(Locale.getDefault())
       access =
-          if (accessStr == "allow") true
-          else if (accessStr == "deny") false
-          else throw AccessException("Unrecognized access token: $accessStr")
+          when (accessStr) {
+            "allow" -> true
+            "deny" -> false
+            else -> throw AccessException("Unrecognized access token: $accessStr")
+          }
       patterns = ArrayList()
       val s = st.nextToken().lowercase(Locale.getDefault())
       val pt = StringTokenizer(s, "|")
       while (pt.hasMoreTokens()) {
         patterns.add(WildcardStringPattern(pt.nextToken().lowercase(Locale.getDefault())))
       }
-    }
-  }
-
-  protected inner class TempBan(accessStr: String?, minutes: Int) {
-    protected var startTime: Long
-    protected var minutes: Int
-
-    private var patterns: MutableList<WildcardStringPattern>
-    protected fun getPatterns(): List<WildcardStringPattern> {
-      return patterns
-    }
-
-    val isExpired: Boolean
-      get() = if (System.currentTimeMillis() > startTime + minutes * 60000) true else false
-
-    fun matches(address: String?): Boolean {
-      for (pattern in patterns) {
-        if (pattern.match(address)) return true
-      }
-      return false
-    }
-
-    init {
-      patterns = ArrayList()
-      val s = accessStr!!.lowercase(Locale.getDefault())
-      val pt = StringTokenizer(s, "|")
-      while (pt.hasMoreTokens()) {
-        patterns.add(WildcardStringPattern(pt.nextToken().lowercase(Locale.getDefault())))
-      }
-      this.minutes = minutes
-      startTime = System.currentTimeMillis()
-    }
-  }
-
-  protected inner class TempAdmin(accessStr: String?, minutes: Int) {
-    protected var startTime: Long
-    protected var minutes: Int
-
-    private var patterns: MutableList<WildcardStringPattern>
-    protected fun getPatterns(): List<WildcardStringPattern> {
-      return patterns
-    }
-
-    val isExpired: Boolean
-      get() = if (System.currentTimeMillis() > startTime + minutes * 60000) true else false
-
-    fun matches(address: String?): Boolean {
-      for (pattern in patterns) {
-        if (pattern.match(address)) return true
-      }
-      return false
-    }
-
-    init {
-      patterns = ArrayList()
-      val s = accessStr!!.lowercase(Locale.getDefault())
-      val pt = StringTokenizer(s, "|")
-      while (pt.hasMoreTokens()) {
-        patterns.add(WildcardStringPattern(pt.nextToken().lowercase(Locale.getDefault())))
-      }
-      this.minutes = minutes
-      startTime = System.currentTimeMillis()
-    }
-  }
-
-  protected inner class TempModerator(accessStr: String?, minutes: Int) {
-    protected var startTime: Long
-    protected var minutes: Int
-
-    private var patterns: MutableList<WildcardStringPattern>
-    protected fun getPatterns(): List<WildcardStringPattern> {
-      return patterns
-    }
-
-    val isExpired: Boolean
-      get() = if (System.currentTimeMillis() > startTime + minutes * 60000) true else false
-
-    fun matches(address: String?): Boolean {
-      for (pattern in patterns) {
-        if (pattern.match(address)) return true
-      }
-      return false
-    }
-
-    init {
-      patterns = ArrayList()
-      val s = accessStr!!.lowercase(Locale.getDefault())
-      val pt = StringTokenizer(s, "|")
-      while (pt.hasMoreTokens()) {
-        patterns.add(WildcardStringPattern(pt.nextToken().lowercase(Locale.getDefault())))
-      }
-      this.minutes = minutes
-      startTime = System.currentTimeMillis()
-    }
-  }
-
-  protected inner class TempElevated(accessStr: String?, minutes: Int) {
-    protected var startTime: Long
-    protected var minutes: Int
-
-    private var patterns: MutableList<WildcardStringPattern>
-    protected fun getPatterns(): List<WildcardStringPattern> {
-      return patterns
-    }
-
-    val isExpired: Boolean
-      get() = if (System.currentTimeMillis() > startTime + minutes * 60000) true else false
-
-    fun matches(address: String?): Boolean {
-      for (pattern in patterns) {
-        if (pattern.match(address)) return true
-      }
-      return false
-    }
-
-    init {
-      patterns = ArrayList()
-      val s = accessStr!!.lowercase(Locale.getDefault())
-      val pt = StringTokenizer(s, "|")
-      while (pt.hasMoreTokens()) {
-        patterns.add(WildcardStringPattern(pt.nextToken().lowercase(Locale.getDefault())))
-      }
-      this.minutes = minutes
-      startTime = System.currentTimeMillis()
-    }
-  }
-
-  protected inner class Silence(accessStr: String?, minutes: Int) {
-    protected var startTime: Long
-    protected var minutes: Int
-
-    private var patterns: MutableList<WildcardStringPattern>
-    protected fun getPatterns(): List<WildcardStringPattern> {
-      return patterns
-    }
-
-    val isExpired: Boolean
-      get() = if (System.currentTimeMillis() > startTime + minutes * 60000) true else false
-
-    fun matches(address: String?): Boolean {
-      for (pattern in patterns) {
-        if (pattern.match(address)) return true
-      }
-      return false
-    }
-
-    init {
-      patterns = ArrayList()
-      val s = accessStr!!.lowercase(Locale.getDefault())
-      val pt = StringTokenizer(s, "|")
-      while (pt.hasMoreTokens()) {
-        patterns.add(WildcardStringPattern(pt.nextToken().lowercase(Locale.getDefault())))
-      }
-      this.minutes = minutes
-      startTime = System.currentTimeMillis()
     }
   }
 

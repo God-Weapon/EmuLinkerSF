@@ -61,9 +61,6 @@ abstract class V086Message : ByteBufferMessage() {
     @Throws(ParseException::class, MessageFormatException::class)
     fun parse(messageNumber: Int, messageLength: Int, buffer: ByteBuffer): V086Message {
 
-      // removed to increase speed
-      //		if (messageType < 0 || messageType > 0x17)
-      //			throw new MessageFormatException("Invalid message type: " + messageType);
       val message: V086Message =
           when (val messageType = buffer.get()
           ) {

@@ -45,12 +45,12 @@ class StartGameAction
     handledEventCount++
     try {
       val game = event.game
-      clientHandler.user!!.tempDelay = game.delay - clientHandler.user!!.delay
+      clientHandler.user!!.tempDelay = game.highestUserFrameDelay - clientHandler.user!!.frameDelay
       val delay: Int =
           if (game.sameDelay) {
-            game.delay
+            game.highestUserFrameDelay
           } else {
-            clientHandler.user!!.delay
+            clientHandler.user!!.frameDelay
           }
       val playerNumber = game.getPlayerNumber(clientHandler.user!!)
       clientHandler.send(
@@ -58,7 +58,7 @@ class StartGameAction
               clientHandler.nextMessageNumber,
               delay.toShort().toInt(),
               playerNumber.toByte().toShort(),
-              game.numPlayers.toByte().toShort()))
+              game.players.size.toByte().toShort()))
     } catch (e: MessageFormatException) {
       logger.atSevere().withCause(e).log("Failed to construct StartGame_Notification message")
     }

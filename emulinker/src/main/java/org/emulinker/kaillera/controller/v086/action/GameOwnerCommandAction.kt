@@ -79,7 +79,7 @@ class GameOwnerCommandAction @Inject internal constructor() : V086Action<GameCha
     val user = clientHandler.user as KailleraUserImpl
     val game =
         user.game ?: throw FatalActionException("GameOwner Command Failed: Not in a game: $chat")
-    if (user != game.owner && user.access < AccessManager.ACCESS_SUPERADMIN) {
+    if (user != game.owner && user.accessLevel < AccessManager.ACCESS_SUPERADMIN) {
       if (!chat.startsWith(COMMAND_HELP)) {
         logger.atWarning().log("GameOwner Command Denied: Not game owner: $game: $user: $chat")
         game.announce("GameOwner Command Error: You are not an owner!", user)
@@ -124,7 +124,7 @@ class GameOwnerCommandAction @Inject internal constructor() : V086Action<GameCha
       admin: KailleraUserImpl,
       clientHandler: V086ClientHandler
   ) {
-    if (admin != game.owner && admin.access < AccessManager.ACCESS_SUPERADMIN) return
+    if (admin != game.owner && admin.accessLevel < AccessManager.ACCESS_SUPERADMIN) return
     // game.setIndividualGameAnnounce(admin.getPlayerNumber());
     // game.announce(EmuLang.getString("GameOwnerCommandAction.AvailableCommands"));
     // try { Thread.sleep(20); } catch(Exception e) {}
@@ -267,7 +267,7 @@ class GameOwnerCommandAction @Inject internal constructor() : V086Action<GameCha
       admin: KailleraUserImpl,
       clientHandler: V086ClientHandler
   ) {
-    admin.game!!.announce(game.numPlayers.toString() + " in the room!", admin)
+    admin.game!!.announce("${game.players.size} in the room!", admin)
   }
 
   @Throws(ActionException::class, MessageFormatException::class)
@@ -282,7 +282,8 @@ class GameOwnerCommandAction @Inject internal constructor() : V086Action<GameCha
     if (message == "/lagstat") {
       var str = ""
       for (player in game.players) {
-        if (!player.stealth) str = str + "P" + player.playerNumber + ": " + player.timeouts + ", "
+        if (!player.inStealthMode)
+            str = str + "P" + player.playerNumber + ": " + player.timeouts + ", "
       }
       if (str.isNotEmpty()) {
         str = str.substring(0, str.length - ", ".length)
@@ -326,9 +327,9 @@ class GameOwnerCommandAction @Inject internal constructor() : V086Action<GameCha
       if (str == "/muteall") {
         for (w in 1..game.players.size) {
           // do not mute owner or admin
-          if (game.getPlayer(w)!!.access < AccessManager.ACCESS_ADMIN &&
+          if (game.getPlayer(w)!!.accessLevel < AccessManager.ACCESS_ADMIN &&
               game.getPlayer(w) != game.owner) {
-            game.getPlayer(w)!!.mute = true
+            game.getPlayer(w)!!.isMuted = true
             game.mutedUsers.add(game.getPlayer(w)!!.connectSocketAddress.address.hostAddress)
           }
         }
@@ -345,15 +346,15 @@ class GameOwnerCommandAction @Inject internal constructor() : V086Action<GameCha
         user.game!!.announce("You can't mute yourself!", admin)
         return
       }
-      if (user.access >= AccessManager.ACCESS_ADMIN &&
-          admin.access != AccessManager.ACCESS_SUPERADMIN) {
+      if (user.accessLevel >= AccessManager.ACCESS_ADMIN &&
+          admin.accessLevel != AccessManager.ACCESS_SUPERADMIN) {
         user.game!!.announce("You can't mute an Admin", admin)
         return
       }
 
       // mute by IP
       game.mutedUsers.add(user.connectSocketAddress.address.hostAddress)
-      user.mute = true
+      user.isMuted = true
       val user1 = clientHandler.user as KailleraUserImpl
       user1.game!!.announce(user.name + " has been muted!", null)
     } catch (e: NoSuchElementException) {
@@ -374,7 +375,7 @@ class GameOwnerCommandAction @Inject internal constructor() : V086Action<GameCha
       val str = scanner.next()
       if (str == "/unmuteall") {
         for (w in 1..game.players.size) {
-          game.getPlayer(w)!!.mute = false
+          game.getPlayer(w)!!.isMuted = false
           game.mutedUsers.remove(game.getPlayer(w)!!.connectSocketAddress.address.hostAddress)
         }
         admin.game!!.announce("All players have been unmuted!", null)
@@ -390,13 +391,13 @@ class GameOwnerCommandAction @Inject internal constructor() : V086Action<GameCha
         user.game!!.announce("You can't unmute yourself!", admin)
         return
       }
-      if (user.access >= AccessManager.ACCESS_ADMIN &&
-          admin.access != AccessManager.ACCESS_SUPERADMIN) {
+      if (user.accessLevel >= AccessManager.ACCESS_ADMIN &&
+          admin.accessLevel != AccessManager.ACCESS_SUPERADMIN) {
         user.game!!.announce("You can't unmute an Admin", admin)
         return
       }
       game.mutedUsers.remove(user.connectSocketAddress.address.hostAddress)
-      user.mute = false
+      user.isMuted = false
       val user1 = clientHandler.user
       (user1 as KailleraUserImpl?)!!.game!!.announce(user.name + " has been unmuted!", null)
     } catch (e: NoSuchElementException) {
@@ -514,7 +515,7 @@ class GameOwnerCommandAction @Inject internal constructor() : V086Action<GameCha
       if (str == "/kickall") {
         // start kick players from last to first and don't kick owner or admin
         for (w in game.players.size downTo 1) {
-          if (game.getPlayer(w)!!.access < AccessManager.ACCESS_ADMIN &&
+          if (game.getPlayer(w)!!.accessLevel < AccessManager.ACCESS_ADMIN &&
               game.getPlayer(w) != game.owner)
               game.kick(admin, game.getPlayer(w)!!.id)
         }

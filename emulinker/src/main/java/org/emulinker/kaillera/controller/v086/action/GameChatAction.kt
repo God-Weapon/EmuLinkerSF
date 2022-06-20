@@ -64,7 +64,7 @@ class GameChatAction
   @Throws(FatalActionException::class)
   private fun checkCommands(message: V086Message, clientHandler: V086ClientHandler?) {
     var doCommand = true
-    if (clientHandler!!.user!!.access < AccessManager.ACCESS_ELEVATED) {
+    if (clientHandler!!.user!!.accessLevel < AccessManager.ACCESS_ELEVATED) {
       try {
         clientHandler.user!!.chat(":USER_COMMAND")
       } catch (e: ActionException) {
@@ -75,14 +75,14 @@ class GameChatAction
       if ((message as GameChat).message == "/msgon") {
         val user = clientHandler.user as KailleraUserImpl
         try {
-          clientHandler.user!!.msg = true
+          clientHandler.user!!.isAcceptingDirectMessages = true
           user.game!!.announce("Private messages are now on.", user)
         } catch (e: Exception) {}
         return
       } else if (message.message == "/msgoff") {
         val user = clientHandler.user as KailleraUserImpl
         try {
-          clientHandler.user!!.msg = false
+          clientHandler.user!!.isAcceptingDirectMessages = false
           user.game!!.announce("Private messages are now off.", user)
         } catch (e: Exception) {}
         return
@@ -166,7 +166,7 @@ class GameChatAction
             user1.game!!.announce("You can't private message yourself!", user1)
             return
           }
-          if (!user.msg ||
+          if (!user.isAcceptingDirectMessages ||
               user.searchIgnoredUsers(
                   clientHandler.user!!.connectSocketAddress.address.hostAddress)) {
             user1.game!!.announce("<" + user.name + "> Is not accepting private messages!", user1)
@@ -230,13 +230,9 @@ class GameChatAction
                 user1.game!!.announce("You can't private message yourself!", user1)
                 return
               }
-              if (!user.msg) {
-                user1.game!!.announce("<${user.name}> Is not accepting private messages!", user1)
-                return
-              }
               var m = sb.toString()
               m = m.trim { it <= ' ' }
-              if (m.isNullOrBlank() || m.startsWith("�") || m.startsWith("�")) return
+              if (m.isBlank() || m.startsWith("�") || m.startsWith("�")) return
               if (access == AccessManager.ACCESS_NORMAL) {
                 val chars = m.toCharArray()
                 var i = 0
@@ -315,7 +311,7 @@ class GameChatAction
             user1.game!!.announce("You can't ignore a user that is already ignored!", user1)
             return
           }
-          if (user.access >= AccessManager.ACCESS_MODERATOR) {
+          if (user.accessLevel >= AccessManager.ACCESS_MODERATOR) {
             user1.game!!.announce("You cannot ignore a moderator or admin!", user1)
             return
           }
@@ -447,7 +443,7 @@ class GameChatAction
           gameChatEvent.user.connectSocketAddress.address.hostAddress))
           return
       else if (clientHandler.user!!.ignoreAll) {
-        if (gameChatEvent.user.access < AccessManager.ACCESS_ADMIN &&
+        if (gameChatEvent.user.accessLevel < AccessManager.ACCESS_ADMIN &&
             gameChatEvent.user !== clientHandler.user)
             return
       }

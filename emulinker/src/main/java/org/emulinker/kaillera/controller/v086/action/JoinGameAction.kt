@@ -57,7 +57,7 @@ class JoinGameAction @Inject internal constructor() :
         val players: MutableList<Player> = ArrayList()
         for (player in game.players) {
           if (player != thisUser) {
-            if (!player.stealth)
+            if (!player.inStealthMode)
                 players.add(
                     PlayerInformation.Player(
                         player.name!!, player.ping.toLong(), player.id, player.connectionType))
@@ -65,7 +65,7 @@ class JoinGameAction @Inject internal constructor() :
         }
         clientHandler.send(PlayerInformation(clientHandler.nextMessageNumber, players))
       }
-      if (!user.stealth)
+      if (!user.inStealthMode)
           clientHandler.send(
               JoinGame_Notification(
                   clientHandler.nextMessageNumber,

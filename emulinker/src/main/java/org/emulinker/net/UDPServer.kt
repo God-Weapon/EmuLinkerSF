@@ -10,7 +10,6 @@ import java.nio.Buffer
 import java.nio.ByteBuffer
 import java.nio.channels.DatagramChannel
 import kotlin.Throws
-import org.emulinker.net.UDPServer.ShutdownThread
 import org.emulinker.util.EmuUtil.formatSocketAddress
 import org.emulinker.util.Executable
 
@@ -42,7 +41,7 @@ abstract class UDPServer(shutdownOnExit: Boolean, metrics: MetricRegistry?) : Ex
     private set
   private var channel: DatagramChannel? = null
 
-  final override var running = false
+  final override var threadIsActive = false
     private set
 
   protected var stopFlag = false
@@ -60,7 +59,7 @@ abstract class UDPServer(shutdownOnExit: Boolean, metrics: MetricRegistry?) : Ex
   @Synchronized
   open fun start() {
     logger.atFine().log(toString() + " received start request!")
-    if (running) {
+    if (threadIsActive) {
       logger.atFine().log(toString() + " start request ignored: already running!")
       return
     }
@@ -134,7 +133,7 @@ abstract class UDPServer(shutdownOnExit: Boolean, metrics: MetricRegistry?) : Ex
   }
 
   override fun run() {
-    running = true
+    threadIsActive = true
     logger.atFine().log(toString() + ": thread running...")
     try {
       while (!stopFlag) {
@@ -182,7 +181,7 @@ abstract class UDPServer(shutdownOnExit: Boolean, metrics: MetricRegistry?) : Ex
           .log("UDPServer on port %d caught unexpected exception!", bindPort)
       stop()
     } finally {
-      running = false
+      threadIsActive = false
       logger.atFine().log(toString() + ": thread exiting...")
     }
   }

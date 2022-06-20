@@ -9,14 +9,20 @@ import org.emulinker.kaillera.model.impl.KailleraUserImpl
 
 interface KailleraUser {
   // Fields that only support getters.
-  val access: Int
+  val id: Int
+  /**
+   * Level of access that the user has.
+   *
+   * See AdminCommandAction for available values. This should be turned into an enum.
+   */
+  val accessLevel: Int
+  /** User action data response message size (in number of bytes). */
   val arraySize: Int
   val bytesPerAction: Int
   val connectSocketAddress: InetSocketAddress
   val connectTime: Long
-  val delay: Int
+  val frameDelay: Int
   val game: KailleraGameImpl?
-  val id: Int
   val isEmuLinkerClient: Boolean
   val lastActivity: Long
   val lastKeepAlive: Long
@@ -33,14 +39,14 @@ interface KailleraUser {
   var frameCount: Int
   var ignoreAll: Boolean
   var lastMsgID: Int
-  var msg: Boolean
-  var mute: Boolean
+  var isAcceptingDirectMessages: Boolean
+  var isMuted: Boolean
   var name: String? // TODO(nue): Remove this "?"
   var p2P: Boolean
   var ping: Int
   var playerNumber: Int
   var socketAddress: InetSocketAddress?
-  var stealth: Boolean
+  var inStealthMode: Boolean
   var tempDelay: Int
   var timeouts: Int
 

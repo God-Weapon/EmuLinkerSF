@@ -85,7 +85,7 @@ class ACKAction @Inject internal constructor() :
       for (game in server.games) {
         var num = 0
         for (user in game.players) {
-          if (!user.stealth) num++
+          if (!user.inStealthMode) num++
         }
         games.add(
             ServerStatus.Game(

@@ -36,7 +36,7 @@ class ChatAction @Inject internal constructor(private val adminCommandAction: Ad
   @Throws(FatalActionException::class)
   override fun performAction(message: Chat_Request, clientHandler: V086ClientHandler) {
     if (message.message.startsWith(ADMIN_COMMAND_ESCAPE_STRING)) {
-      if (clientHandler.user!!.access > AccessManager.ACCESS_ELEVATED) {
+      if (clientHandler.user!!.accessLevel > AccessManager.ACCESS_ELEVATED) {
         try {
           if (adminCommandAction.isValidCommand(message.message)) {
             adminCommandAction.performAction(message, clientHandler)
@@ -78,7 +78,7 @@ class ChatAction @Inject internal constructor(private val adminCommandAction: Ad
   private fun checkCommands(chatMessage: Chat_Request, clientHandler: V086ClientHandler) {
     var doCommand = true
     val userN = clientHandler.user as KailleraUserImpl
-    if (userN.access < AccessManager.ACCESS_ELEVATED) {
+    if (userN.accessLevel < AccessManager.ACCESS_ELEVATED) {
       try {
         clientHandler.user!!.chat(":USER_COMMAND")
       } catch (e: ActionException) {
@@ -96,7 +96,7 @@ class ChatAction @Inject internal constructor(private val adminCommandAction: Ad
                   ":ALIVECHECK=EmulinkerSF Alive Check: You are still logged in."))
         } catch (e: Exception) {}
       } else if (chatMessage.message == "/version" &&
-          clientHandler.user!!.access < AccessManager.ACCESS_ADMIN) {
+          clientHandler.user!!.accessLevel < AccessManager.ACCESS_ADMIN) {
         val releaseInfo = clientHandler.user!!.server.releaseInfo
         try {
           clientHandler.send(
@@ -120,14 +120,14 @@ class ChatAction @Inject internal constructor(private val adminCommandAction: Ad
                       clientHandler.user!!.connectSocketAddress.address.hostAddress))
         } catch (e: Exception) {}
       } else if (chatMessage.message == "/msgon") {
-        clientHandler.user!!.msg = true
+        clientHandler.user!!.isAcceptingDirectMessages = true
         try {
           clientHandler.send(
               InformationMessage(
                   clientHandler.nextMessageNumber, "server", "Private messages are now on."))
         } catch (e: Exception) {}
       } else if (chatMessage.message == "/msgoff") {
-        clientHandler.user!!.msg = false
+        clientHandler.user!!.isAcceptingDirectMessages = false
         try {
           clientHandler.send(
               InformationMessage(
@@ -207,7 +207,7 @@ class ChatAction @Inject internal constructor(private val adminCommandAction: Ad
             } catch (e: Exception) {}
             return
           }
-          if (!user.msg ||
+          if (!user.isAcceptingDirectMessages ||
               user.searchIgnoredUsers(
                   clientHandler.user!!.connectSocketAddress.address.hostAddress)) {
             try {
@@ -303,7 +303,7 @@ class ChatAction @Inject internal constructor(private val adminCommandAction: Ad
                 } catch (e1: Exception) {}
                 return
               }
-              if (!user.msg) {
+              if (!user.isAcceptingDirectMessages) {
                 try {
                   clientHandler.send(
                       InformationMessage(
@@ -426,7 +426,7 @@ class ChatAction @Inject internal constructor(private val adminCommandAction: Ad
             } catch (e: Exception) {}
             return
           }
-          if (user.access >= AccessManager.ACCESS_MODERATOR) {
+          if (user.accessLevel >= AccessManager.ACCESS_MODERATOR) {
             try {
               clientHandler.send(
                   InformationMessage(
@@ -542,7 +542,7 @@ class ChatAction @Inject internal constructor(private val adminCommandAction: Ad
         try {
           Thread.sleep(20)
         } catch (e: Exception) {}
-        if (clientHandler.user!!.access == AccessManager.ACCESS_MODERATOR) {
+        if (clientHandler.user!!.accessLevel == AccessManager.ACCESS_MODERATOR) {
           try {
             clientHandler.send(
                 InformationMessage(
@@ -562,7 +562,7 @@ class ChatAction @Inject internal constructor(private val adminCommandAction: Ad
             Thread.sleep(20)
           } catch (e: Exception) {}
         }
-        if (clientHandler.user!!.access < AccessManager.ACCESS_ADMIN) {
+        if (clientHandler.user!!.accessLevel < AccessManager.ACCESS_ADMIN) {
           try {
             clientHandler.send(
                 InformationMessage(
@@ -584,7 +584,7 @@ class ChatAction @Inject internal constructor(private val adminCommandAction: Ad
           return
         }
       } else if (chatMessage.message.startsWith("/finduser") &&
-          clientHandler.user!!.access < AccessManager.ACCESS_ADMIN) {
+          clientHandler.user!!.accessLevel < AccessManager.ACCESS_ADMIN) {
         val space = chatMessage.message.indexOf(' ')
         if (space < 0) {
           try {
@@ -647,7 +647,8 @@ class ChatAction @Inject internal constructor(private val adminCommandAction: Ad
           event.user.connectSocketAddress.address.hostAddress))
           return
       else if (clientHandler.user!!.ignoreAll) {
-        if (event.user.access < AccessManager.ACCESS_ADMIN && event.user !== clientHandler.user)
+        if (event.user.accessLevel < AccessManager.ACCESS_ADMIN &&
+            event.user !== clientHandler.user)
             return
       }
       val m = event.message

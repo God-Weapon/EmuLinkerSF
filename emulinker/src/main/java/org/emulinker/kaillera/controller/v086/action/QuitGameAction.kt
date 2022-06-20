@@ -52,11 +52,11 @@ class QuitGameAction
     val thisUser = clientHandler.user
     try {
       val user = event.user
-      if (!user.stealth)
+      if (!user.inStealthMode)
           clientHandler.send(
               QuitGame_Notification(clientHandler.nextMessageNumber, user.name!!, user.id))
       if (thisUser === user) {
-        if (user.stealth)
+        if (user.inStealthMode)
             clientHandler.send(
                 QuitGame_Notification(clientHandler.nextMessageNumber, user.name!!, user.id))
       }

@@ -39,7 +39,7 @@ class DropGameAction @Inject internal constructor() :
       val playerNumber = event.playerNumber
       //			clientHandler.send(PlayerDrop_Notification.create(clientHandler.getNextMessageNumber(),
       // user.getName(), (byte) game.getPlayerNumber(user)));
-      if (!user.stealth)
+      if (!user.inStealthMode)
           clientHandler.send(
               PlayerDrop_Notification(
                   clientHandler.nextMessageNumber, user.name!!, playerNumber.toByte()))

@@ -31,7 +31,7 @@ class MasterListUpdater
   private var stopFlag = false
 
   @get:Synchronized
-  override var running = false
+  override var threadIsActive = false
     private set
 
   @Synchronized
@@ -72,7 +72,7 @@ class MasterListUpdater
   override fun stop() {
     if (publicInfo != null) {
       logger.atFine().log("MasterListUpdater thread received stop request!")
-      if (!running) {
+      if (!threadIsActive) {
         logger.atFine().log("MasterListUpdater thread stop request ignored: not running!")
         return
       }
@@ -81,7 +81,7 @@ class MasterListUpdater
   }
 
   override fun run() {
-    running = true
+    threadIsActive = true
     logger.atFine().log("MasterListUpdater thread running...")
     try {
       while (!stopFlag) {
@@ -95,7 +95,7 @@ class MasterListUpdater
         statsCollector.clearStartedGamesList()
       }
     } finally {
-      running = false
+      threadIsActive = false
       logger.atFine().log("MasterListUpdater thread exiting...")
     }
   }

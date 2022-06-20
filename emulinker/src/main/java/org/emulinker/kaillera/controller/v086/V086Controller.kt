@@ -73,8 +73,7 @@ class V086Controller
 
   var actions: Array<V086Action<*>?> = arrayOfNulls(25)
 
-  override val version: String
-    get() = "v086"
+  override val version = "v086"
 
   override val numClients = clientHandlers.size
 
@@ -99,7 +98,7 @@ class V086Controller
         val port = portInteger.toInt()
         logger.atInfo().log("Private port $port allocated to: $user")
         try {
-          clientHandler!!.bind(port)
+          clientHandler.bind(port)
           boundPort = port
           break
         } catch (e: BindException) {
@@ -107,12 +106,7 @@ class V086Controller
           logger
               .atFine()
               .log(
-                  toString() +
-                      " returning port " +
-                      port +
-                      " to available port queue: " +
-                      (portRangeQueue.size + 1) +
-                      " available")
+                  "${toString()} returning port $port to available port queue: ${portRangeQueue.size + 1} available")
           portRangeQueue.add(port)
         }
       }
@@ -122,10 +116,10 @@ class V086Controller
       } catch (e: InterruptedException) {}
     }
     if (boundPort < 0) {
-      clientHandler!!.stop()
+      clientHandler.stop()
       throw NewConnectionException("Failed to bind!")
     }
-    clientHandler!!.start(user!!)
+    clientHandler.start(user!!)
     return boundPort
   }
 
@@ -146,7 +140,6 @@ class V086Controller
   }
 
   init {
-
     var maxPort = 0
     for (i in portRangeStart..portRangeStart + server.maxUsers + extraPorts) {
       portRangeQueue.add(i)
@@ -155,11 +148,7 @@ class V086Controller
     logger
         .atWarning()
         .log(
-            "Listening on UDP ports: " +
-                portRangeStart +
-                " to " +
-                maxPort +
-                ".  Make sure these ports are open in your firewall!")
+            "Listening on UDP ports: $portRangeStart to $maxPort.  Make sure these ports are open in your firewall!")
     Preconditions.checkArgument(flags.v086BufferSize > 0, "controllers.v086.bufferSize must be > 0")
 
     // array access should be faster than a hash and we won't have to create
@@ -180,7 +169,6 @@ class V086Controller
     actions[GameData.ID.toInt()] = gameDataAction
     actions[PlayerDrop.ID.toInt()] = dropGameAction
 
-    // setup the server event handlers
     serverEventHandlers =
         ImmutableMap.builder<Class<*>, V086ServerEventHandler<*>>()
             .put(ChatEvent::class.java, chatAction)
@@ -190,8 +178,6 @@ class V086Controller
             .put(UserQuitEvent::class.java, quitAction)
             .put(GameStatusChangedEvent::class.java, gameStatusAction)
             .build()
-
-    // setup the game event handlers
     gameEventHandlers =
         ImmutableMap.builder<Class<*>, V086GameEventHandler<*>>()
             .put(UserJoinedGameEvent::class.java, joinGameAction)
@@ -206,8 +192,6 @@ class V086Controller
             .put(GameInfoEvent::class.java, gameInfoAction)
             .put(GameTimeoutEvent::class.java, gameTimeoutAction)
             .build()
-
-    // setup the user event handlers
     userEventHandlers =
         ImmutableMap.builder<Class<*>, V086UserEventHandler<*>>()
             .put(ConnectedEvent::class.java, ackAction)

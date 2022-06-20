@@ -3,7 +3,7 @@ package org.emulinker.util
 import java.lang.Runnable
 
 interface Executable : Runnable {
-  val running: Boolean
+  val threadIsActive: Boolean
 
   fun stop()
 }

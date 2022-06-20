@@ -54,7 +54,7 @@ class LoginAction @Inject internal constructor() :
               user.ping.toLong(),
               user.connectionType))
       val thisUser = clientHandler.user as KailleraUserImpl
-      if (thisUser.isEmuLinkerClient && thisUser.access >= AccessManager.ACCESS_SUPERADMIN) {
+      if (thisUser.isEmuLinkerClient && thisUser.accessLevel >= AccessManager.ACCESS_SUPERADMIN) {
         if (user != thisUser) {
           val sb = StringBuilder()
           sb.append(":USERINFO=")

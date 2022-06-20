@@ -192,7 +192,7 @@ class AdminCommandAction @Inject internal constructor() : V086Action<Chat> {
       admin: KailleraUserImpl,
       clientHandler: V086ClientHandler?
   ) {
-    if (admin.access == AccessManager.ACCESS_MODERATOR) return
+    if (admin.accessLevel == AccessManager.ACCESS_MODERATOR) return
     // clientHandler.send(InformationMessage(clientHandler.getNextMessageNumber(), "server",
     // EmuLang.getString("AdminCommandAction.AdminCommands")));
     // try { Thread.sleep(20); } catch(Exception e) {}
@@ -228,7 +228,7 @@ class AdminCommandAction @Inject internal constructor() : V086Action<Chat> {
     try {
       Thread.sleep(20)
     } catch (e: Exception) {}
-    if (admin.access == AccessManager.ACCESS_ADMIN) {
+    if (admin.accessLevel == AccessManager.ACCESS_ADMIN) {
       clientHandler.send(
           InformationMessage(
               clientHandler.nextMessageNumber,
@@ -310,7 +310,7 @@ class AdminCommandAction @Inject internal constructor() : V086Action<Chat> {
     try {
       Thread.sleep(20)
     } catch (e: Exception) {}
-    if (admin.access == AccessManager.ACCESS_SUPERADMIN) {
+    if (admin.accessLevel == AccessManager.ACCESS_SUPERADMIN) {
       clientHandler.send(
           InformationMessage(
               clientHandler.nextMessageNumber,
@@ -431,12 +431,13 @@ class AdminCommandAction @Inject internal constructor() : V086Action<Chat> {
       if (user.id == admin.id)
           throw ActionException(EmuLang.getString("AdminCommandAction.CanNotSilenceSelf"))
       val access = server.accessManager.getAccess(user.connectSocketAddress.address)
-      if (access >= AccessManager.ACCESS_ADMIN && admin.access != AccessManager.ACCESS_SUPERADMIN)
+      if (access >= AccessManager.ACCESS_ADMIN &&
+          admin.accessLevel != AccessManager.ACCESS_SUPERADMIN)
           throw ActionException(EmuLang.getString("AdminCommandAction.CanNotSilenceAdmin"))
       if (access == AccessManager.ACCESS_MODERATOR &&
-          admin.access == AccessManager.ACCESS_MODERATOR)
+          admin.accessLevel == AccessManager.ACCESS_MODERATOR)
           throw ActionException("You cannot silence a moderator if you're not an admin!")
-      if (admin.access == AccessManager.ACCESS_MODERATOR) {
+      if (admin.accessLevel == AccessManager.ACCESS_MODERATOR) {
         if (server.accessManager.isSilenced(user.socketAddress!!.address))
             throw ActionException(
                 "This User has already been Silenced.  Please wait until his time expires.")
@@ -468,9 +469,10 @@ class AdminCommandAction @Inject internal constructor() : V086Action<Chat> {
           throw ActionException(EmuLang.getString("AdminCommandAction.CanNotKickSelf"))
       val access = server.accessManager.getAccess(user.connectSocketAddress.address)
       if (access == AccessManager.ACCESS_MODERATOR &&
-          admin.access == AccessManager.ACCESS_MODERATOR)
+          admin.accessLevel == AccessManager.ACCESS_MODERATOR)
           throw ActionException("You cannot kick a moderator if you're not an admin!")
-      if (access >= AccessManager.ACCESS_ADMIN && admin.access != AccessManager.ACCESS_SUPERADMIN)
+      if (access >= AccessManager.ACCESS_ADMIN &&
+          admin.accessLevel != AccessManager.ACCESS_SUPERADMIN)
           throw ActionException(EmuLang.getString("AdminCommandAction.CanNotKickAdmin"))
       user.quit(EmuLang.getString("AdminCommandAction.QuitKicked"))
     } catch (e: NoSuchElementException) {
@@ -495,7 +497,7 @@ class AdminCommandAction @Inject internal constructor() : V086Action<Chat> {
       val owner = game.owner
       val access = server.accessManager.getAccess(owner.connectSocketAddress.address)
       if (access >= AccessManager.ACCESS_ADMIN &&
-          admin.access != AccessManager.ACCESS_SUPERADMIN &&
+          admin.accessLevel != AccessManager.ACCESS_SUPERADMIN &&
           owner.loggedIn)
           throw ActionException(EmuLang.getString("AdminCommandAction.CanNotCloseAdminGame"))
       owner.quitGame()
@@ -522,7 +524,8 @@ class AdminCommandAction @Inject internal constructor() : V086Action<Chat> {
       if (user.id == admin.id)
           throw ActionException(EmuLang.getString("AdminCommandAction.CanNotBanSelf"))
       val access = server.accessManager.getAccess(user.connectSocketAddress.address)
-      if (access >= AccessManager.ACCESS_ADMIN && admin.access != AccessManager.ACCESS_SUPERADMIN)
+      if (access >= AccessManager.ACCESS_ADMIN &&
+          admin.accessLevel != AccessManager.ACCESS_SUPERADMIN)
           throw ActionException(EmuLang.getString("AdminCommandAction.CanNotBanAdmin"))
       server.announce(
           EmuLang.getString("AdminCommandAction.Banned", minutes, user.name), false, null)
@@ -540,7 +543,7 @@ class AdminCommandAction @Inject internal constructor() : V086Action<Chat> {
       admin: KailleraUserImpl,
       clientHandler: V086ClientHandler?
   ) {
-    if (admin.access != AccessManager.ACCESS_SUPERADMIN) {
+    if (admin.accessLevel != AccessManager.ACCESS_SUPERADMIN) {
       throw ActionException("Only SUPER ADMIN's can give Temp Elevated Status!")
     }
     val scanner = Scanner(message).useDelimiter(" ")
@@ -554,7 +557,8 @@ class AdminCommandAction @Inject internal constructor() : V086Action<Chat> {
       if (user.id == admin.id)
           throw ActionException(EmuLang.getString("AdminCommandAction.AlreadyAdmin"))
       val access = server.accessManager.getAccess(user.connectSocketAddress.address)
-      if (access >= AccessManager.ACCESS_ADMIN && admin.access != AccessManager.ACCESS_SUPERADMIN)
+      if (access >= AccessManager.ACCESS_ADMIN &&
+          admin.accessLevel != AccessManager.ACCESS_SUPERADMIN)
           throw ActionException(EmuLang.getString("AdminCommandAction.UserAlreadyAdmin"))
       else if (access == AccessManager.ACCESS_ELEVATED)
           throw ActionException("User is already elevated.")
@@ -574,7 +578,7 @@ class AdminCommandAction @Inject internal constructor() : V086Action<Chat> {
       admin: KailleraUserImpl,
       clientHandler: V086ClientHandler?
   ) {
-    if (admin.access != AccessManager.ACCESS_SUPERADMIN) {
+    if (admin.accessLevel != AccessManager.ACCESS_SUPERADMIN) {
       throw ActionException("Only SUPER ADMIN's can give Temp Moderator Status!")
     }
     val scanner = Scanner(message).useDelimiter(" ")
@@ -588,7 +592,8 @@ class AdminCommandAction @Inject internal constructor() : V086Action<Chat> {
       if (user.id == admin.id)
           throw ActionException(EmuLang.getString("AdminCommandAction.AlreadyAdmin"))
       val access = server.accessManager.getAccess(user.connectSocketAddress.address)
-      if (access >= AccessManager.ACCESS_ADMIN && admin.access != AccessManager.ACCESS_SUPERADMIN)
+      if (access >= AccessManager.ACCESS_ADMIN &&
+          admin.accessLevel != AccessManager.ACCESS_SUPERADMIN)
           throw ActionException(EmuLang.getString("AdminCommandAction.UserAlreadyAdmin"))
       else if (access == AccessManager.ACCESS_MODERATOR)
           throw ActionException("User is already moderator.")
@@ -607,8 +612,8 @@ class AdminCommandAction @Inject internal constructor() : V086Action<Chat> {
       admin: KailleraUserImpl,
       clientHandler: V086ClientHandler?
   ) {
-    if (admin.access != AccessManager.ACCESS_SUPERADMIN) {
-      throw ActionException("Only SUPER ADMIN's can give Temp Admin Status!")
+    if (admin.accessLevel != AccessManager.ACCESS_SUPERADMIN) {
+      throw ActionException("Only SUPER ADMINs can give Temp Admin Status!")
     }
     val scanner = Scanner(message).useDelimiter(" ")
     try {
@@ -621,7 +626,8 @@ class AdminCommandAction @Inject internal constructor() : V086Action<Chat> {
       if (user.id == admin.id)
           throw ActionException(EmuLang.getString("AdminCommandAction.AlreadyAdmin"))
       val access = server.accessManager.getAccess(user.connectSocketAddress.address)
-      if (access >= AccessManager.ACCESS_ADMIN && admin.access != AccessManager.ACCESS_SUPERADMIN)
+      if (access >= AccessManager.ACCESS_ADMIN &&
+          admin.accessLevel != AccessManager.ACCESS_SUPERADMIN)
           throw ActionException(EmuLang.getString("AdminCommandAction.UserAlreadyAdmin"))
       server.accessManager.addTempAdmin(user.connectSocketAddress.address.hostAddress, minutes)
       server.announce(
@@ -640,11 +646,11 @@ class AdminCommandAction @Inject internal constructor() : V086Action<Chat> {
   ) {
     if (admin.game != null) throw ActionException("Can't use /stealth while in a gameroom.")
     if (message == "/stealthon") {
-      admin.stealth = true
+      admin.inStealthMode = true
       clientHandler!!.send(
           InformationMessage(clientHandler.nextMessageNumber, "server", "Stealth Mode is on."))
     } else if (message == "/stealthoff") {
-      admin.stealth = false
+      admin.inStealthMode = false
       clientHandler!!.send(
           InformationMessage(clientHandler.nextMessageNumber, "server", "Stealth Mode is off."))
     } else throw ActionException("Stealth Mode Error: /stealthon /stealthoff")
@@ -814,9 +820,9 @@ class AdminCommandAction @Inject internal constructor() : V086Action<Chat> {
         } catch (e: Exception) {
           throw ActionException(EmuLang.getString("AdminCommandAction.ClearAddressFormatError"))
         }
-    if (admin.access == AccessManager.ACCESS_SUPERADMIN &&
+    if (admin.accessLevel == AccessManager.ACCESS_SUPERADMIN &&
         server.accessManager.clearTemp(inetAddr, true) ||
-        admin.access == AccessManager.ACCESS_ADMIN &&
+        admin.accessLevel == AccessManager.ACCESS_ADMIN &&
             server.accessManager.clearTemp(inetAddr, false))
         clientHandler!!.send(
             InformationMessage(
@@ -851,7 +857,7 @@ class AdminCommandAction @Inject internal constructor() : V086Action<Chat> {
                   ": " +
                   EmuUtil.toSimpleUtcDatetime(releaseInfo.buildDate)))
       sleep(20.milliseconds)
-      if (admin.access >= AccessManager.ACCESS_ADMIN) {
+      if (admin.accessLevel >= AccessManager.ACCESS_ADMIN) {
         val props = System.getProperties()
         clientHandler.send(
             InformationMessage(

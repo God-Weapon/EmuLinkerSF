@@ -22,7 +22,7 @@ class GameStatusAction @Inject internal constructor() :
     handledEventCount++
     try {
       val game = event.game
-      val visiblePlayers = game.players.count { !it.stealth }
+      val visiblePlayers = game.players.count { !it.inStealthMode }
       clientHandler.send(
           GameStatus(
               clientHandler.nextMessageNumber,

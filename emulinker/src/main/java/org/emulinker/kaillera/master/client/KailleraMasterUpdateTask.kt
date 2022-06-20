@@ -41,7 +41,7 @@ class KailleraMasterUpdateTask(
     for (game in kailleraServer.games) {
       if (game.status != GameStatus.WAITING) continue
       waitingGames.append(
-          "${game.id}|${game.romName}|${game.owner.name}|${game.owner.clientType}|${game.numPlayers}|")
+          "${game.id}|${game.romName}|${game.owner.name}|${game.owner.clientType}|${game.players.size}|")
     }
     val params =
         arrayOf(

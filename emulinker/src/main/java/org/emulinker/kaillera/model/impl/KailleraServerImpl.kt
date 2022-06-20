@@ -47,13 +47,13 @@ class KailleraServerImpl
         metrics: MetricRegistry
     ) : KailleraServer, Executable {
 
-  protected var allowedConnectionTypes = BooleanArray(7)
-  protected val loginMessages: ImmutableList<String>
-  protected var stopFlag = false
-  override var running = false
-    protected set
-  protected var connectionCounter = 1
-  protected var gameCounter = 1
+  private var allowedConnectionTypes = BooleanArray(7)
+  private val loginMessages: ImmutableList<String>
+  private var stopFlag = false
+  override var threadIsActive = false
+    private set
+  private var connectionCounter = 1
+  private var gameCounter = 1
 
   var statsCollector: StatsCollector? = null
 
@@ -89,20 +89,17 @@ class KailleraServerImpl
   override val maxUsers = flags.maxUsers
   override val maxGames = flags.maxGames
 
-  val chatFloodTime = flags.chatFloodTime
-  val createGameFloodTime = flags.createGameFloodTime
   val allowSinglePlayer = flags.allowSinglePlayer
-  val maxUserNameLength = flags.maxUserNameLength
-  val maxChatLength = flags.maxChatLength
+  private val maxUserNameLength = flags.maxUserNameLength
   val maxGameChatLength = flags.maxGameChatLength
-  val maxGameNameLength = flags.maxGameNameLength
-  val quitMessageLength = flags.maxQuitMessageLength
-  val maxClientNameLength = flags.maxClientNameLength
-  val allowMultipleConnections = flags.allowMultipleConnections
+  private val maxClientNameLength = flags.maxClientNameLength
 
   override fun toString(): String {
     return String.format(
-        "KailleraServerImpl[numUsers=%d numGames=%d isRunning=%b]", users.size, games.size, running)
+        "KailleraServerImpl[numUsers=%d numGames=%d isRunning=%b]",
+        users.size,
+        games.size,
+        threadIsActive)
   }
 
   @Synchronized
@@ -122,7 +119,7 @@ class KailleraServerImpl
   @Synchronized
   override fun stop() {
     logger.atFine().log("KailleraServer thread received stop request!")
-    if (!running) {
+    if (!threadIsActive) {
       logger.atFine().log("KailleraServer thread stop request ignored: not running!")
       return
     }
@@ -133,13 +130,13 @@ class KailleraServerImpl
   }
 
   // not synchronized because I know the caller will be thread safe
-  protected fun getNextUserID(): Int {
+  private fun getNextUserID(): Int {
     if (connectionCounter > 0xFFFF) connectionCounter = 1
     return connectionCounter++
   }
 
   // not synchronized because I know the caller will be thread safe
-  protected fun getNextGameID(): Int {
+  private fun getNextGameID(): Int {
     if (gameCounter > 0xFFFF) gameCounter = 1
     return gameCounter++
   }
@@ -165,9 +162,7 @@ class KailleraServerImpl
       logger
           .atWarning()
           .log(
-              "Connection from " +
-                  formatSocketAddress(clientSocketAddress) +
-                  " denied: Server is full!")
+              "Connection from ${formatSocketAddress(clientSocketAddress)} denied: Server is full!")
       throw ServerFullException(getString("KailleraServerImpl.LoginDeniedServerFull"))
     }
     val userID = getNextUserID()
@@ -176,31 +171,15 @@ class KailleraServerImpl
     logger
         .atInfo()
         .log(
-            user.toString() +
-                " attempting new connection using protocol " +
-                protocol +
-                " from " +
-                formatSocketAddress(clientSocketAddress))
+            "$user attempting new connection using protocol $protocol from ${formatSocketAddress(clientSocketAddress)}")
     logger
         .atFine()
-        .log(
-            user.toString() +
-                " Thread starting (ThreadPool:" +
-                threadPool.activeCount +
-                "/" +
-                threadPool.poolSize +
-                ")")
+        .log("$user Thread starting (ThreadPool:${threadPool.activeCount}/${threadPool.poolSize})")
     threadPool.execute(user)
     Thread.yield()
     logger
         .atFine()
-        .log(
-            user.toString() +
-                " Thread started (ThreadPool:" +
-                threadPool.activeCount +
-                "/" +
-                threadPool.poolSize +
-                ")")
+        .log("$user Thread started (ThreadPool:${threadPool.activeCount}/${threadPool.poolSize})")
     usersMap[userID] = user
     return user
   }
@@ -295,7 +274,7 @@ class KailleraServerImpl
 
     // access == AccessManager.ACCESS_NORMAL &&
     if (flags.maxUserNameLength > 0 && user.name!!.length > maxUserNameLength) {
-      logger.atInfo().log(user.toString() + " login denied: UserName Length > " + maxUserNameLength)
+      logger.atInfo().log("$user login denied: UserName Length > $maxUserNameLength")
       usersMap.remove(userListKey)
       throw UserNameException(getString("KailleraServerImpl.LoginDeniedUserNameTooLong"))
     }
@@ -350,7 +329,7 @@ class KailleraServerImpl
     }
     for (u2 in users) {
       if (u2.loggedIn) {
-        if (!u2.equals(u) &&
+        if (u2.id != u.id &&
             (u.connectSocketAddress.address == u2.connectSocketAddress.address) &&
             u.name == u2.name) {
           // user is attempting to login more than once with the same name and address
@@ -360,7 +339,7 @@ class KailleraServerImpl
           } catch (e: Exception) {
             logger.atSevere().withCause(e).log("Error forcing $u2 quit for reconnect!")
           }
-        } else if (!u2.equals(u) &&
+        } else if (u2.id != u.id &&
             u2.name!!.lowercase(Locale.getDefault()).trim { it <= ' ' } ==
                 u.name!!.lowercase(Locale.getDefault()).trim { it <= ' ' }) {
           usersMap.remove(userListKey)
@@ -370,7 +349,7 @@ class KailleraServerImpl
           throw ClientAddressException("Duplicating names is not allowed: " + u2.name)
         }
         if (access == AccessManager.ACCESS_NORMAL &&
-            !u2.equals(u) &&
+            u2.id != u.id &&
             (u.connectSocketAddress.address == u2.connectSocketAddress.address) &&
             u.name != u2.name &&
             !flags.allowMultipleConnections) {
@@ -385,7 +364,7 @@ class KailleraServerImpl
     }
 
     // passed all checks
-    userImpl!!.access = access
+    userImpl!!.accessLevel = access
     userImpl.status = UserStatus.IDLE
     userImpl.loggedIn = true
     usersMap[userListKey] = userImpl
@@ -500,7 +479,7 @@ class KailleraServerImpl
     val userGame = (user as KailleraUserImpl?)!!.game
     if (userGame != null) user.quitGame()
     var quitMsg = message!!.trim { it <= ' ' }
-    if (quitMsg.isNullOrBlank() ||
+    if (quitMsg.isBlank() ||
         (flags.maxQuitMessageLength > 0 && quitMsg.length > flags.maxQuitMessageLength))
         quitMsg = getString("KailleraServerImpl.StandardQuitMessage")
     val access = user.server.accessManager.getAccess(user.socketAddress!!.address)
@@ -701,7 +680,7 @@ class KailleraServerImpl
       return false
     }
     message = message.trim { it <= ' ' }
-    if (message.isNullOrBlank()) return false
+    if (message.isBlank()) return false
     if (access == AccessManager.ACCESS_NORMAL) {
       val chars = message.toCharArray()
       for (i in chars.indices) {
@@ -772,6 +751,7 @@ class KailleraServerImpl
       if (user.loggedIn) {
         if (user.status != UserStatus.IDLE) {
           if (user.p2P) {
+            // TODO(nue): Get rid of this bad use of toString.
             if (event.toString() == "GameDataEvent") user.addEvent(event)
             else if (event.toString() == "ChatEvent") continue
             else if (event.toString() == "UserJoinedEvent") continue
@@ -792,7 +772,7 @@ class KailleraServerImpl
   }
 
   override fun run() {
-    running = true
+    threadIsActive = true
     logger.atFine().log("KailleraServer thread running...")
     try {
       while (!stopFlag) {
@@ -808,7 +788,7 @@ class KailleraServerImpl
         for (user in users) {
           synchronized(user) {
             val access = accessManager.getAccess(user.connectSocketAddress.address)
-            (user as KailleraUserImpl?)!!.access = access
+            (user as KailleraUserImpl?)!!.accessLevel = access
 
             // LagStat
             if (user.loggedIn) {
@@ -877,7 +857,7 @@ class KailleraServerImpl
         logger.atSevere().withCause(e).log("KailleraServer thread caught unexpected exception: $e")
       }
     } finally {
-      running = false
+      threadIsActive = false
       logger.atFine().log("KailleraServer thread exiting...")
     }
   }
@@ -900,10 +880,10 @@ class KailleraServerImpl
     }
     metrics.register(
         MetricRegistry.name(this.javaClass, "users", "idle"),
-        Gauge { usersMap.values.count { it!!.status == UserStatus.IDLE } })
+        Gauge { usersMap.values.count { it.status == UserStatus.IDLE } })
     metrics.register(
         MetricRegistry.name(this.javaClass, "users", "playing"),
-        Gauge { usersMap.values.count { it!!.status == UserStatus.PLAYING } })
+        Gauge { usersMap.values.count { it.status == UserStatus.PLAYING } })
     metrics.register(
         MetricRegistry.name(this.javaClass, "games", "waiting"),
         Gauge { gamesMap.values.count { it.status == GameStatus.WAITING } })

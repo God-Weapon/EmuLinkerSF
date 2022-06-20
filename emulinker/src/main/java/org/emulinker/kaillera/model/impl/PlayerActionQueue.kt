@@ -15,7 +15,7 @@ class PlayerActionQueue(
     capture: Boolean
 ) {
   var lastTimeout: PlayerTimeoutException? = null
-  private val array: ByteArray = ByteArray(gameBufferSize)
+  private val array = ByteArray(gameBufferSize)
   private val heads = IntArray(numPlayers)
   private var tail = 0
 

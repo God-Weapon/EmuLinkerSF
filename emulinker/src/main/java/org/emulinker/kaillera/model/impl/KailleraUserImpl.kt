@@ -32,7 +32,9 @@ class KailleraUserImpl(
     override val server: KailleraServerImpl
 ) : KailleraUser, Executable {
 
-  override var stealth = false
+  override var inStealthMode = false
+
+  /** Example: "Project 64k 0.13 (01 Aug 2003)" */
   override var clientType: String? = null
     set(clientType) {
       field = clientType
@@ -48,7 +50,7 @@ class KailleraUserImpl(
   override var socketAddress: InetSocketAddress? = null
   override var status =
       UserStatus.PLAYING // TODO(nue): This probably shouldn't have a default value..
-  override var access = 0
+  override var accessLevel = 0
   override var isEmuLinkerClient = false
     private set
   override val connectTime: Long = initTime
@@ -68,7 +70,7 @@ class KailleraUserImpl(
   var lastCreateGameTime: Long = 0
     private set
   override var frameCount = 0
-  override var delay = 0
+  override var frameDelay = 0
 
   private var totalDelay = 0
   override var bytesPerAction = 0
@@ -81,9 +83,9 @@ class KailleraUserImpl(
 
   override var playerNumber = -1
   override var ignoreAll = false
-  override var msg = true
+  override var isAcceptingDirectMessages = true
   override var lastMsgID = -1
-  override var mute = false
+  override var isMuted = false
 
   private val lostInput: MutableList<ByteArray> = ArrayList()
   /** Note that this is a different type from lostInput. */
@@ -94,7 +96,7 @@ class KailleraUserImpl(
   private val ignoredUsers: MutableList<String> = ArrayList()
   private var gameDataErrorTime: Long = -1
 
-  override var running = false
+  override var threadIsActive = false
     private set
 
   private var stopFlag = false
@@ -174,7 +176,7 @@ class KailleraUserImpl(
     }
 
   val accessStr: String
-    get() = AccessManager.ACCESS_NAMES[access]
+    get() = AccessManager.ACCESS_NAMES[accessLevel]
 
   override fun equals(other: Any?): Boolean {
     return other is KailleraUserImpl && other.id == id
@@ -189,7 +191,7 @@ class KailleraUserImpl(
 
   override fun stop() {
     synchronized(this) {
-      if (!running) {
+      if (!threadIsActive) {
         logger.atFine().log("$this  thread stop request ignored: not running!")
         return
       }
@@ -325,7 +327,7 @@ class KailleraUserImpl(
       logger.atWarning().log("$this game chat failed: Not in a game")
       throw GameChatException(EmuLang.getString("KailleraUserImpl.GameChatErrorNotInGame"))
     }
-    if (mute) {
+    if (isMuted) {
       logger.atWarning().log("$this gamechat denied: Muted: $message")
       game!!.announce("You are currently muted!", this)
       return
@@ -377,7 +379,7 @@ class KailleraUserImpl(
     if (status != UserStatus.IDLE) {
       status = UserStatus.IDLE
     }
-    mute = false
+    isMuted = false
     game = null
     addEvent(UserQuitGameEvent(game, this))
   }
@@ -405,7 +407,7 @@ class KailleraUserImpl(
         game!!.playerActionQueue!![playerNumber - 1].synched) {
       return
     }
-    totalDelay = game!!.delay + tempDelay + 5
+    totalDelay = game!!.highestUserFrameDelay + tempDelay + 5
     game!!.ready(this, playerNumber)
   }
 
@@ -482,7 +484,7 @@ class KailleraUserImpl(
   }
 
   override fun run() {
-    running = true
+    threadIsActive = true
     logger.atFine().log("$this thread running...")
     try {
       while (!stopFlag) {
@@ -500,7 +502,7 @@ class KailleraUserImpl(
     } catch (e: Throwable) {
       logger.atSevere().withCause(e).log("$this thread caught unexpected exception!")
     } finally {
-      running = false
+      threadIsActive = false
       logger.atFine().log("$this thread exiting...")
     }
   }
