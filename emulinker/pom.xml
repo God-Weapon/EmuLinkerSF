@@ -5,7 +5,7 @@
 
   <groupId>org.emulinker</groupId>
   <artifactId>emulinkersf-netsma</artifactId>
-  <version>0.5.0</version>
+  <version>0.6.0</version>
 
   <name>EmulinkerSF-netsma</name>
   <url>https://github.com/hopskipnfall/EmuLinkerSF-netsma</url>
