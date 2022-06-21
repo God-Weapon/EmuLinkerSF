@@ -92,14 +92,14 @@ class GameChatAction
           if (clientHandler.user!!.game!!.owner == clientHandler.user) {
             clientHandler.user!!.game!!.p2P = true
             for (u in clientHandler.user!!.game!!.players) {
-              u.p2P = true
+              u.ignoringUnnecessaryServerActivity = true
               if (u.loggedIn) {
                 u.game!!.announce(
                     "This game will NOT receive any server activity during gameplay!", u)
               }
             }
           } else {
-            clientHandler.user!!.p2P = true
+            clientHandler.user!!.ignoringUnnecessaryServerActivity = true
             for (u in clientHandler.user!!.game!!.players) {
               if (u.loggedIn) {
                 u.game!!.announce(
@@ -112,14 +112,14 @@ class GameChatAction
           if (clientHandler.user!!.game!!.owner == clientHandler.user) {
             clientHandler.user!!.game!!.p2P = false
             for (u in clientHandler.user!!.game!!.players) {
-              u.p2P = false
+              u.ignoringUnnecessaryServerActivity = false
               if (u.loggedIn) {
                 u.game!!.announce(
                     "This game will NOW receive ALL server activity during gameplay!", u)
               }
             }
           } else {
-            clientHandler.user!!.p2P = false
+            clientHandler.user!!.ignoringUnnecessaryServerActivity = false
             for (u in clientHandler.user!!.game!!.players) {
               if (u.loggedIn) {
                 u.game!!.announce(

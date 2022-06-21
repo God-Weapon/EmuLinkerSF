@@ -59,7 +59,8 @@ class TwitterBroadcaster
       return false
     }
     val disposable =
-        Completable.timer(flags.twitterBroadcastDelay.seconds, TimeUnit.SECONDS, Schedulers.io())
+        Completable.timer(
+                flags.twitterBroadcastDelay.inWholeSeconds, TimeUnit.SECONDS, Schedulers.io())
             .subscribe {
               pendingReports.remove(lookingForGameEvent)
               val user: KailleraUser = lookingForGameEvent.user

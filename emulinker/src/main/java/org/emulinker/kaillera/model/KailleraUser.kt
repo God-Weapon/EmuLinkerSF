@@ -42,13 +42,20 @@ interface KailleraUser {
   var isAcceptingDirectMessages: Boolean
   var isMuted: Boolean
   var name: String? // TODO(nue): Remove this "?"
-  var p2P: Boolean
+  /**
+   * This is called "p2p mode" in the code and commands.
+   *
+   * See the command /p2pon.
+   */
+  var ignoringUnnecessaryServerActivity: Boolean
   var ping: Int
   var playerNumber: Int
   var socketAddress: InetSocketAddress?
   var inStealthMode: Boolean
   var tempDelay: Int
   var timeouts: Int
+  var smallLagSpikesCausedByUser: Long
+  var bigLagSpikesCausedByUser: Long
 
   // Methods.
   @Throws(

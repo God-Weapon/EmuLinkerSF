@@ -1,6 +1,5 @@
 package org.emulinker.kaillera.access
 
-import com.google.common.base.Preconditions.checkArgument
 import com.google.common.flogger.FluentLogger
 import java.io.*
 import java.net.InetAddress
@@ -12,6 +11,7 @@ import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.ThreadPoolExecutor
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.time.Duration.Companion.minutes
 import org.emulinker.config.RuntimeFlags
 import org.emulinker.util.WildcardStringPattern
 
@@ -481,10 +481,10 @@ class AccessManager2
 
   init {
     val url = AccessManager2::class.java.getResource("/access.cfg")
-    checkArgument(url != null, "Resource not found: /access.conf")
+    require(url != null) { "Resource not found: /access.conf" }
     accessFile =
         try {
-          File(url!!.toURI())
+          File(url.toURI())
         } catch (e: URISyntaxException) {
           throw IllegalStateException("Could not parse URI", e)
         }

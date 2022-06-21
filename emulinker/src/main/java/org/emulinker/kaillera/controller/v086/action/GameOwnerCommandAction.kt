@@ -4,6 +4,7 @@ import com.google.common.flogger.FluentLogger
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
+import org.emulinker.config.RuntimeFlags
 import org.emulinker.kaillera.access.AccessManager
 import org.emulinker.kaillera.controller.messaging.MessageFormatException
 import org.emulinker.kaillera.controller.v086.V086ClientHandler
@@ -48,7 +49,8 @@ private const val COMMAND_NUM = "/num"
 private val logger = FluentLogger.forEnclosingClass()
 
 @Singleton
-class GameOwnerCommandAction @Inject internal constructor() : V086Action<GameChat> {
+class GameOwnerCommandAction @Inject internal constructor(private val flags: RuntimeFlags) :
+    V086Action<GameChat> {
   override val actionPerformedCount = 0
   override fun toString() = "GameOwnerCommandAction"
 
@@ -224,7 +226,7 @@ class GameOwnerCommandAction @Inject internal constructor() : V086Action<GameCha
     game.announce(
         EmuLang.getString("GameOwnerCommandAction.HelpCurrentSensitivity", sensitivity) +
             if (sensitivity == 0) EmuLang.getString("GameOwnerCommandAction.HelpDisabled") else "",
-        null)
+    )
   }
 
   @Throws(ActionException::class, MessageFormatException::class)
@@ -239,7 +241,9 @@ class GameOwnerCommandAction @Inject internal constructor() : V086Action<GameCha
       emu = "any"
     }
     admin.game!!.aEmulator = emu!!
-    admin.game!!.announce("Owner has restricted the emulator to: $emu", null)
+    admin.game!!.announce(
+        "Owner has restricted the emulator to: $emu",
+    )
     return
   }
 
@@ -256,7 +260,9 @@ class GameOwnerCommandAction @Inject internal constructor() : V086Action<GameCha
       conn = "any"
     }
     admin.game!!.aConnection = conn
-    admin.game!!.announce("Owner has restricted the connection type to: $conn", null)
+    admin.game!!.announce(
+        "Owner has restricted the connection type to: $conn",
+    )
     return
   }
 
@@ -277,23 +283,29 @@ class GameOwnerCommandAction @Inject internal constructor() : V086Action<GameCha
       admin: KailleraUserImpl,
       clientHandler: V086ClientHandler
   ) {
-    if (game.status != GameStatus.PLAYING)
-        game.announce("Lagstat is only available during gameplay!", admin)
     if (message == "/lagstat") {
-      var str = ""
-      for (player in game.players) {
-        if (!player.inStealthMode)
-            str = str + "P" + player.playerNumber + ": " + player.timeouts + ", "
-      }
-      if (str.isNotEmpty()) {
-        str = str.substring(0, str.length - ", ".length)
-        game.announce("$str lag spikes", null)
+      if (flags.improvedLagstatEnabled) {
+        game.announce("Lagged frames per player:")
+        game.players.asSequence().filter { !it.inStealthMode }.forEach {
+          game.announce(
+              "P${it.playerNumber}: ${it.smallLagSpikesCausedByUser} (tiny), ${it.bigLagSpikesCausedByUser} (big)")
+        }
+      } else {
+        game.announce(
+            "${game.players
+          .asSequence()
+          .filter { !it.inStealthMode }
+          .map { "P" + it.playerNumber + ": " + it.timeouts }
+          .joinToString(", ")} lag spikes")
       }
     } else if (message == "/lagreset") {
       for (player in game.players) {
         player.timeouts = 0
+        player.smallLagSpikesCausedByUser = 0
       }
-      game.announce("LagStat has been reset!", null)
+      game.announce(
+          "LagStat has been reset!",
+      )
     }
   }
 
@@ -306,11 +318,14 @@ class GameOwnerCommandAction @Inject internal constructor() : V086Action<GameCha
   ) {
     if (message == "/samedelay true") {
       game.sameDelay = true
-      admin.game!!.announce("Players will have the same delay when game starts (restarts)!", null)
+      admin.game!!.announce(
+          "Players will have the same delay when game starts (restarts)!",
+      )
     } else {
       game.sameDelay = false
       admin.game!!.announce(
-          "Players will have independent delays when game starts (restarts)!", null)
+          "Players will have independent delays when game starts (restarts)!",
+      )
     }
   }
 
@@ -333,7 +348,9 @@ class GameOwnerCommandAction @Inject internal constructor() : V086Action<GameCha
             game.mutedUsers.add(game.getPlayer(w)!!.connectSocketAddress.address.hostAddress)
           }
         }
-        admin.game!!.announce("All players have been muted!", null)
+        admin.game!!.announce(
+            "All players have been muted!",
+        )
         return
       }
       val userID = scanner.nextInt()
@@ -356,7 +373,9 @@ class GameOwnerCommandAction @Inject internal constructor() : V086Action<GameCha
       game.mutedUsers.add(user.connectSocketAddress.address.hostAddress)
       user.isMuted = true
       val user1 = clientHandler.user as KailleraUserImpl
-      user1.game!!.announce(user.name + " has been muted!", null)
+      user1.game!!.announce(
+          user.name + " has been muted!",
+      )
     } catch (e: NoSuchElementException) {
       val user = clientHandler.user as KailleraUserImpl
       user.game!!.announce("Mute Player Error: /mute <UserID>", admin)
@@ -378,7 +397,9 @@ class GameOwnerCommandAction @Inject internal constructor() : V086Action<GameCha
           game.getPlayer(w)!!.isMuted = false
           game.mutedUsers.remove(game.getPlayer(w)!!.connectSocketAddress.address.hostAddress)
         }
-        admin.game!!.announce("All players have been unmuted!", null)
+        admin.game!!.announce(
+            "All players have been unmuted!",
+        )
         return
       }
       val userID = scanner.nextInt()
@@ -399,7 +420,9 @@ class GameOwnerCommandAction @Inject internal constructor() : V086Action<GameCha
       game.mutedUsers.remove(user.connectSocketAddress.address.hostAddress)
       user.isMuted = false
       val user1 = clientHandler.user
-      (user1 as KailleraUserImpl?)!!.game!!.announce(user.name + " has been unmuted!", null)
+      (user1 as KailleraUserImpl?)!!.game!!.announce(
+          user.name + " has been unmuted!",
+      )
     } catch (e: NoSuchElementException) {
       val user = clientHandler.user as KailleraUserImpl
       user.game!!.announce("Unmute Player Error: /unmute <UserID>", admin)
@@ -419,7 +442,9 @@ class GameOwnerCommandAction @Inject internal constructor() : V086Action<GameCha
       val num = scanner.nextInt()
       if (num in 1..100) {
         game.startN = num.toByte().toInt()
-        game.announce("This game will start when $num players have joined.", null)
+        game.announce(
+            "This game will start when $num players have joined.",
+        )
       } else {
         game.announce("StartN Error: Enter value between 1 and 100.", admin)
       }
@@ -477,7 +502,8 @@ class GameOwnerCommandAction @Inject internal constructor() : V086Action<GameCha
             else{
             	game.getPlayerActionQueue()[i] = game.getPlayerActionQueue()[num[i]-1];
             }*/ game.announce(
-                player.name + " is now Player#: " + player.playerNumber, null)
+                player.name + " is now Player#: " + player.playerNumber,
+            )
             i++
           }
         } else
@@ -519,7 +545,9 @@ class GameOwnerCommandAction @Inject internal constructor() : V086Action<GameCha
               game.getPlayer(w) != game.owner)
               game.kick(admin, game.getPlayer(w)!!.id)
         }
-        admin.game!!.announce("All players have been kicked!", null)
+        admin.game!!.announce(
+            "All players have been kicked!",
+        )
         return
       }
       val playerNumber = scanner.nextInt()
@@ -557,7 +585,9 @@ class GameOwnerCommandAction @Inject internal constructor() : V086Action<GameCha
       val num = scanner.nextInt()
       if (num in 1..100) {
         game.maxUsers = num
-        game.announce("Max Users has been set to $num", null)
+        game.announce(
+            "Max Users has been set to $num",
+        )
       } else {
         game.announce("Max Users Error: Enter value between 1 and 100", admin)
       }
@@ -579,7 +609,9 @@ class GameOwnerCommandAction @Inject internal constructor() : V086Action<GameCha
       val num = scanner.nextInt()
       if (num in 1..1000) {
         game.maxPing = num
-        game.announce("Max Ping has been set to $num", null)
+        game.announce(
+            "Max Ping has been set to $num",
+        )
       } else {
         game.announce("Max Ping Error: Enter value between 1 and 1000", admin)
       }

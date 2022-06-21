@@ -22,7 +22,8 @@ interface KailleraServer {
   var trivia: Trivia?
   var switchTrivia: Boolean
 
-  fun announce(announcement: String, gamesAlso: Boolean, user: KailleraUserImpl?)
+  fun announce(message: String, gamesAlso: Boolean)
+  fun announce(message: String, gamesAlso: Boolean, targetUser: KailleraUserImpl?)
   fun getUser(userID: Int): KailleraUser?
   fun getGame(gameID: Int): KailleraGame?
   fun checkMe(user: KailleraUser, message: String): Boolean

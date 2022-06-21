@@ -252,16 +252,7 @@ class ChatAction @Inject internal constructor(private val adminCommandAction: Ad
           user1.lastMsgID = user.id
           user.lastMsgID = user1.id
           user1.server.announce(
-              "TO: <" +
-                  user.name +
-                  ">(" +
-                  user.id +
-                  ") <" +
-                  clientHandler.user!!.name +
-                  "> (" +
-                  clientHandler.user!!.id +
-                  "): " +
-                  m,
+              "TO: <${user.name}>(${user.id}) <${clientHandler.user!!.name}> (${clientHandler.user!!.id}): $m",
               false,
               user1)
           user.server.announce(
@@ -386,14 +377,18 @@ class ChatAction @Inject internal constructor(private val adminCommandAction: Ad
         try {
           clientHandler.user!!.ignoreAll = true
           (user as KailleraUserImpl).server.announce(
-              clientHandler.user!!.name + " is now ignoring everyone!", false, null)
+              clientHandler.user!!.name + " is now ignoring everyone!",
+              false,
+          )
         } catch (e: Exception) {}
       } else if (chatMessage.message == "/unignoreall") {
         val user = clientHandler.user
         try {
           clientHandler.user!!.ignoreAll = false
           (user as KailleraUserImpl).server.announce(
-              clientHandler.user!!.name + " is now unignoring everyone!", false, null)
+              clientHandler.user!!.name + " is now unignoring everyone!",
+              false,
+          )
         } catch (e: Exception) {}
       } else if (chatMessage.message.startsWith("/ignore")) {
         val scanner = Scanner(chatMessage.message).useDelimiter(" ")
@@ -440,7 +435,7 @@ class ChatAction @Inject internal constructor(private val adminCommandAction: Ad
           user.server.announce(
               clientHandler.user!!.name + " is now ignoring <" + user.name + "> ID: " + user.id,
               false,
-              null)
+          )
         } catch (e: NoSuchElementException) {
           val user = clientHandler.user as KailleraUserImpl
           user.server.announce("Ignore User Error: /ignore <UserID>", false, user)
@@ -485,8 +480,7 @@ class ChatAction @Inject internal constructor(private val adminCommandAction: Ad
                       user.name +
                       "> ID: " +
                       user.id,
-                  gamesAlso = false,
-                  user = null)
+                  gamesAlso = false)
           else
               try {
                 clientHandler.send(

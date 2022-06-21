@@ -1,53 +1,54 @@
 package org.emulinker.config
 
 import java.nio.charset.Charset
-import java.time.Duration
 import javax.inject.Singleton
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 import org.apache.commons.configuration.Configuration
 
 /** Configuration flags that are set at startup and do not change until the job is restarted. */
 @Singleton
-data class RuntimeFlags
-    constructor(
-        val allowMultipleConnections: Boolean,
-        val allowSinglePlayer: Boolean,
-        val metricsEnabled: Boolean,
-        val touchEmulinker: Boolean,
-        val touchKaillera: Boolean,
-        val charset: Charset,
-        val metricsLoggingFrequency: Duration,
-        val connectionTypes: List<String>,
-        val coreThreadPoolSize: Int,
-        val chatFloodTime: Int,
-        val createGameFloodTime: Int,
-        val gameAutoFireSensitivity: Int,
-        val gameBufferSize: Int,
-        val gameDesynchTimeouts: Int,
-        val gameTimeoutMillis: Int,
-        val idleTimeout: Int,
-        val keepAliveTimeout: Int,
-        val maxChatLength: Int,
-        val maxClientNameLength: Int,
-        val maxGameChatLength: Int,
-        val maxGameNameLength: Int,
-        val maxGames: Int,
-        val maxPing: Int,
-        val maxQuitMessageLength: Int,
-        val maxUserNameLength: Int,
-        val maxUsers: Int,
-        val serverAddress: String,
-        val serverLocation: String,
-        val serverName: String,
-        val serverWebsite: String,
-        val v086BufferSize: Int,
-        val twitterBroadcastDelay: Duration,
-        val twitterEnabled: Boolean,
-        val twitterOAuthAccessToken: String,
-        val twitterOAuthAccessTokenSecret: String,
-        val twitterOAuthConsumerKey: String,
-        val twitterOAuthConsumerSecret: String,
-        val twitterPreventBroadcastNameSuffixes: List<String>,
-    ) {
+data class RuntimeFlags(
+    val allowMultipleConnections: Boolean,
+    val allowSinglePlayer: Boolean,
+    val charset: Charset,
+    val chatFloodTime: Int,
+    val connectionTypes: List<String>,
+    val coreThreadPoolSize: Int,
+    val createGameFloodTime: Int,
+    val gameAutoFireSensitivity: Int,
+    val gameBufferSize: Int,
+    val gameDesynchTimeouts: Int,
+    val gameTimeoutMillis: Int,
+    val idleTimeout: Int,
+    val improvedLagstatEnabled: Boolean,
+    val keepAliveTimeout: Int,
+    val maxChatLength: Int,
+    val maxClientNameLength: Int,
+    val maxGameChatLength: Int,
+    val maxGameNameLength: Int,
+    val maxGames: Int,
+    val maxPing: Int,
+    val maxQuitMessageLength: Int,
+    val maxUserNameLength: Int,
+    val maxUsers: Int,
+    val metricsEnabled: Boolean,
+    val metricsLoggingFrequency: Duration,
+    val serverAddress: String,
+    val serverLocation: String,
+    val serverName: String,
+    val serverWebsite: String,
+    val touchEmulinker: Boolean,
+    val touchKaillera: Boolean,
+    val twitterBroadcastDelay: Duration,
+    val twitterEnabled: Boolean,
+    val twitterOAuthAccessToken: String,
+    val twitterOAuthAccessTokenSecret: String,
+    val twitterOAuthConsumerKey: String,
+    val twitterOAuthConsumerSecret: String,
+    val twitterPreventBroadcastNameSuffixes: List<String>,
+    val v086BufferSize: Int,
+) {
 
   init {
     // Note: this used to be max 30, but for some reason we had 31 set as the default in the config.
@@ -83,17 +84,14 @@ data class RuntimeFlags
           charset = Charset.forName(config.getString("emulinker.charset")),
           chatFloodTime = config.getInt("server.chatFloodTime"),
           connectionTypes = config.getList("server.allowedConnectionTypes") as List<String>,
-          // TODO(nue): Experiment with Runtime.getRuntime().availableProcessors()
           coreThreadPoolSize = config.getInt("server.coreThreadpoolSize", 5),
           createGameFloodTime = config.getInt("server.createGameFloodTime"),
-          metricsEnabled = config.getBoolean("metrics.enabled", false),
-          metricsLoggingFrequency =
-              Duration.ofSeconds(config.getInt("metrics.loggingFrequencySeconds", 30).toLong()),
           gameAutoFireSensitivity = config.getInt("game.defaultAutoFireSensitivity"),
           gameBufferSize = config.getInt("game.bufferSize"),
           gameDesynchTimeouts = config.getInt("game.desynchTimeouts"),
           gameTimeoutMillis = config.getInt("game.timeoutMillis"),
           idleTimeout = config.getInt("server.idleTimeout"),
+          improvedLagstatEnabled = config.getBoolean("server.improvedLagstatEnabled", true),
           keepAliveTimeout = config.getInt("server.keepAliveTimeout"),
           maxChatLength = config.getInt("server.maxChatLength"),
           maxClientNameLength = config.getInt("server.maxClientNameLength"),
@@ -104,15 +102,15 @@ data class RuntimeFlags
           maxQuitMessageLength = config.getInt("server.maxQuitMessageLength"),
           maxUserNameLength = config.getInt("server.maxUserNameLength"),
           maxUsers = config.getInt("server.maxUsers"),
+          metricsEnabled = config.getBoolean("metrics.enabled", false),
+          metricsLoggingFrequency = config.getInt("metrics.loggingFrequencySeconds", 30).seconds,
           serverAddress = config.getString("masterList.serverConnectAddress", ""),
           serverLocation = config.getString("masterList.serverLocation", "Unknown"),
           serverName = config.getString("masterList.serverName", "Emulinker Server"),
           serverWebsite = config.getString("masterList.serverWebsite", ""),
           touchEmulinker = config.getBoolean("masterList.touchEmulinker", false),
           touchKaillera = config.getBoolean("masterList.touchKaillera", false),
-          v086BufferSize = config.getInt("controllers.v086.bufferSize", 4096),
-          twitterBroadcastDelay =
-              Duration.ofSeconds(config.getInt("twitter.broadcastDelaySeconds", 15).toLong()),
+          twitterBroadcastDelay = config.getInt("twitter.broadcastDelaySeconds", 15).seconds,
           twitterEnabled = config.getBoolean("twitter.enabled", false),
           twitterOAuthAccessToken = config.getString("twitter.auth.oAuthAccessToken", ""),
           twitterOAuthAccessTokenSecret =
@@ -121,7 +119,9 @@ data class RuntimeFlags
           twitterOAuthConsumerSecret =
               config.getString(
                   "twitter.auth.oAuthConsumerSecret", ""), // TODO(nue): Read these from a file
-          twitterPreventBroadcastNameSuffixes = listOf("待", "街", "町", "再起", "侍ち"))
+          twitterPreventBroadcastNameSuffixes = listOf("待", "街", "町", "再起", "侍ち"),
+          v086BufferSize = config.getInt("controllers.v086.bufferSize", 4096),
+      )
       // ImmutableList.copyOf(config.getString("twitter.preventBroadcastNameSuffixes",
       // "").split(",")))
     }

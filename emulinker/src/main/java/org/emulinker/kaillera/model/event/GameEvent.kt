@@ -8,7 +8,7 @@ sealed interface GameEvent : KailleraEvent {
 }
 
 data class GameInfoEvent(
-    override val game: KailleraGame, val message: String, val user: KailleraUser?
+    override val game: KailleraGame, val message: String, val toUser: KailleraUser?
 ) : GameEvent
 
 data class GameChatEvent(

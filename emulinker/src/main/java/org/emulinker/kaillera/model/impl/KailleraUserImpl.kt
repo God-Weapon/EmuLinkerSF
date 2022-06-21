@@ -4,11 +4,14 @@ import com.google.common.flogger.FluentLogger
 import java.lang.Exception
 import java.lang.InterruptedException
 import java.net.InetSocketAddress
+import java.time.Duration
+import java.time.Instant
 import java.util.ArrayList
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeUnit
 import kotlin.Throws
+import org.emulinker.config.RuntimeFlags
 import org.emulinker.kaillera.access.AccessManager
 import org.emulinker.kaillera.model.ConnectionType
 import org.emulinker.kaillera.model.KailleraGame
@@ -29,7 +32,8 @@ class KailleraUserImpl(
     override val protocol: String,
     override val connectSocketAddress: InetSocketAddress,
     override val listener: KailleraEventListener,
-    override val server: KailleraServerImpl
+    override val server: KailleraServerImpl,
+    flags: RuntimeFlags,
 ) : KailleraUser, Executable {
 
   override var inStealthMode = false
@@ -58,6 +62,15 @@ class KailleraUserImpl(
   override var lastActivity: Long = initTime
     private set
 
+  override var smallLagSpikesCausedByUser = 0L
+  override var bigLagSpikesCausedByUser = 0L
+  private var lastUpdate = Instant.now()
+  private var smallLagThreshold = Duration.ZERO
+  private var bigSpikeThreshold = Duration.ZERO
+
+  // Saved to a variable because I think this might give a speed boost.
+  private val improvedLagstat = flags.improvedLagstatEnabled
+
   override fun updateLastActivity() {
     lastKeepAlive = System.currentTimeMillis()
     lastActivity = lastKeepAlive
@@ -79,7 +92,7 @@ class KailleraUserImpl(
   override var arraySize = 0
     private set
 
-  override var p2P = false
+  override var ignoringUnnecessaryServerActivity = false
 
   override var playerNumber = -1
   override var ignoreAll = false
@@ -112,22 +125,16 @@ class KailleraUserImpl(
   }
 
   override fun findIgnoredUser(address: String): Boolean {
-    for (i in ignoredUsers.indices) {
-      if (ignoredUsers[i] == address) {
-        return true
-      }
-    }
-    return false
+    return ignoredUsers.any { it == address }
   }
 
   override fun removeIgnoredUser(address: String, removeAll: Boolean): Boolean {
-    var i = 1
     var here = false
     if (removeAll) {
       ignoredUsers.clear()
       return true
     }
-    i = 0
+    var i = 0
     while (i < ignoredUsers.size) {
       if (ignoredUsers[i] == address) {
         ignoredUsers.removeAt(i)
@@ -139,15 +146,7 @@ class KailleraUserImpl(
   }
 
   override fun searchIgnoredUsers(address: String): Boolean {
-    var i = 1
-    i = 0
-    while (i < ignoredUsers.size) {
-      if (ignoredUsers[i] == address) {
-        return true
-      }
-      i++
-    }
-    return false
+    return ignoredUsers.any { it == address }
   }
 
   override var loggedIn = false
@@ -408,11 +407,33 @@ class KailleraUserImpl(
       return
     }
     totalDelay = game!!.highestUserFrameDelay + tempDelay + 5
+
+    smallLagThreshold =
+        Duration.ofSeconds(1)
+            .dividedBy(60)
+            .multipliedBy(frameDelay.toLong())
+            // Effectively this is the delay that is allowed before calling it a lag spike.
+            .plusMillis(10)
+    bigSpikeThreshold =
+        Duration.ofSeconds(1)
+            .dividedBy(60)
+            .multipliedBy(frameDelay.toLong())
+            // Effectively this is the delay that is allowed before calling it a lag spike.
+            .plusMillis(70)
     game!!.ready(this, playerNumber)
   }
 
   @Throws(GameDataException::class)
   override fun addGameData(data: ByteArray) {
+    if (improvedLagstat) {
+      val delaySinceLastResponse = Duration.between(lastUpdate, Instant.now())
+      if (delaySinceLastResponse.nano in smallLagThreshold.nano..bigSpikeThreshold.nano) {
+        smallLagSpikesCausedByUser++
+      } else if (delaySinceLastResponse.nano > bigSpikeThreshold.nano) {
+        bigLagSpikesCausedByUser++
+      }
+    }
+
     updateLastActivity()
     try {
       if (game == null)
@@ -468,6 +489,10 @@ class KailleraUserImpl(
         throw e
       }
     }
+
+    if (improvedLagstat) {
+      lastUpdate = Instant.now()
+    }
   }
 
   fun addEvent(event: KailleraEvent?) {
@@ -476,7 +501,7 @@ class KailleraUserImpl(
       return
     }
     if (status != UserStatus.IDLE) {
-      if (p2P) {
+      if (ignoringUnnecessaryServerActivity) {
         if (event.toString() == "InfoMessageEvent") return
       }
     }

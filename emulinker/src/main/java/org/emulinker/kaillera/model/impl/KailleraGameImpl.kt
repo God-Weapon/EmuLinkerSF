@@ -148,8 +148,8 @@ class KailleraGameImpl(
   }
 
   @Synchronized
-  fun announce(announcement: String, user: KailleraUser?) {
-    addEvent(GameInfoEvent(this, announcement, user))
+  fun announce(announcement: String, toUser: KailleraUser? = null) {
+    addEvent(GameInfoEvent(this, announcement, toUser))
   }
 
   @Synchronized
@@ -402,7 +402,7 @@ class KailleraGameImpl(
         highestUserFrameDelay = delayVal.toInt()
       }
       if (p2P) {
-        player.p2P = true
+        player.ignoringUnnecessaryServerActivity = true
         announce("This game is ignoring ALL server activity during gameplay!", player)
       }
       /*else{
@@ -447,7 +447,7 @@ class KailleraGameImpl(
       addEvent(AllReadyEvent(this))
       var frameDelay = (highestUserFrameDelay + 1) * owner.connectionType.byteValue - 1
       if (sameDelay) {
-        announce("This game's delay is: $highestUserFrameDelay ($frameDelay frame delay)", null)
+        announce("This game's delay is: $highestUserFrameDelay ($frameDelay frame delay)")
       } else {
         var i = 0
         while (i < playerActionQueue!!.size && i < players.size) {
@@ -455,7 +455,7 @@ class KailleraGameImpl(
           // do not show delay if stealth mode
           if (player != null && !player.inStealthMode) {
             frameDelay = (player.frameDelay + 1) * player.connectionType.byteValue - 1
-            announce("P${i + 1} Delay = ${player.frameDelay} ($frameDelay frame delay)", null)
+            announce("P${i + 1} Delay = ${player.frameDelay} ($frameDelay frame delay)")
           }
           i++
         }
@@ -488,12 +488,12 @@ class KailleraGameImpl(
     if (playingCount == 0) {
       if (startN != -1) {
         startN = -1
-        announce("StartN is now off.", null)
+        announce("StartN is now off.")
       }
       status = GameStatus.WAITING
     }
     addEvent(UserDroppedGameEvent(this, user, playerNumber))
-    if (user.p2P) {
+    if (user.ignoringUnnecessaryServerActivity) {
       // KailleraUserImpl u = (KailleraUserImpl) user;
       // u.addEvent(ServerACK.create(.getNextMessageNumber());
       // u.addEvent(new ConnectedEvent(server, user));
@@ -512,7 +512,7 @@ class KailleraGameImpl(
       }
       logger.atInfo().log("$user quit: $this")
       addEvent(UserQuitGameEvent(this, user))
-      user.p2P = false
+      user.ignoringUnnecessaryServerActivity = false
       swap = false
       if (status == GameStatus.WAITING) {
         for (i in players.indices) {
@@ -541,7 +541,7 @@ class KailleraGameImpl(
       (it as KailleraUserImpl).apply {
         status = UserStatus.IDLE
         isMuted = false
-        p2P = false
+        ignoringUnnecessaryServerActivity = false
         game = null
       }
     }

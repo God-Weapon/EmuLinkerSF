@@ -1,6 +1,5 @@
 package org.emulinker.kaillera.controller.v086
 
-import com.google.common.base.Preconditions
 import com.google.common.collect.ImmutableMap
 import com.google.common.flogger.FluentLogger
 import java.net.InetSocketAddress
@@ -149,7 +148,7 @@ class V086Controller
         .atWarning()
         .log(
             "Listening on UDP ports: $portRangeStart to $maxPort.  Make sure these ports are open in your firewall!")
-    Preconditions.checkArgument(flags.v086BufferSize > 0, "controllers.v086.bufferSize must be > 0")
+    require(flags.v086BufferSize > 0) { "controllers.v086.bufferSize must be > 0" }
 
     // array access should be faster than a hash and we won't have to create
     // a new Integer each time

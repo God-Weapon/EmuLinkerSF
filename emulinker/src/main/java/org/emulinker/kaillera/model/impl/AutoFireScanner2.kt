@@ -185,7 +185,9 @@ class AutoFireScanner2(private var game: KailleraGame, sensitivity: Int) : AutoF
             //						}
             if (aSequenceCount >= minReps && bSequenceCount >= minReps && !stopFlag) {
               val gameImpl = game as KailleraGameImpl
-              gameImpl.announce(getString("AutoFireScanner2.AutoFireDetected", user!!.name), null)
+              gameImpl.announce(
+                  getString("AutoFireScanner2.AutoFireDetected", user!!.name),
+              )
               logger
                   .atInfo()
                   .log(

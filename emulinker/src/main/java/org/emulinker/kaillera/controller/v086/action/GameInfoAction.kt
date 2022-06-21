@@ -19,8 +19,8 @@ class GameInfoAction @Inject internal constructor() : V086GameEventHandler<GameI
 
   override fun handleEvent(event: GameInfoEvent, clientHandler: V086ClientHandler) {
     handledEventCount++
-    if (event.user != null) {
-      if (event.user !== clientHandler.user) return
+    if (event.toUser != null) {
+      if (event.toUser !== clientHandler.user) return
     }
     try {
       clientHandler.send(

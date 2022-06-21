@@ -798,7 +798,7 @@ class AdminCommandAction @Inject internal constructor() : V086Action<Chat> {
       val game =
           server.getGame(gameID) as KailleraGameImpl
               ?: throw ActionException(EmuLang.getString("AdminCommandAction.GameNotFound", gameID))
-      game.announce(sb.toString(), null)
+      game.announce(sb.toString())
     } catch (e: NoSuchElementException) {
       throw ActionException(EmuLang.getString("AdminCommandAction.AnnounceGameError"))
     }

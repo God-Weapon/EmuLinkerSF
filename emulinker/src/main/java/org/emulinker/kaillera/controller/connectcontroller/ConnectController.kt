@@ -1,7 +1,6 @@
 package org.emulinker.kaillera.controller.connectcontroller
 
 import com.codahale.metrics.MetricRegistry
-import com.google.common.base.Preconditions
 import com.google.common.flogger.FluentLogger
 import java.net.InetSocketAddress
 import java.nio.ByteBuffer
@@ -253,7 +252,7 @@ class ConnectController
   init {
     val port = config.getInt("controllers.connect.port")
     bufferSize = config.getInt("controllers.connect.bufferSize")
-    Preconditions.checkArgument(bufferSize > 0, "controllers.connect.bufferSize must be > 0")
+    require(bufferSize > 0) { "controllers.connect.bufferSize must be > 0" }
     controllersMap = HashMap()
     for (controller in kailleraServerControllers) {
       val clientTypes = controller.clientTypes
