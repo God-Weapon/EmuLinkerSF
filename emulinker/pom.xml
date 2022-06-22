@@ -15,8 +15,8 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <build-timestamp>${maven.build.timestamp}</build-timestamp>
     <maven.build.timestamp.format>yyyy-MM-dd'T'HH:mm:ss'Z'</maven.build.timestamp.format>
-    <kotlin.version>1.6.0</kotlin.version>
-    <dagger.version>2.39</dagger.version>
+    <kotlin.version>1.7.0</kotlin.version>
+    <dagger.version>2.42</dagger.version>
     <log4j.version>2.17.2</log4j.version>
     <!-- Optional but gives us incremental builds. -->
     <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
