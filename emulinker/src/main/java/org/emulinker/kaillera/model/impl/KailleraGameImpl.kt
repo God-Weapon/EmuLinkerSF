@@ -47,7 +47,7 @@ class KailleraGameImpl(
   override var highestUserFrameDelay = 0
   override var maxPing = 1000
   override var startN = -1
-  override var p2P = false
+  override var ignoringUnnecessaryServerActivity = false
   override var sameDelay = false
   override var startTimeout = false
   override var maxUsers = 8
@@ -378,7 +378,7 @@ class KailleraGameImpl(
     startTimeout = false
     highestUserFrameDelay = 1
     if (server.users.size > 60) {
-      p2P = true
+      ignoringUnnecessaryServerActivity = true
     }
     for (i in players.indices) {
       val player = players[i]
@@ -401,7 +401,7 @@ class KailleraGameImpl(
       if (delayVal.toInt() > highestUserFrameDelay) {
         highestUserFrameDelay = delayVal.toInt()
       }
-      if (p2P) {
+      if (ignoringUnnecessaryServerActivity) {
         player.ignoringUnnecessaryServerActivity = true
         announce("This game is ignoring ALL server activity during gameplay!", player)
       }

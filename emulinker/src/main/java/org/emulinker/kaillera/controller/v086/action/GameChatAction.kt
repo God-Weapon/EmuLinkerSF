@@ -90,7 +90,7 @@ class GameChatAction
         val user = clientHandler.user as KailleraUserImpl
         if (message.message == "/p2pon") {
           if (clientHandler.user!!.game!!.owner == clientHandler.user) {
-            clientHandler.user!!.game!!.p2P = true
+            clientHandler.user!!.game!!.ignoringUnnecessaryServerActivity = true
             for (u in clientHandler.user!!.game!!.players) {
               u.ignoringUnnecessaryServerActivity = true
               if (u.loggedIn) {
@@ -110,7 +110,7 @@ class GameChatAction
           }
         } else if (message.message == "/p2poff") {
           if (clientHandler.user!!.game!!.owner == clientHandler.user) {
-            clientHandler.user!!.game!!.p2P = false
+            clientHandler.user!!.game!!.ignoringUnnecessaryServerActivity = false
             for (u in clientHandler.user!!.game!!.players) {
               u.ignoringUnnecessaryServerActivity = false
               if (u.loggedIn) {

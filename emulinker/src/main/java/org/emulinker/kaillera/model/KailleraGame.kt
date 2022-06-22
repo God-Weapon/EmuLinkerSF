@@ -26,7 +26,7 @@ interface KailleraGame {
   var highestUserFrameDelay: Int
   var maxPing: Int
   var maxUsers: Int
-  var p2P: Boolean
+  var ignoringUnnecessaryServerActivity: Boolean
   /** Frame delay is synced with others users in the same game (see /samedelay). */
   var sameDelay: Boolean
   var startN: Int

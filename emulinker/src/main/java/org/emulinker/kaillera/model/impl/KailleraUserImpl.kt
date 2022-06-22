@@ -64,6 +64,8 @@ class KailleraUserImpl(
 
   override var smallLagSpikesCausedByUser = 0L
   override var bigLagSpikesCausedByUser = 0L
+
+  /** The last time we heard from this player for lag detection purposes. */
   private var lastUpdate = Instant.now()
   private var smallLagThreshold = Duration.ZERO
   private var bigSpikeThreshold = Duration.ZERO
@@ -410,13 +412,13 @@ class KailleraUserImpl(
 
     smallLagThreshold =
         Duration.ofSeconds(1)
-            .dividedBy(60)
+            .dividedBy(connectionType.updatesPerSecond.toLong())
             .multipliedBy(frameDelay.toLong())
             // Effectively this is the delay that is allowed before calling it a lag spike.
             .plusMillis(10)
     bigSpikeThreshold =
         Duration.ofSeconds(1)
-            .dividedBy(60)
+            .dividedBy(connectionType.updatesPerSecond.toLong())
             .multipliedBy(frameDelay.toLong())
             // Effectively this is the delay that is allowed before calling it a lag spike.
             .plusMillis(70)
@@ -518,6 +520,9 @@ class KailleraUserImpl(
         listener.actionPerformed(event)
         if (event is GameStartedEvent) {
           status = UserStatus.PLAYING
+          if (improvedLagstat) {
+            lastUpdate = Instant.now()
+          }
         } else if (event is UserQuitEvent && event.user == this) {
           stop()
         }

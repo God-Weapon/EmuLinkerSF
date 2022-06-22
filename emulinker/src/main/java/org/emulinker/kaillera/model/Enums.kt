@@ -30,7 +30,14 @@ enum class GameStatus(val byteValue: Byte, private val readableName: String) {
   }
 }
 
-enum class ConnectionType(val byteValue: Byte, val readableName: String) {
+enum class ConnectionType(
+    /**
+     * ID for the connection type used over the wire, but has a more concrete meaning in that it
+     * determines the number of updates per second while inside a game: 60/byteValue qps.
+     */
+    val byteValue: Byte,
+    val readableName: String
+) {
   DISABLED(0, "DISABLED"),
   LAN(1, "LAN"),
   EXCELLENT(2, "Excellent"),
@@ -40,6 +47,8 @@ enum class ConnectionType(val byteValue: Byte, val readableName: String) {
   BAD(6, "Bad");
 
   override fun toString() = readableName
+
+  val updatesPerSecond = if (byteValue == 0.toByte()) 0 else 60 / byteValue
 
   companion object {
     fun fromByteValue(byteValue: Byte): ConnectionType {
