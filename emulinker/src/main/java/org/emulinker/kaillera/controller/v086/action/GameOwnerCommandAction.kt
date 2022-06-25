@@ -302,6 +302,7 @@ class GameOwnerCommandAction @Inject internal constructor(private val flags: Run
       for (player in game.players) {
         player.timeouts = 0
         player.smallLagSpikesCausedByUser = 0
+        player.bigLagSpikesCausedByUser = 0
       }
       game.announce(
           "LagStat has been reset!",
