@@ -135,6 +135,8 @@ class ConnectController
           }
         }
 
+    //    logger.atInfo().log("IN-> $inMessage")
+
     // the message set of the ConnectController isn't really complex enough to warrant a complicated
     // request/action class
     // structure, so I'm going to handle it  all in this class alone
@@ -245,6 +247,7 @@ class ConnectController
   }
 
   protected fun send(outMessage: ConnectMessage, toSocketAddress: InetSocketAddress?) {
+    //    logger.atInfo().log("<-OUT $outMessage")
     send(outMessage.toBuffer(), toSocketAddress)
     outMessage.releaseBuffer()
   }

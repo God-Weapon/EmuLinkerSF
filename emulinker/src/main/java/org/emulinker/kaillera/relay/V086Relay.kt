@@ -36,7 +36,7 @@ class V086Relay
   override fun processClientToServer(
       receiveBuffer: ByteBuffer, fromAddress: InetSocketAddress, toAddress: InetSocketAddress
   ): ByteBuffer? {
-    logger.atFine().log("-> " + dumpBuffer(receiveBuffer))
+    //    logger.atFine().log("-> " + dumpBuffer(receiveBuffer))
     val inBundle: V086Bundle =
         try {
           // inBundle = V086Bundle.parse(receiveBuffer, lastClientMessageNumber);
@@ -60,7 +60,7 @@ class V086Relay
               .log("Invalid message format: " + dumpBuffer(receiveBuffer))
           return null
         }
-    logger.atFine().log("-> $inBundle")
+    //    logger.atInfo().log("-> $inBundle")
     val inMessages = inBundle.messages
     for (i in 0 until inBundle.numMessages) {
       if (inMessages[i]!!.messageNumber > lastClientMessageNumber)
@@ -77,7 +77,7 @@ class V086Relay
   override fun processServerToClient(
       receiveBuffer: ByteBuffer, fromAddress: InetSocketAddress, toAddress: InetSocketAddress
   ): ByteBuffer? {
-    logger.atFine().log("<- " + dumpBuffer(receiveBuffer))
+    //    logger.atFine().log("<- " + dumpBuffer(receiveBuffer))
     val inBundle: V086Bundle =
         try {
           // inBundle = V086Bundle.parse(receiveBuffer, lastServerMessageNumber);
@@ -101,7 +101,7 @@ class V086Relay
               .log("Invalid message format: " + dumpBuffer(receiveBuffer))
           return null
         }
-    logger.atInfo().log("<- $inBundle")
+    //    logger.atInfo().log("<- $inBundle")
     val inMessages = inBundle.messages
     for (i in 0 until inBundle.numMessages) {
       if (inMessages[i]!!.messageNumber > lastServerMessageNumber)

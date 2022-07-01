@@ -17,8 +17,6 @@ import org.emulinker.kaillera.model.exception.*
 
 private val logger = FluentLogger.forEnclosingClass()
 
-private const val numAcksForSpeedTest = 3
-
 @Singleton
 class ACKAction @Inject internal constructor() :
     V086Action<ClientACK>, V086UserEventHandler<UserEvent> {
@@ -35,7 +33,7 @@ class ACKAction @Inject internal constructor() :
     val user = clientHandler.user
     if (user!!.loggedIn) return
     clientHandler.addSpeedMeasurement()
-    if (clientHandler.speedMeasurementCount > numAcksForSpeedTest) {
+    if (clientHandler.speedMeasurementCount > clientHandler.numAcksForSpeedTest) {
       user.ping = clientHandler.averageNetworkSpeed
       logger
           .atFine()

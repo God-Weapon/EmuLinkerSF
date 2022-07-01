@@ -13,6 +13,16 @@ import org.emulinker.util.UnsignedUtil
 private val logger = FluentLogger.forEnclosingClass()
 
 abstract class V086Message : ByteBufferMessage() {
+  /**
+   * The 0-based enumeration indicating the order in which this message was sent/received for each
+   * server.
+   *
+   * The first client->server message would be 0 and the first server->client message would be 0.
+   * These are two separate counters.
+   *
+   * This rule is sometimes broken. For instance, ConnectMessage_HELLO and ConnectMessage_HELLOD00D
+   * are not included in this count.
+   */
   abstract val messageNumber: Int
 
   @Deprecated("We should try to use a sealed class instead of relying on this messageId field")

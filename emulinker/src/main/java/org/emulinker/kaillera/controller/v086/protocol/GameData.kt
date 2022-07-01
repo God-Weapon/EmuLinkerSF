@@ -8,7 +8,7 @@ import org.emulinker.util.UnsignedUtil
 
 data class GameData
     @Throws(MessageFormatException::class)
-    private constructor(override val messageNumber: Int, val gameData: ByteArray) : V086Message() {
+    constructor(override val messageNumber: Int, val gameData: ByteArray) : V086Message() {
 
   override val messageId = ID
 

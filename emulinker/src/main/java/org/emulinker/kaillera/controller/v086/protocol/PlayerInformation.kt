@@ -68,7 +68,7 @@ data class PlayerInformation
       val b = buffer.get()
       if (b.toInt() != 0x00)
           throw MessageFormatException(
-              "Invalid " + "Player Information" + " format: byte 0 = " + EmuUtil.byteToHex(b))
+              "Invalid Player Information format: byte 0 = ${EmuUtil.byteToHex(b)}")
       val numPlayers = buffer.int
       val minLen = numPlayers * 9
       if (buffer.remaining() < minLen) throw ParseException("Failed byte count validation!")
