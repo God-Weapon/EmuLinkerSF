@@ -1,5 +1,6 @@
 package org.emulinker.kaillera.controller.connectcontroller.protocol
 
+import io.ktor.utils.io.core.*
 import java.nio.ByteBuffer
 import java.nio.charset.CharacterCodingException
 import kotlin.Throws
@@ -37,6 +38,33 @@ abstract class ConnectMessage : ByteBufferMessage() {
       }
       buffer.rewind()
       throw MessageFormatException("Unrecognized connect message: " + EmuUtil.dumpBuffer(buffer))
+    }
+
+    @Throws(MessageFormatException::class)
+    fun parse(byteReadPacket: ByteReadPacket): ConnectMessage {
+      val messageStr =
+          try {
+            //            val stringDecoder = charset.newDecoder()
+            byteReadPacket.readText(charset)
+            //            stringDecoder.decode(byteReadPacket).toString()
+          } catch (e: CharacterCodingException) {
+            throw MessageFormatException("Invalid bytes received: failed to decode to a string!", e)
+          }
+
+      if (messageStr.startsWith(ConnectMessage_TOO.ID)) {
+        return ConnectMessage_TOO.parse(messageStr)
+      } else if (messageStr.startsWith(ConnectMessage_HELLOD00D.ID)) {
+        return ConnectMessage_HELLOD00D.parse(messageStr)
+      } else if (messageStr.startsWith(ConnectMessage_HELLO.ID)) {
+        return ConnectMessage_HELLO.parse(messageStr)
+      } else if (messageStr.startsWith(ConnectMessage_PING.ID)) {
+        return ConnectMessage_PING.parse(messageStr)
+      } else if (messageStr.startsWith(ConnectMessage_PONG.ID)) {
+        return ConnectMessage_PONG.parse(messageStr)
+      }
+      //      byteReadPacket.rewind()
+      throw MessageFormatException(
+          "Unrecognized connect message: " + EmuUtil.dumpBuffer(byteReadPacket.readByteBuffer()))
     }
   }
 }

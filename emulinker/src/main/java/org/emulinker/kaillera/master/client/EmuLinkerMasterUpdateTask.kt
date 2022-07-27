@@ -32,12 +32,9 @@ class EmuLinkerMasterUpdateTask(
 
   override fun touchMaster() {
     val waitingGames = StringBuilder()
-    for (game in kailleraServer.games) {
-      if (game.status != GameStatus.WAITING) {
-        continue
-      }
+    kailleraServer.games.asSequence().filter { it.status == GameStatus.WAITING }.forEach {
       waitingGames.append(
-          "${game.romName}|${game.owner.name}|${game.owner.clientType}|${game.players.size}/${game.maxUsers}|")
+          "${it.romName}|${it.owner.name}|${it.owner.clientType}|${it.players.size}/${it.maxUsers}|")
     }
     val params =
         arrayOf(

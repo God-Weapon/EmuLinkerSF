@@ -1,6 +1,5 @@
 package org.emulinker.kaillera.controller.connectcontroller.protocol
 
-import java.net.InetSocketAddress
 import java.nio.ByteBuffer
 import kotlin.Throws
 import org.emulinker.kaillera.controller.messaging.MessageFormatException
@@ -9,13 +8,12 @@ import org.emulinker.kaillera.controller.messaging.MessageFormatException
 class ConnectMessage_PONG : ConnectMessage() {
   override val iD = ID
 
-  var clientSocketAddress: InetSocketAddress? = null
   override fun toString() = "Server Pong"
 
   override val length = ID.length + 1
 
-  override fun writeTo(buffer: ByteBuffer?) {
-    buffer!!.put(charset.encode(ID))
+  override fun writeTo(buffer: ByteBuffer) {
+    buffer.put(charset.encode(ID))
     buffer.put(0x00.toByte())
   }
 

@@ -17,7 +17,7 @@ class InfoMessageAction @Inject internal constructor() : V086UserEventHandler<In
 
   override fun toString() = "InfoMessageAction"
 
-  override fun handleEvent(event: InfoMessageEvent, clientHandler: V086ClientHandler) {
+  override suspend fun handleEvent(event: InfoMessageEvent, clientHandler: V086ClientHandler) {
     handledEventCount++
     try {
       clientHandler.send(

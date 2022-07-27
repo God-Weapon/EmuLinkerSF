@@ -20,7 +20,7 @@ class CachedGameDataAction @Inject internal constructor() : V086Action<CachedGam
   override fun toString() = "CachedGameDataAction"
 
   @Throws(FatalActionException::class)
-  override fun performAction(message: CachedGameData, clientHandler: V086ClientHandler) {
+  override suspend fun performAction(message: CachedGameData, clientHandler: V086ClientHandler) {
     try {
       val user = clientHandler.user
       val data = clientHandler.clientGameDataCache[message.key]
@@ -28,7 +28,7 @@ class CachedGameDataAction @Inject internal constructor() : V086Action<CachedGam
         logger.atFine().log("Game Cache Error: null data")
         return
       }
-      user!!.addGameData(data)
+      user.addGameData(data)
     } catch (e: GameDataException) {
       logger.atFine().withCause(e).log("Game data error")
       if (e.response != null) {

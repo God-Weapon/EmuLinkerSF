@@ -1,7 +1,9 @@
 package org.emulinker.kaillera.model
 
 import java.net.InetSocketAddress
+import java.time.Instant
 import kotlin.Throws
+import kotlinx.coroutines.sync.Mutex
 import org.emulinker.kaillera.model.event.KailleraEventListener
 import org.emulinker.kaillera.model.exception.*
 import org.emulinker.kaillera.model.impl.KailleraGameImpl
@@ -20,12 +22,12 @@ interface KailleraUser {
   val arraySize: Int
   val bytesPerAction: Int
   val connectSocketAddress: InetSocketAddress
-  val connectTime: Long
+  val connectTime: Instant
   val frameDelay: Int
   val game: KailleraGameImpl?
   val isEmuLinkerClient: Boolean
-  val lastActivity: Long
-  val lastKeepAlive: Long
+  val lastActivity: Instant
+  val lastKeepAlive: Instant
   val listener: KailleraEventListener
   val loggedIn: Boolean
   val protocol: String
@@ -49,8 +51,8 @@ interface KailleraUser {
    */
   var ignoringUnnecessaryServerActivity: Boolean
   var ping: Int
-  var playerNumber: Int
-  var socketAddress: InetSocketAddress?
+  var playerNumber: Int // TODO(nue): Make this nullable.
+  var socketAddress: InetSocketAddress
   var inStealthMode: Boolean
   var tempDelay: Int
   var timeouts: Int
@@ -64,7 +66,7 @@ interface KailleraUser {
       ConnectionTypeException::class,
       UserNameException::class,
       LoginException::class)
-  fun login()
+  suspend fun login()
 
   fun updateLastActivity()
 
@@ -81,10 +83,10 @@ interface KailleraUser {
   fun addIgnoredUser(address: String)
 
   @Throws(ChatException::class, FloodException::class)
-  fun chat(message: String?)
+  fun chat(message: String)
 
   @Throws(CreateGameException::class, FloodException::class)
-  fun createGame(romName: String?): KailleraGame?
+  suspend fun createGame(romName: String): KailleraGame
 
   @Throws(
       QuitException::class,
@@ -94,7 +96,7 @@ interface KailleraUser {
   fun quit(message: String?)
 
   @Throws(JoinGameException::class)
-  fun joinGame(gameID: Int): KailleraGame
+  suspend fun joinGame(gameID: Int): KailleraGame
 
   @Throws(StartGameException::class)
   fun startGame()
@@ -119,5 +121,6 @@ interface KailleraUser {
 
   fun droppedPacket()
 
-  fun stop()
+  suspend fun stop()
+  val mutex: Mutex
 }

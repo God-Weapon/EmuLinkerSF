@@ -23,16 +23,16 @@ class QuitAction @Inject internal constructor() :
   override fun toString() = "QuitAction"
 
   @Throws(FatalActionException::class)
-  override fun performAction(message: Quit_Request, clientHandler: V086ClientHandler) {
+  override suspend fun performAction(message: Quit_Request, clientHandler: V086ClientHandler) {
     actionPerformedCount++
     try {
-      clientHandler.user!!.quit(message.message)
+      clientHandler.user.quit(message.message)
     } catch (e: ActionException) {
       throw FatalActionException("Failed to quit: " + e.message)
     }
   }
 
-  override fun handleEvent(event: UserQuitEvent, clientHandler: V086ClientHandler) {
+  override suspend fun handleEvent(event: UserQuitEvent, clientHandler: V086ClientHandler) {
     handledEventCount++
     try {
       val user = event.user

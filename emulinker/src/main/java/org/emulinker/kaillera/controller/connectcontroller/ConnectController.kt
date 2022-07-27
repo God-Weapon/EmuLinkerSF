@@ -1,44 +1,56 @@
 package org.emulinker.kaillera.controller.connectcontroller
 
-import com.codahale.metrics.MetricRegistry
 import com.google.common.flogger.FluentLogger
 import java.net.InetSocketAddress
 import java.nio.ByteBuffer
-import java.util.concurrent.ThreadPoolExecutor
+import java.util.Set
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.coroutines.CoroutineContext
+import kotlin.time.Duration.Companion.minutes
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.apache.commons.configuration.Configuration
+import org.emulinker.config.RuntimeFlags
 import org.emulinker.kaillera.access.AccessManager
 import org.emulinker.kaillera.controller.KailleraServerController
 import org.emulinker.kaillera.controller.connectcontroller.protocol.*
 import org.emulinker.kaillera.controller.connectcontroller.protocol.ConnectMessage.Companion.parse
-import org.emulinker.kaillera.controller.messaging.ByteBufferMessage
 import org.emulinker.kaillera.controller.messaging.ByteBufferMessage.Companion.getBuffer
 import org.emulinker.kaillera.controller.messaging.MessageFormatException
 import org.emulinker.kaillera.model.exception.NewConnectionException
 import org.emulinker.kaillera.model.exception.ServerFullException
-import org.emulinker.net.BindException
 import org.emulinker.net.UDPServer
+import org.emulinker.net.UdpSocketProvider
 import org.emulinker.util.EmuUtil.dumpBuffer
 import org.emulinker.util.EmuUtil.formatSocketAddress
 
 private val logger = FluentLogger.forEnclosingClass()
 
-/** The UDP Server implementation. */
+/**
+ * The UDP Server implementation.
+ *
+ * This is the main server for new connections (usually on 27888).
+ */
 @Singleton
 class ConnectController
     @Inject
     internal constructor(
-        private val threadPool: ThreadPoolExecutor,
-        kailleraServerControllers: java.util.Set<KailleraServerController>,
+        // TODO(nue): This makes no sense because KailleraServerController is a singleton...
+        kailleraServerControllers: Set<KailleraServerController>,
         private val accessManager: AccessManager,
-        config: Configuration,
-        metrics: MetricRegistry?
-    ) : UDPServer(/* shutdownOnExit= */ true, metrics) {
+        private val config: Configuration,
+        flags: RuntimeFlags,
+    ) : UDPServer(flags) {
 
-  private val controllersMap: MutableMap<String?, KailleraServerController>
+  private val mutex = Mutex()
 
-  var bufferSize = 0
+  private val controllersMap: MutableMap<String?, KailleraServerController> = HashMap()
+
+  override val bufferSize = flags.connectControllerBufferSize
+
+  private var internalBufferSize = 0
   var startTime: Long = 0
     private set
   var requestCount = 0
@@ -55,95 +67,80 @@ class ConnectController
   private var lastAddressCount = 0
   var failedToStartCount = 0
     private set
-  var connectCount = 0
-    private set
+  private var connectCount = 0
   var pingCount = 0
     private set
 
-  fun getController(clientType: String?): KailleraServerController? {
+  private lateinit var udpSocketProvider: UdpSocketProvider
+
+  private fun getController(clientType: String?): KailleraServerController? {
     return controllersMap[clientType]
   }
 
   val controllers: Collection<KailleraServerController>
     get() = controllersMap.values
-  override val buffer: ByteBuffer
-    protected get() = getBuffer(bufferSize)
 
-  override fun releaseBuffer(buffer: ByteBuffer) {
-    ByteBufferMessage.releaseBuffer(buffer)
+  override fun allocateBuffer(): ByteBuffer {
+    return getBuffer(internalBufferSize)
   }
 
-  override fun toString(): String {
-    // return "ConnectController[port=" + getBindPort() + " isRunning=" + isRunning() + "]";
-    // return "ConnectController[port=" + getBindPort() + "]";
-    return if (bindPort > 0) "ConnectController($bindPort)" else "ConnectController(unbound)"
-  }
+  override fun toString(): String =
+      if (bindPort > 0) "ConnectController($bindPort)" else "ConnectController(unbound)"
 
-  @Synchronized
-  override fun start() {
+  override suspend fun start(
+      udpSocketProvider: UdpSocketProvider, globalContext: CoroutineContext
+  ) {
+    this.udpSocketProvider = udpSocketProvider
+    this.globalContext = globalContext
+    val port = config.getInt("controllers.connect.port")
     startTime = System.currentTimeMillis()
-    logger
-        .atFine()
-        .log(
-            toString() +
-                " Thread starting (ThreadPool:" +
-                threadPool.activeCount +
-                "/" +
-                threadPool.poolSize +
-                ")")
-    threadPool.execute(this)
-    Thread.yield()
-    logger
-        .atFine()
-        .log(
-            toString() +
-                " Thread started (ThreadPool:" +
-                threadPool.activeCount +
-                "/" +
-                threadPool.poolSize +
-                ")")
+
+    super.bind(udpSocketProvider, port)
+    this.run(globalContext)
   }
 
-  @Synchronized
-  override fun stop() {
-    super.stop()
-    for (controller in controllersMap.values) controller.stop()
+  override suspend fun stop() {
+    mutex.withLock {
+      super.stop()
+      for (controller in controllersMap.values) controller.stop()
+    }
   }
 
-  @Synchronized
-  override fun handleReceived(buffer: ByteBuffer, fromSocketAddress: InetSocketAddress) {
+  override suspend fun handleReceived(
+      buffer: ByteBuffer, remoteSocketAddress: InetSocketAddress, requestScope: CoroutineScope
+  ) {
     requestCount++
-    var inMessage: ConnectMessage? = null
-    inMessage =
-        try {
+    val inMessage: ConnectMessage? =
+    // TODO(nue): Remove this catch logic.
+    try {
           parse(buffer)
-        } catch (e: Exception) {
-          when (e) {
-            is MessageFormatException, is IllegalArgumentException -> {
-              messageFormatErrorCount++
-              buffer.rewind()
-              logger
-                  .atWarning()
-                  .log(
-                      "Received invalid message from " +
-                          formatSocketAddress(fromSocketAddress) +
-                          ": " +
-                          dumpBuffer(buffer))
-              return
-            }
-            else -> throw e
-          }
+        } catch (e: MessageFormatException) {
+          messageFormatErrorCount++
+          buffer.rewind()
+          logger
+              .atWarning()
+              .log(
+                  "Received invalid message from ${formatSocketAddress(remoteSocketAddress)}: ${dumpBuffer(buffer)}")
+          return
+        } catch (e: IllegalArgumentException) {
+          messageFormatErrorCount++
+          buffer.rewind()
+          logger
+              .atWarning()
+              .log(
+                  "Received invalid message from ${formatSocketAddress(remoteSocketAddress)}: ${dumpBuffer(buffer)}")
+          return
         }
 
-    //    logger.atInfo().log("IN-> $inMessage")
+    logger.atFinest().log("-> FROM %s: %s", formatSocketAddress(remoteSocketAddress), inMessage)
 
     // the message set of the ConnectController isn't really complex enough to warrant a complicated
     // request/action class
     // structure, so I'm going to handle it  all in this class alone
     if (inMessage is ConnectMessage_PING) {
       pingCount++
-      logger.atFine().log("Ping from: " + formatSocketAddress(fromSocketAddress))
-      send(ConnectMessage_PONG(), fromSocketAddress)
+      logger.atFine().log("Ping from: " + formatSocketAddress(remoteSocketAddress))
+      send(ConnectMessage_PONG(), remoteSocketAddress)
       return
     }
     if (inMessage !is ConnectMessage_HELLO) {
@@ -151,86 +148,76 @@ class ConnectController
       logger
           .atWarning()
           .log(
-              "Received unexpected message type from " +
-                  formatSocketAddress(fromSocketAddress) +
-                  ": " +
-                  inMessage)
+              "Received unexpected message type from ${formatSocketAddress(remoteSocketAddress)}: $inMessage")
       return
     }
-    val connectMessage = inMessage
 
     // now we need to find the specific server this client is request to
     // connect to using the client type
-    val protocolController = getController(connectMessage.protocol)
+    val protocolController = getController(inMessage.protocol)
     if (protocolController == null) {
       protocolErrorCount++
       logger
           .atSevere()
           .log(
-              "Client requested an unhandled protocol " +
-                  formatSocketAddress(fromSocketAddress) +
-                  ": " +
-                  connectMessage.protocol)
+              "Client requested an unhandled protocol ${formatSocketAddress(remoteSocketAddress)}: ${inMessage.protocol}")
       return
     }
-    if (!accessManager.isAddressAllowed(fromSocketAddress.address)) {
+    if (!accessManager.isAddressAllowed(remoteSocketAddress.address)) {
       deniedOtherCount++
       logger
           .atWarning()
-          .log("AccessManager denied connection from " + formatSocketAddress(fromSocketAddress))
+          .log("AccessManager denied connection from ${formatSocketAddress(remoteSocketAddress)}")
       return
     } else {
-      var privatePort = -1
-      val access = accessManager.getAccess(fromSocketAddress.address)
+      val privatePort: Int
+      val access = accessManager.getAccess(remoteSocketAddress.address)
       try {
-        // SF MOD - Hammer Protection
-        if (access < AccessManager.ACCESS_ADMIN && connectCount > 0) {
-          if (lastAddress == fromSocketAddress.address.hostAddress) {
-            lastAddressCount++
-            if (lastAddressCount >= 4) {
+        mutex.withLock {
+          // SF MOD - Hammer Protection
+          if (access < AccessManager.ACCESS_ADMIN && connectCount > 0) {
+            if (lastAddress == remoteSocketAddress.address.hostAddress) {
+              lastAddressCount++
+              if (lastAddressCount >= 4) {
+                lastAddressCount = 0
+                failedToStartCount++
+                logger
+                    .atFine()
+                    .log(
+                        "SF MOD: HAMMER PROTECTION (2 Min Ban): ${formatSocketAddress(remoteSocketAddress)}")
+                accessManager.addTempBan(remoteSocketAddress.address.hostAddress, 2.minutes)
+                return
+              }
+            } else {
+              lastAddress = remoteSocketAddress.address.hostAddress
               lastAddressCount = 0
-              failedToStartCount++
-              logger
-                  .atFine()
-                  .log(
-                      "SF MOD: HAMMER PROTECTION (2 Min Ban): " +
-                          formatSocketAddress(fromSocketAddress))
-              accessManager.addTempBan(fromSocketAddress.address.hostAddress, 2)
-              return
             }
-          } else {
-            lastAddress = fromSocketAddress.address.hostAddress
-            lastAddressCount = 0
+          } else lastAddress = remoteSocketAddress.address.hostAddress
+          privatePort =
+              protocolController.newConnection(
+                  udpSocketProvider, remoteSocketAddress, inMessage.protocol)
+          if (privatePort <= 0) {
+            failedToStartCount++
+            logger
+                .atSevere()
+                .log(
+                    "$protocolController failed to start for ${formatSocketAddress(remoteSocketAddress)}")
+            return
           }
-        } else lastAddress = fromSocketAddress.address.hostAddress
-        privatePort = protocolController.newConnection(fromSocketAddress, connectMessage.protocol)
-        if (privatePort <= 0) {
-          failedToStartCount++
+          connectCount++
           logger
-              .atSevere()
+              .atFine()
               .log(
-                  protocolController.toString() +
-                      " failed to start for " +
-                      formatSocketAddress(fromSocketAddress))
-          return
+                  "$protocolController allocated port $privatePort to client from ${remoteSocketAddress.address.hostAddress}")
+          send(ConnectMessage_HELLOD00D(privatePort), remoteSocketAddress)
         }
-        connectCount++
-        logger
-            .atFine()
-            .log(
-                protocolController.toString() +
-                    " allocated port " +
-                    privatePort +
-                    " to client from " +
-                    fromSocketAddress.address.hostAddress)
-        send(ConnectMessage_HELLOD00D(privatePort), fromSocketAddress)
       } catch (e: ServerFullException) {
         deniedServerFullCount++
         logger
             .atFine()
             .withCause(e)
-            .log("Sending server full response to " + formatSocketAddress(fromSocketAddress))
-        send(ConnectMessage_TOO(), fromSocketAddress)
+            .log("Sending server full response to ${formatSocketAddress(remoteSocketAddress)}")
+        send(ConnectMessage_TOO(), remoteSocketAddress)
         return
       } catch (e: NewConnectionException) {
         deniedOtherCount++
@@ -238,37 +225,25 @@ class ConnectController
             .atWarning()
             .withCause(e)
             .log(
-                protocolController.toString() +
-                    " denied connection from " +
-                    formatSocketAddress(fromSocketAddress))
+                "$protocolController denied connection from ${formatSocketAddress(remoteSocketAddress)}")
         return
       }
     }
   }
 
-  protected fun send(outMessage: ConnectMessage, toSocketAddress: InetSocketAddress?) {
-    //    logger.atInfo().log("<-OUT $outMessage")
+  private suspend fun send(outMessage: ConnectMessage, toSocketAddress: InetSocketAddress) {
+    logger.atFinest().log("<- TO %s: %s", formatSocketAddress(toSocketAddress), outMessage)
+
     send(outMessage.toBuffer(), toSocketAddress)
     outMessage.releaseBuffer()
   }
 
   init {
-    val port = config.getInt("controllers.connect.port")
-    bufferSize = config.getInt("controllers.connect.bufferSize")
-    require(bufferSize > 0) { "controllers.connect.bufferSize must be > 0" }
-    controllersMap = HashMap()
-    for (controller in kailleraServerControllers) {
-      val clientTypes = controller.clientTypes
-      for (j in clientTypes.indices) {
-        logger.atFine().log("Mapping client type " + clientTypes[j] + " to " + controller)
-        controllersMap[clientTypes[j]] = controller
+    kailleraServerControllers.forEach { controller ->
+      controller.clientTypes.forEach { type ->
+        logger.atFine().log("Mapping client type $type to $controller")
+        controllersMap[type] = controller
       }
     }
-    try {
-      super.bind(port)
-    } catch (e: BindException) {
-      throw IllegalStateException(e)
-    }
-    logger.atInfo().log("Ready to accept connections on port $port")
   }
 }

@@ -5,6 +5,8 @@ import java.lang.Exception
 import java.util.*
 import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.Throws
+import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.delay
 import org.emulinker.kaillera.access.AccessManager
 import org.emulinker.kaillera.master.StatsCollector
 import org.emulinker.kaillera.model.GameStatus
@@ -92,7 +94,7 @@ class KailleraGameImpl(
   override val clientType: String?
     get() = owner.clientType
 
-  val autoFireDetector: AutoFireDetector?
+  var autoFireDetector: AutoFireDetector = server.getAutoFireDetector(this)
 
   override fun getPlayerNumber(user: KailleraUser): Int {
     return players.indexOf(user) + 1
@@ -116,10 +118,7 @@ class KailleraGameImpl(
     get() = players.asSequence().filter { it.status == UserStatus.PLAYING }.count()
 
   private val synchedCount: Int
-    get() {
-      if (playerActionQueue == null) return 0
-      return playerActionQueue!!.count { it.synched }
-    }
+    get() = playerActionQueue?.count { it.synched } ?: 0
 
   private fun addEvent(event: GameEvent?) {
     for (player in players) (player as KailleraUserImpl).addEvent(event)
@@ -127,13 +126,13 @@ class KailleraGameImpl(
 
   @Synchronized
   @Throws(GameChatException::class)
-  override fun chat(user: KailleraUser, message: String?) {
+  override fun chat(user: KailleraUser, message: String) {
     if (!players.contains(user)) {
       logger.atWarning().log("$user game chat denied: not in $this")
       throw GameChatException(EmuLang.getString("KailleraGameImpl.GameChatErrorNotInGame"))
     }
     if (user.accessLevel == AccessManager.ACCESS_NORMAL) {
-      if (server.maxGameChatLength > 0 && message!!.length > server.maxGameChatLength) {
+      if (server.maxGameChatLength > 0 && message.length > server.maxGameChatLength) {
         logger
             .atWarning()
             .log("$user gamechat denied: Message Length > ${server.maxGameChatLength}")
@@ -144,7 +143,7 @@ class KailleraGameImpl(
       }
     }
     logger.atInfo().log("$user, $this gamechat: $message")
-    addEvent(GameChatEvent(this, user, message!!))
+    addEvent(GameChatEvent(this, user, message))
   }
 
   @Synchronized
@@ -193,8 +192,8 @@ class KailleraGameImpl(
 
   @Synchronized
   @Throws(JoinGameException::class)
-  override fun join(user: KailleraUser): Int {
-    val access = server.accessManager.getAccess(user.socketAddress!!.address)
+  override suspend fun join(user: KailleraUser): Int {
+    val access = server.accessManager.getAccess(user.socketAddress.address)
 
     // SF MOD - Join room spam protection
     if (lastAddress == user.connectSocketAddress.address.hostAddress) {
@@ -266,9 +265,7 @@ class KailleraGameImpl(
     // SF MOD - /startn
     if (startN != -1) {
       if (players.size >= startN) {
-        try {
-          Thread.sleep(1000)
-        } catch (e: Exception) {}
+        delay(1.seconds)
         try {
           start(owner)
         } catch (e: Exception) {}
@@ -321,7 +318,7 @@ class KailleraGameImpl(
   @Synchronized
   @Throws(StartGameException::class)
   override fun start(user: KailleraUser) {
-    val access = server.accessManager.getAccess(user.socketAddress!!.address)
+    val access = server.accessManager.getAccess(user.socketAddress.address)
     if (user != owner && access < AccessManager.ACCESS_ADMIN) {
       logger.atWarning().log("$user start game denied: not the owner of $this")
       throw StartGameException(
@@ -373,7 +370,7 @@ class KailleraGameImpl(
     }
     logger.atInfo().log("$user started: $this")
     status = GameStatus.SYNCHRONIZING
-    autoFireDetector?.start(players.size)
+    autoFireDetector.start(players.size)
     val actionQueueBuilder: Array<PlayerActionQueue?> = arrayOfNulls(players.size)
     startTimeout = false
     highestUserFrameDelay = 1
@@ -409,7 +406,7 @@ class KailleraGameImpl(
       	player.setP2P(false);
       }*/
       logger.atInfo().log("$this: $player is player number $playerNumber")
-      autoFireDetector?.addPlayer(player, playerNumber)
+      autoFireDetector.addPlayer(player, playerNumber)
     }
     playerActionQueue = actionQueueBuilder.map { it!! }.toTypedArray()
     statsCollector?.markGameAsStarted(server, this)
@@ -484,7 +481,7 @@ class KailleraGameImpl(
       }
       logger.atInfo().log("$this: game desynched: less than 2 players playing!")
     }
-    autoFireDetector?.stop(playerNumber)
+    autoFireDetector.stop(playerNumber)
     if (playingCount == 0) {
       if (startN != -1) {
         startN = -1
@@ -516,8 +513,9 @@ class KailleraGameImpl(
       swap = false
       if (status == GameStatus.WAITING) {
         for (i in players.indices) {
-          getPlayer(i + 1)!!.playerNumber = i + 1
-          logger.atFine().log(getPlayer(i + 1)!!.name + ":::" + getPlayer(i + 1)!!.playerNumber)
+          val player = getPlayer(i + 1)
+          player!!.playerNumber = i + 1
+          logger.atFine().log("%s:::%d", player.name, player.playerNumber)
         }
       }
     }
@@ -591,7 +589,7 @@ class KailleraGameImpl(
           playerActionQueueCopy.size)
     }
     playerActionQueueCopy[playerNumber - 1].addActions(data)
-    autoFireDetector?.addData(playerNumber, data, user.bytesPerAction)
+    autoFireDetector.addData(playerNumber, data, user.bytesPerAction)
     val response = ByteArray(user.arraySize)
     for (actionCounter in 0 until actionsPerMessage) {
       for (playerCounter in playerActionQueueCopy.indices) {
@@ -618,7 +616,7 @@ class KailleraGameImpl(
             user.bytesPerAction,
             playerNumber,
             playerActionQueueCopy.size)
-    (user as KailleraUserImpl?)!!.addEvent(GameDataEvent(this, response))
+    (user as KailleraUserImpl).addEvent(GameDataEvent(this, response))
   }
 
   // it's very important this method is synchronized
@@ -652,9 +650,5 @@ class KailleraGameImpl(
         logger.atInfo().log("$this: game desynched: less than 2 players synched!")
       }
     }
-  }
-
-  init {
-    autoFireDetector = server.getAutoFireDetector(this)
   }
 }

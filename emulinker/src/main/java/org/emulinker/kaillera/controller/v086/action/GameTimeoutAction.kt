@@ -15,7 +15,7 @@ class GameTimeoutAction @Inject internal constructor() : V086GameEventHandler<Ga
 
   override fun toString() = "GameTimeoutAction"
 
-  override fun handleEvent(event: GameTimeoutEvent, clientHandler: V086ClientHandler) {
+  override suspend fun handleEvent(event: GameTimeoutEvent, clientHandler: V086ClientHandler) {
     handledEventCount++
     val player = event.user
     val user = clientHandler.user
@@ -23,13 +23,20 @@ class GameTimeoutAction @Inject internal constructor() : V086GameEventHandler<Ga
       logger
           .atFine()
           .log(
-              "$user received timeout event ${event.timeoutNumber} for ${event.game}: resending messages...")
+              "%s received timeout event %d for %s: resending messages...",
+              user,
+              event.timeoutNumber,
+              event.game)
       clientHandler.resend(event.timeoutNumber)
     } else {
       logger
           .atFine()
           .log(
-              "${user.toString()} received timeout event ${event.timeoutNumber} from $player for ${event.game}")
+              "%s received timeout event %d from %s for %s",
+              user,
+              event.timeoutNumber,
+              player,
+              event.game)
     }
   }
 }

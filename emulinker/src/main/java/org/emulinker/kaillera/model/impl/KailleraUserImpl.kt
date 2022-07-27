@@ -1,7 +1,6 @@
 package org.emulinker.kaillera.model.impl
 
 import com.google.common.flogger.FluentLogger
-import java.lang.Exception
 import java.lang.InterruptedException
 import java.net.InetSocketAddress
 import java.time.Duration
@@ -11,6 +10,11 @@ import java.util.concurrent.BlockingQueue
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeUnit
 import kotlin.Throws
+import kotlin.coroutines.CoroutineContext
+import kotlin.time.Duration.Companion.milliseconds
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.emulinker.config.RuntimeFlags
 import org.emulinker.kaillera.access.AccessManager
 import org.emulinker.kaillera.model.ConnectionType
@@ -38,6 +42,8 @@ class KailleraUserImpl(
 
   override var inStealthMode = false
 
+  override val mutex = Mutex()
+
   /** Example: "Project 64k 0.13 (01 Aug 2003)" */
   override var clientType: String? = null
     set(clientType) {
@@ -46,20 +52,20 @@ class KailleraUserImpl(
           isEmuLinkerClient = true
     }
 
-  private val initTime = System.currentTimeMillis()
+  private val initTime: Instant = Instant.now()
 
   override var connectionType: ConnectionType =
       ConnectionType.DISABLED // TODO(nue): This probably shouldn't have a default.
   override var ping = 0
-  override var socketAddress: InetSocketAddress? = null
+  override lateinit var socketAddress: InetSocketAddress
   override var status =
       UserStatus.PLAYING // TODO(nue): This probably shouldn't have a default value..
   override var accessLevel = 0
   override var isEmuLinkerClient = false
     private set
-  override val connectTime: Long = initTime
+  override val connectTime = initTime
   override var timeouts = 0
-  override var lastActivity: Long = initTime
+  override var lastActivity = initTime
     private set
 
   override var smallLagSpikesCausedByUser = 0L
@@ -74,13 +80,13 @@ class KailleraUserImpl(
   private val improvedLagstat = flags.improvedLagstatEnabled
 
   override fun updateLastActivity() {
-    lastKeepAlive = System.currentTimeMillis()
+    lastKeepAlive = Instant.now()
     lastActivity = lastKeepAlive
   }
 
-  override var lastKeepAlive: Long = initTime
+  override var lastKeepAlive = initTime
     private set
-  var lastChatTime: Long = initTime
+  var lastChatTime: Long = initTime.toEpochMilli()
     private set
   var lastCreateGameTime: Long = 0
     private set
@@ -165,7 +171,7 @@ class KailleraUserImpl(
   override var name: String? = null
 
   override fun updateLastKeepAlive() {
-    lastKeepAlive = System.currentTimeMillis()
+    lastKeepAlive = Instant.now()
   }
 
   override var game: KailleraGameImpl? = null
@@ -185,13 +191,15 @@ class KailleraUserImpl(
 
   fun toDetailedString(): String {
     return ("KailleraUserImpl[id=$id protocol=$protocol status=$status name=$name clientType=$clientType ping=$ping connectionType=$connectionType remoteAddress=" +
-        (if (socketAddress == null) EmuUtil.formatSocketAddress(connectSocketAddress)
-        else EmuUtil.formatSocketAddress(socketAddress!!)) +
+        (if (!this::socketAddress.isInitialized) {
+          EmuUtil.formatSocketAddress(connectSocketAddress)
+        } else EmuUtil.formatSocketAddress(socketAddress)) +
         "]")
   }
 
-  override fun stop() {
-    synchronized(this) {
+  override suspend fun stop() {
+    //    synchronized(this) {
+    mutex.withLock {
       if (!threadIsActive) {
         logger.atFine().log("$this  thread stop request ignored: not running!")
         return
@@ -201,9 +209,7 @@ class KailleraUserImpl(
         return
       }
       stopFlag = true
-      try {
-        Thread.sleep(500)
-      } catch (e: Exception) {}
+      delay(500.milliseconds)
       addEvent(StopFlagEvent())
     }
     listener.stop()
@@ -226,14 +232,14 @@ class KailleraUserImpl(
       ConnectionTypeException::class,
       UserNameException::class,
       LoginException::class)
-  override fun login() {
+  override suspend fun login() {
     updateLastActivity()
     server.login(this)
   }
 
   @Synchronized
   @Throws(ChatException::class, FloodException::class)
-  override fun chat(message: String?) {
+  override fun chat(message: String) {
     updateLastActivity()
     server.chat(this, message)
     lastChatTime = System.currentTimeMillis()
@@ -247,17 +253,14 @@ class KailleraUserImpl(
       logger.atWarning().log("$this kick User $userID failed: Not in a game")
       throw GameKickException(EmuLang.getString("KailleraUserImpl.KickErrorNotInGame"))
     }
-    game!!.kick(this, userID)
+    game?.kick(this, userID)
   }
 
   @Synchronized
   @Throws(CreateGameException::class, FloodException::class)
-  override fun createGame(romName: String?): KailleraGame? {
+  override suspend fun createGame(romName: String): KailleraGame {
     updateLastActivity()
-    if (server.getUser(id) == null) {
-      logger.atSevere().log("$this create game failed: User don't exist!")
-      return null
-    }
+    requireNotNull(server.getUser(id)) { "$this create game failed: User don't exist!" }
     if (status == UserStatus.PLAYING) {
       logger.atWarning().log("$this create game failed: User status is Playing!")
       throw CreateGameException(EmuLang.getString("KailleraUserImpl.CreateGameErrorAlreadyInGame"))
@@ -285,7 +288,7 @@ class KailleraUserImpl(
 
   @Synchronized
   @Throws(JoinGameException::class)
-  override fun joinGame(gameID: Int): KailleraGame {
+  override suspend fun joinGame(gameID: Int): KailleraGame {
     updateLastActivity()
     if (game != null) {
       logger.atWarning().log("$this join game failed: Already in: $game")
@@ -333,7 +336,7 @@ class KailleraUserImpl(
       game!!.announce("You are currently muted!", this)
       return
     }
-    if (server.accessManager.isSilenced(socketAddress!!.address)) {
+    if (server.accessManager.isSilenced(socketAddress.address)) {
       logger.atWarning().log("$this gamechat denied: Silenced: $message")
       game!!.announce("You are currently silenced!", this)
       return
@@ -510,11 +513,14 @@ class KailleraUserImpl(
     eventQueue.offer(event)
   }
 
-  override fun run() {
+  // TODO(nue): Get rid of this for loop. We should be able to trigger event listeners as soon as
+  // the new data is added.
+  override suspend fun run(globalContext: CoroutineContext) {
     threadIsActive = true
     logger.atFine().log("$this thread running...")
     try {
       while (!stopFlag) {
+        // TODO(nue): Replace this eventQueue with a buffered Channel.
         val event = eventQueue.poll(200, TimeUnit.SECONDS)
         if (event == null) continue else if (event is StopFlagEvent) break
         listener.actionPerformed(event)

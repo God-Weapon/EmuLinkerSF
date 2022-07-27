@@ -1,9 +1,11 @@
 package org.emulinker.kaillera.master.client
 
 import com.google.common.flogger.FluentLogger
-import java.util.concurrent.ThreadPoolExecutor
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.coroutines.CoroutineContext
+import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.delay
 import org.emulinker.config.RuntimeFlags
 import org.emulinker.kaillera.controller.connectcontroller.ConnectController
 import org.emulinker.kaillera.master.PublicServerInformation
@@ -19,7 +21,6 @@ class MasterListUpdater
     @Inject
     internal constructor(
         private val flags: RuntimeFlags,
-        private val threadPool: ThreadPoolExecutor,
         connectController: ConnectController?,
         kailleraServer: KailleraServer?,
         private val statsCollector: StatsCollector,
@@ -35,41 +36,20 @@ class MasterListUpdater
     private set
 
   @Synchronized
-  override fun toString(): String {
-    return ("MasterListUpdater[touchKaillera=" +
-        flags.touchKaillera +
-        " touchEmulinker=" +
-        flags.touchEmulinker +
-        "]")
-  }
+  override fun toString() =
+      "MasterListUpdater[touchKaillera=${flags.touchKaillera} touchEmulinker=${flags.touchEmulinker}]"
 
   @Synchronized
   fun start() {
     if (publicInfo != null) {
       logger.atFine().log("MasterListUpdater thread received start request!")
-      logger
-          .atFine()
-          .log(
-              "MasterListUpdater thread starting (ThreadPool:" +
-                  threadPool.activeCount +
-                  "/" +
-                  threadPool.poolSize +
-                  ")")
-      threadPool.execute(this)
-      Thread.yield()
-      logger
-          .atFine()
-          .log(
-              "MasterListUpdater thread started (ThreadPool:" +
-                  threadPool.activeCount +
-                  "/" +
-                  threadPool.poolSize +
-                  ")")
+      //      threadPool.execute(this) // NUEFIXME
+      //      Thread.yield() // nue removed
     }
   }
 
   @Synchronized
-  override fun stop() {
+  override suspend fun stop() {
     if (publicInfo != null) {
       logger.atFine().log("MasterListUpdater thread received stop request!")
       if (!threadIsActive) {
@@ -80,18 +60,16 @@ class MasterListUpdater
     }
   }
 
-  override fun run() {
+  override suspend fun run(globalContext: CoroutineContext) {
     threadIsActive = true
     logger.atFine().log("MasterListUpdater thread running...")
     try {
       while (!stopFlag) {
-        try {
-          Thread.sleep(60000)
-        } catch (e: Exception) {}
+        delay(60.seconds)
         if (stopFlag) break
         logger.atInfo().log("MasterListUpdater touching masters...")
-        if (emulinkerMasterTask != null) emulinkerMasterTask!!.touchMaster()
-        if (kailleraMasterTask != null) kailleraMasterTask!!.touchMaster()
+        emulinkerMasterTask?.touchMaster()
+        kailleraMasterTask?.touchMaster()
         statsCollector.clearStartedGamesList()
       }
     } finally {

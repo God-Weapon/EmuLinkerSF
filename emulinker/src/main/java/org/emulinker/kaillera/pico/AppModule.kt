@@ -6,9 +6,6 @@ import dagger.Module
 import dagger.Provides
 import dagger.multibindings.IntoSet
 import java.nio.charset.Charset
-import java.util.concurrent.SynchronousQueue
-import java.util.concurrent.ThreadPoolExecutor
-import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 import org.apache.commons.configuration.Configuration
 import org.emulinker.config.RuntimeFlags
@@ -100,12 +97,6 @@ abstract class AppModule {
       val flags = loadFromApacheConfiguration(configuration!!)
       charsetDoNotUse = flags.charset
       return flags
-    }
-
-    @Provides
-    fun provideThreadPoolExecutor(flags: RuntimeFlags): ThreadPoolExecutor {
-      return ThreadPoolExecutor(
-          flags.coreThreadPoolSize, Int.MAX_VALUE, 60L, TimeUnit.SECONDS, SynchronousQueue())
     }
 
     @Provides

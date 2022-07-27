@@ -24,16 +24,18 @@ import org.emulinker.util.GameDataCache
 
 private val logger = FluentLogger.forEnclosingClass()
 
+/** Fake client for testing. */
 class EvalClient(
     private val username: String,
     private val connectControllerAddress: InetSocketAddress,
     private val simulateGameLag: Boolean = false,
     private val connectionType: ConnectionType = ConnectionType.LAN,
-    private val frameDelay: Int = 1
+    private val frameDelay: Int = 1,
+    private val clientType: String = "Project 64k 0.13 (01 Aug 2003)"
 ) : Closeable {
   private val lastMessageBuffer = LastMessageBuffer(V086Controller.MAX_BUNDLE_SIZE)
 
-  var socket: ConnectedDatagramSocket? = null
+  lateinit var socket: ConnectedDatagramSocket
 
   var gameDataCache: GameDataCache = ClientGameDataCache(256)
 
@@ -58,7 +60,7 @@ class EvalClient(
     socket = aSocket(selectorManager).udp().connect(connectControllerAddress)
 
     val allocatedPort =
-        socket?.use { connectedSocket ->
+        socket.use { connectedSocket ->
           logger.atInfo().log("Started new eval client at %s", connectedSocket.localAddress)
 
           sendConnectMessage(ConnectMessage_HELLO(protocol = "0.83"))
@@ -69,23 +71,23 @@ class EvalClient(
 
           response.port
         }
-    requireNotNull(allocatedPort)
 
     socket =
         aSocket(selectorManager)
             .udp()
             .connect(InetSocketAddress(connectControllerAddress.hostname, allocatedPort))
-    logger.atInfo().log("Changing connection to: %s", socket!!.remoteAddress)
+    logger.atInfo().log("Changing connection to: %s", socket.remoteAddress)
+
+    giveServerTime()
   }
 
   /** Interacts in the server */
-  @OptIn(DelicateCoroutinesApi::class) // GlobalScope.
+  @OptIn(DelicateCoroutinesApi::class)
   suspend fun start() {
-
     GlobalScope.launch(Dispatchers.IO) {
       while (!killSwitch) {
         try {
-          val response = V086Bundle.parse(socket!!.receive().packet.readByteBuffer())
+          val response = V086Bundle.parse(socket.receive().packet.readByteBuffer())
           handleIncoming(response)
         } catch (e: ParseException) {
 
@@ -102,10 +104,8 @@ class EvalClient(
       logger.atInfo().log("EvalClient shut down.")
     }
 
-    sendWithMessageId {
-      UserInformation(
-          messageNumber = it, username, "Project 64k 0.13 (01 Aug 2003)", connectionType)
-    }
+    sendWithMessageId { UserInformation(messageNumber = it, username, clientType, connectionType) }
+    giveServerTime()
   }
 
   private suspend fun handleIncoming(bundle: V086Bundle) {
@@ -219,10 +219,12 @@ class EvalClient(
       CreateGame_Request(
           messageNumber = it, romName = "Nintendo All-Star! Dairantou Smash Brothers (J)")
     }
+    giveServerTime()
   }
 
   suspend fun startOwnGame() {
     sendWithMessageId { StartGame_Request(messageNumber = it) }
+    giveServerTime()
   }
 
   suspend fun joinAnyAvailableGame() {
@@ -231,16 +233,19 @@ class EvalClient(
     sendWithMessageId {
       JoinGame_Request(messageNumber = it, gameId = games.first().gameId, connectionType)
     }
+    giveServerTime()
   }
 
   override fun close() {
     logger.atInfo().log("Shutting down EvalClient.")
     killSwitch = true
-    socket?.close()
+    if (!socket.isClosed) {
+      socket.close()
+    }
   }
 
   private suspend fun sendConnectMessage(message: ConnectMessage) {
-    socket!!.send(Datagram(ByteReadPacket(message.toBuffer()!!), socket!!.remoteAddress))
+    socket.send(Datagram(ByteReadPacket(message.toBuffer()), socket.remoteAddress))
   }
 
   private suspend fun sendWithMessageId(messageIdToMessage: (messageNumber: Int) -> V086Message) {
@@ -255,19 +260,24 @@ class EvalClient(
       outBundle.writeTo(outBuffer)
       (outBuffer as Buffer).flip()
       logger.atInfo().log(">>>>>>>> SENT message: %s", outBundle.messages.first())
-      socket!!.send(Datagram(ByteReadPacket(outBuffer), socket!!.remoteAddress))
+      socket.send(Datagram(ByteReadPacket(outBuffer), socket.remoteAddress))
     }
   }
 
   suspend fun dropGame() {
     sendWithMessageId { PlayerDrop_Request(messageNumber = it) }
+    giveServerTime()
   }
 
   suspend fun quitGame() {
     sendWithMessageId { QuitGame_Request(messageNumber = it) }
+    giveServerTime()
   }
 
   suspend fun quitServer() {
     sendWithMessageId { Quit_Request(messageNumber = it, message = "End of test.") }
+    giveServerTime()
   }
+
+  private suspend fun giveServerTime() = delay(1.seconds)
 }

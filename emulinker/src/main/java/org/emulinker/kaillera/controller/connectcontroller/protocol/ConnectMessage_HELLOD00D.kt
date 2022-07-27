@@ -12,8 +12,8 @@ data class ConnectMessage_HELLOD00D(val port: Int) : ConnectMessage() {
 
   override val length = ID.length + port.toString().length + 1
 
-  override fun writeTo(buffer: ByteBuffer?) {
-    buffer!!.put(charset.encode(ID))
+  override fun writeTo(buffer: ByteBuffer) {
+    buffer.put(charset.encode(ID))
     EmuUtil.writeString(buffer, port.toString(), 0x00, charset)
   }
 

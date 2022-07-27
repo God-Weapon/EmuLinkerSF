@@ -4,6 +4,8 @@ import com.google.common.flogger.FluentLogger
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.time.Duration.Companion.milliseconds
+import kotlinx.coroutines.delay
 import org.emulinker.config.RuntimeFlags
 import org.emulinker.kaillera.access.AccessManager
 import org.emulinker.kaillera.controller.messaging.MessageFormatException
@@ -76,7 +78,7 @@ class GameOwnerCommandAction @Inject internal constructor(private val flags: Run
   }
 
   @Throws(FatalActionException::class)
-  override fun performAction(message: GameChat, clientHandler: V086ClientHandler) {
+  override suspend fun performAction(message: GameChat, clientHandler: V086ClientHandler) {
     val chat = message.message
     val user = clientHandler.user as KailleraUserImpl
     val game =
@@ -120,7 +122,7 @@ class GameOwnerCommandAction @Inject internal constructor(private val flags: Run
   }
 
   @Throws(ActionException::class, MessageFormatException::class)
-  private fun processHelp(
+  private suspend fun processHelp(
       message: String,
       game: KailleraGameImpl,
       admin: KailleraUserImpl,
@@ -129,67 +131,41 @@ class GameOwnerCommandAction @Inject internal constructor(private val flags: Run
     if (admin != game.owner && admin.accessLevel < AccessManager.ACCESS_SUPERADMIN) return
     // game.setIndividualGameAnnounce(admin.getPlayerNumber());
     // game.announce(EmuLang.getString("GameOwnerCommandAction.AvailableCommands"));
-    // try { Thread.sleep(20); } catch(Exception e) {}
+    // try { delay(20.milliseconds); } catch(Exception e) {}
     game.announce(EmuLang.getString("GameOwnerCommandAction.SetAutofireDetection"), admin)
-    try {
-      Thread.sleep(20)
-    } catch (e: Exception) {}
+    delay(20.milliseconds)
     game.announce("/maxusers <#> to set capacity of room", admin)
-    try {
-      Thread.sleep(20)
-    } catch (e: Exception) {}
+    delay(20.milliseconds)
     game.announce("/maxping <#> to set maximum ping for room", admin)
-    try {
-      Thread.sleep(20)
-    } catch (e: Exception) {}
+    delay(20.milliseconds)
     game.announce("/start or /startn <#> start game when n players are joined.", admin)
-    try {
-      Thread.sleep(20)
-    } catch (e: Exception) {}
+    delay(20.milliseconds)
     game.announce("/mute /unmute  <UserID> or /muteall or /unmuteall to mute player(s).", admin)
-    try {
-      Thread.sleep(20)
-    } catch (e: Exception) {}
+    delay(20.milliseconds)
     game.announce(
         "/swap <order> eg. 123..n {n = total # of players; Each slot = new player#}", admin)
-    try {
-      Thread.sleep(20)
-    } catch (e: Exception) {}
+    delay(20.milliseconds)
     game.announce("/kick <Player#> or /kickall to kick a player(s).", admin)
-    try {
-      Thread.sleep(20)
-    } catch (e: Exception) {}
+    delay(20.milliseconds)
     game.announce("/setemu To restrict the gameroom to this emulator!", admin)
-    try {
-      Thread.sleep(20)
-    } catch (e: Exception) {}
+    delay(20.milliseconds)
     game.announce("/setconn To restrict the gameroom to this connection type!", admin)
-    try {
-      Thread.sleep(20)
-    } catch (e: Exception) {}
+    delay(20.milliseconds)
     game.announce(
         "/lagstat To check who has the most lag spikes or /lagreset to reset lagstat!", admin)
-    try {
-      Thread.sleep(20)
-    } catch (e: Exception) {}
+    delay(20.milliseconds)
     game.announce(
         "/samedelay {true | false} to play at the same delay as player with highest ping. Default is false.",
         admin)
-    try {
-      Thread.sleep(20)
-    } catch (e: Exception) {}
+    delay(20.milliseconds)
   }
 
-  private fun autoFireHelp(game: KailleraGameImpl, admin: KailleraUserImpl) {
-    val cur = game.autoFireDetector!!.sensitivity
+  private suspend fun autoFireHelp(game: KailleraGameImpl, admin: KailleraUserImpl) {
+    val cur = game.autoFireDetector.sensitivity
     game.announce(EmuLang.getString("GameOwnerCommandAction.HelpSensitivity"), admin)
-    try {
-      Thread.sleep(20)
-    } catch (e: Exception) {}
+    delay(20.milliseconds)
     game.announce(EmuLang.getString("GameOwnerCommandAction.HelpDisable"), admin)
-    try {
-      Thread.sleep(20)
-    } catch (e: Exception) {}
+    delay(20.milliseconds)
     game.announce(
         EmuLang.getString("GameOwnerCommandAction.HelpCurrentSensitivity", cur) +
             if (cur == 0) EmuLang.getString("GameOwnerCommandAction.HelpDisabled") else "",
@@ -197,7 +173,7 @@ class GameOwnerCommandAction @Inject internal constructor(private val flags: Run
   }
 
   @Throws(ActionException::class, MessageFormatException::class)
-  private fun processDetectAutoFire(
+  private suspend fun processDetectAutoFire(
       message: String,
       game: KailleraGameImpl,
       admin: KailleraUserImpl,
@@ -222,7 +198,7 @@ class GameOwnerCommandAction @Inject internal constructor(private val flags: Run
       autoFireHelp(game, admin)
       return
     }
-    game.autoFireDetector!!.sensitivity = sensitivity
+    game.autoFireDetector.sensitivity = sensitivity
     game.announce(
         EmuLang.getString("GameOwnerCommandAction.HelpCurrentSensitivity", sensitivity) +
             if (sensitivity == 0) EmuLang.getString("GameOwnerCommandAction.HelpDisabled") else "",
@@ -355,7 +331,7 @@ class GameOwnerCommandAction @Inject internal constructor(private val flags: Run
         return
       }
       val userID = scanner.nextInt()
-      val user = clientHandler.user!!.server.getUser(userID) as KailleraUserImpl
+      val user = clientHandler.user.server.getUser(userID) as KailleraUserImpl?
       if (user == null) {
         admin.game!!.announce("Player doesn't exist!", admin)
         return
@@ -394,9 +370,9 @@ class GameOwnerCommandAction @Inject internal constructor(private val flags: Run
     try {
       val str = scanner.next()
       if (str == "/unmuteall") {
-        for (w in 1..game.players.size) {
-          game.getPlayer(w)!!.isMuted = false
-          game.mutedUsers.remove(game.getPlayer(w)!!.connectSocketAddress.address.hostAddress)
+        game.players.forEach { kailleraUser ->
+          kailleraUser.isMuted = false
+          game.mutedUsers.remove(kailleraUser.connectSocketAddress.address.hostAddress)
         }
         admin.game!!.announce(
             "All players have been unmuted!",
@@ -404,7 +380,7 @@ class GameOwnerCommandAction @Inject internal constructor(private val flags: Run
         return
       }
       val userID = scanner.nextInt()
-      val user = clientHandler.user!!.server.getUser(userID)
+      val user = clientHandler.user.server.getUser(userID)
       if (user == null) {
         admin.game!!.announce("Player doesn't exist!", admin)
         return
@@ -421,7 +397,7 @@ class GameOwnerCommandAction @Inject internal constructor(private val flags: Run
       game.mutedUsers.remove(user.connectSocketAddress.address.hostAddress)
       user.isMuted = false
       val user1 = clientHandler.user
-      (user1 as KailleraUserImpl?)!!.game!!.announce(
+      (user1 as KailleraUserImpl).game!!.announce(
           user.name + " has been unmuted!",
       )
     } catch (e: NoSuchElementException) {

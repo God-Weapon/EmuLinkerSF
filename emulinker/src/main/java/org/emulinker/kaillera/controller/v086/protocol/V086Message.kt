@@ -40,9 +40,9 @@ abstract class V086Message : ByteBufferMessage() {
 
   abstract val bodyLength: Int
 
-  override fun writeTo(buffer: ByteBuffer?) {
+  override fun writeTo(buffer: ByteBuffer) {
     val len = length
-    if (len > buffer!!.remaining()) {
+    if (len > buffer.remaining()) {
       logger
           .atWarning()
           .log(
@@ -52,7 +52,7 @@ abstract class V086Message : ByteBufferMessage() {
       // there no realistic reason to use unsigned here since a single packet can't be that large
       // Cast to avoid issue with java version mismatch:
       // https://stackoverflow.com/a/61267496/2875073
-      (buffer as Buffer?)!!.mark()
+      (buffer as Buffer).mark()
       UnsignedUtil.putUnsignedShort(buffer, len)
       //		buffer.putShort((short)getLength());
       buffer.put(messageId)

@@ -23,16 +23,18 @@ class DropGameAction @Inject internal constructor() :
   override fun toString() = "DropGameAction"
 
   @Throws(FatalActionException::class)
-  override fun performAction(message: PlayerDrop_Request, clientHandler: V086ClientHandler) {
+  override suspend fun performAction(
+      message: PlayerDrop_Request, clientHandler: V086ClientHandler
+  ) {
     actionPerformedCount++
     try {
-      clientHandler.user!!.dropGame()
+      clientHandler.user.dropGame()
     } catch (e: DropGameException) {
       logger.atFine().withCause(e).log("Failed to drop game")
     }
   }
 
-  override fun handleEvent(event: UserDroppedGameEvent, clientHandler: V086ClientHandler) {
+  override suspend fun handleEvent(event: UserDroppedGameEvent, clientHandler: V086ClientHandler) {
     handledEventCount++
     try {
       val user = event.user

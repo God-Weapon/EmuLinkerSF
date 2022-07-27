@@ -3,6 +3,7 @@ package org.emulinker.config
 import java.nio.charset.Charset
 import javax.inject.Singleton
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import org.apache.commons.configuration.Configuration
 
@@ -13,16 +14,17 @@ data class RuntimeFlags(
     val allowSinglePlayer: Boolean,
     val charset: Charset,
     val chatFloodTime: Int,
+    val connectControllerBufferSize: Int,
     val connectionTypes: List<String>,
     val coreThreadPoolSize: Int,
     val createGameFloodTime: Int,
     val gameAutoFireSensitivity: Int,
     val gameBufferSize: Int,
     val gameDesynchTimeouts: Int,
-    val gameTimeoutMillis: Int,
-    val idleTimeout: Int,
+    val gameTimeout: Duration,
+    val idleTimeout: Duration,
     val improvedLagstatEnabled: Boolean,
-    val keepAliveTimeout: Int,
+    val keepAliveTimeout: Duration,
     val maxChatLength: Int,
     val maxClientNameLength: Int,
     val maxGameChatLength: Int,
@@ -34,6 +36,7 @@ data class RuntimeFlags(
     val maxUsers: Int,
     val metricsEnabled: Boolean,
     val metricsLoggingFrequency: Duration,
+    val requestTimeout: Duration,
     val serverAddress: String,
     val serverLocation: String,
     val serverName: String,
@@ -59,10 +62,12 @@ data class RuntimeFlags(
     require(maxClientNameLength <= 127) { "server.maxClientNameLength must be <= 127" }
     require(maxPing > 0) { "server.maxPing can not be <= 0" }
     require(maxPing <= 1000) { "server.maxPing can not be > 1000" }
-    require(keepAliveTimeout > 0) { "server.keepAliveTimeout must be > 0 (190 is recommended)" }
+    require(keepAliveTimeout.isPositive()) {
+      "server.keepAliveTimeout must be > 0 (190 is recommended)"
+    }
 
     require(gameBufferSize > 0) { "game.bufferSize can not be <= 0" }
-    require(gameTimeoutMillis > 0) { "game.timeoutMillis can not be <= 0" }
+    require(gameTimeout.isPositive()) { "game.timeoutMillis can not be <= 0" }
     require(gameAutoFireSensitivity in 0..5) { "game.defaultAutoFireSensitivity must be 0-5" }
     for (s in connectionTypes) {
       try {
@@ -89,10 +94,10 @@ data class RuntimeFlags(
           gameAutoFireSensitivity = config.getInt("game.defaultAutoFireSensitivity"),
           gameBufferSize = config.getInt("game.bufferSize"),
           gameDesynchTimeouts = config.getInt("game.desynchTimeouts"),
-          gameTimeoutMillis = config.getInt("game.timeoutMillis"),
-          idleTimeout = config.getInt("server.idleTimeout"),
+          gameTimeout = config.getInt("game.timeoutMillis").milliseconds,
+          idleTimeout = config.getInt("server.idleTimeout").seconds,
           improvedLagstatEnabled = config.getBoolean("server.improvedLagstatEnabled", true),
-          keepAliveTimeout = config.getInt("server.keepAliveTimeout"),
+          keepAliveTimeout = config.getInt("server.keepAliveTimeout").seconds,
           maxChatLength = config.getInt("server.maxChatLength"),
           maxClientNameLength = config.getInt("server.maxClientNameLength"),
           maxGameChatLength = config.getInt("server.maxGameChatLength"),
@@ -104,6 +109,10 @@ data class RuntimeFlags(
           maxUsers = config.getInt("server.maxUsers"),
           metricsEnabled = config.getBoolean("metrics.enabled", false),
           metricsLoggingFrequency = config.getInt("metrics.loggingFrequencySeconds", 30).seconds,
+          requestTimeout =
+              config.getInt(
+                      "server.requestTimeoutMilliseconds", 5.seconds.inWholeMilliseconds.toInt())
+                  .milliseconds,
           serverAddress = config.getString("masterList.serverConnectAddress", ""),
           serverLocation = config.getString("masterList.serverLocation", "Unknown"),
           serverName = config.getString("masterList.serverName", "Emulinker Server"),
@@ -121,6 +130,7 @@ data class RuntimeFlags(
                   "twitter.auth.oAuthConsumerSecret", ""), // TODO(nue): Read these from a file
           twitterPreventBroadcastNameSuffixes = listOf("待", "街", "町", "再起", "侍ち"),
           v086BufferSize = config.getInt("controllers.v086.bufferSize", 4096),
+          connectControllerBufferSize = config.getInt("controllers.connect.bufferSize", 4096),
       )
       // ImmutableList.copyOf(config.getString("twitter.preventBroadcastNameSuffixes",
       // "").split(",")))

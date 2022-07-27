@@ -182,6 +182,21 @@ object EmuUtil {
     return sb.toString()
   }
 
+  fun dumpBufferFromBeginning(buffer: ByteBuffer, allHex: Boolean = false): String {
+    val sb = StringBuilder()
+    // Cast to avoid issue with java version mismatch: https://stackoverflow.com/a/61267496/2875073
+    val pos = buffer.position()
+    (buffer as Buffer).position(0)
+    while (buffer.hasRemaining()) {
+      val b = buffer.get()
+      if (!allHex && Character.isLetterOrDigit(Char(b.toUShort()))) sb.append(Char(b.toUShort()))
+      else sb.append(byteToHex(b))
+      if (buffer.hasRemaining()) sb.append(",")
+    }
+    buffer.position(pos)
+    return sb.toString()
+  }
+
   fun readString(buffer: ByteBuffer, stopByte: Int, charset: Charset): String {
     val tempBuffer = ByteBuffer.allocate(buffer.remaining())
     //		char[] tempArray = new char[buffer.remaining()];

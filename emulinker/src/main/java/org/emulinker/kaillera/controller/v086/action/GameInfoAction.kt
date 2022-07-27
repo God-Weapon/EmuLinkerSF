@@ -17,7 +17,7 @@ class GameInfoAction @Inject internal constructor() : V086GameEventHandler<GameI
 
   override fun toString() = "GameInfoAction"
 
-  override fun handleEvent(event: GameInfoEvent, clientHandler: V086ClientHandler) {
+  override suspend fun handleEvent(event: GameInfoEvent, clientHandler: V086ClientHandler) {
     handledEventCount++
     if (event.toUser != null) {
       if (event.toUser !== clientHandler.user) return

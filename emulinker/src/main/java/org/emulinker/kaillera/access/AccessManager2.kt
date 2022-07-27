@@ -5,24 +5,20 @@ import java.io.*
 import java.net.InetAddress
 import java.net.URISyntaxException
 import java.security.Security
-import java.time.Duration
 import java.util.*
 import java.util.concurrent.CopyOnWriteArrayList
-import java.util.concurrent.ThreadPoolExecutor
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
+import kotlinx.coroutines.*
 import org.emulinker.config.RuntimeFlags
 import org.emulinker.util.WildcardStringPattern
 
 private val logger = FluentLogger.forEnclosingClass()
 
 @Singleton
-class AccessManager2
-    @Inject
-    internal constructor(
-        private val threadPool: ThreadPoolExecutor, private val flags: RuntimeFlags
-    ) : AccessManager, Runnable {
+class AccessManager2 @Inject internal constructor(private val flags: RuntimeFlags) : AccessManager {
   companion object {
     init {
       Security.setProperty("networkaddress.cache.ttl", "60")
@@ -30,8 +26,8 @@ class AccessManager2
     }
   }
 
-  var isRunning = false
-    private set
+  private val scope = CoroutineScope(Dispatchers.IO)
+
   private var stopFlag = false
   private var accessFile: File?
   private var lastLoadModifiedTime: Long = -1
@@ -44,65 +40,6 @@ class AccessManager2
   private val tempModeratorList: MutableList<TempModerator> = CopyOnWriteArrayList()
   private val tempElevatedList: MutableList<TempElevated> = CopyOnWriteArrayList()
   private val silenceList: MutableList<Silence> = CopyOnWriteArrayList()
-  @Synchronized
-  fun start() {
-    logger.atFine().log("AccessManager2 thread received start request!")
-    logger
-        .atFine()
-        .log(
-            "AccessManager2 thread starting (ThreadPool:${threadPool.activeCount}/${threadPool.poolSize})")
-    threadPool.execute(this)
-    Thread.yield()
-  }
-
-  @Synchronized
-  fun stop() {
-    logger.atFine().log("AccessManager2 thread received stop request!")
-    if (!isRunning) {
-      logger.atFine().log("KailleraServer thread stop request ignored: not running!")
-      return
-    }
-    stopFlag = true
-    userList.clear()
-    gameList.clear()
-    emulatorList.clear()
-    addressList.clear()
-    tempBanList.clear()
-    tempElevatedList.clear()
-    tempAdminList.clear()
-    silenceList.clear()
-  }
-
-  override fun run() {
-    isRunning = true
-    logger.atFine().log("AccessManager2 thread running...")
-    try {
-      while (!stopFlag) {
-        try {
-          Thread.sleep(Duration.ofMinutes(1).toMillis())
-        } catch (e: InterruptedException) {
-          logger.atSevere().withCause(e).log("Sleep Interrupted!")
-        }
-        if (stopFlag) break
-        synchronized(this) {
-          tempBanList.removeIf { it.isExpired }
-          tempAdminList.removeIf { it.isExpired }
-          tempModeratorList.removeIf { it.isExpired }
-          tempElevatedList.removeIf { it.isExpired }
-          silenceList.removeIf { it.isExpired }
-          userList.forEach { it.refreshDNS() }
-          addressList.forEach { it.refreshDNS() }
-        }
-      }
-    } catch (e: Throwable) {
-      if (!stopFlag) {
-        logger.atSevere().withCause(e).log("AccessManager2 thread caught unexpected exception")
-      }
-    } finally {
-      isRunning = false
-      logger.atFine().log("AccessManager2 thread exiting...")
-    }
-  }
 
   @Synchronized
   private fun checkReload() {
@@ -147,34 +84,41 @@ class AccessManager2
     }
   }
 
-  override fun addTempBan(addressPattern: String, minutes: Int) {
-    tempBanList.add(TempBan(addressPattern, Duration.ofMinutes(minutes.toLong())))
+  override fun addTempBan(addressPattern: String, duration: Duration) {
+    addTemporaryAttributeToList(tempBanList, TempBan(addressPattern, duration))
   }
 
-  override fun addTempAdmin(addressPattern: String, minutes: Int) {
-    tempAdminList.add(TempAdmin(addressPattern, Duration.ofMinutes(minutes.toLong())))
+  override fun addTempAdmin(addressPattern: String, duration: Duration) {
+    addTemporaryAttributeToList(tempAdminList, TempAdmin(addressPattern, duration))
   }
 
-  override fun addTempModerator(addressPattern: String, minutes: Int) {
-    tempModeratorList.add(TempModerator(addressPattern, Duration.ofMinutes(minutes.toLong())))
+  override fun addTempModerator(addressPattern: String, duration: Duration) {
+    addTemporaryAttributeToList(tempModeratorList, TempModerator(addressPattern, duration))
   }
 
-  override fun addTempElevated(addressPattern: String, minutes: Int) {
-    tempElevatedList.add(TempElevated(addressPattern, Duration.ofMinutes(minutes.toLong())))
+  override fun addTempElevated(addressPattern: String, duration: Duration) {
+    addTemporaryAttributeToList(tempElevatedList, TempElevated(addressPattern, duration))
   }
 
-  override fun addSilenced(addressPattern: String, minutes: Int) {
-    silenceList.add(Silence(addressPattern, Duration.ofMinutes(minutes.toLong())))
+  override fun addSilenced(addressPattern: String, duration: Duration) {
+    addTemporaryAttributeToList(silenceList, Silence(addressPattern, duration))
+  }
+
+  private fun <T : TemporaryAttribute> addTemporaryAttributeToList(
+      list: MutableList<T>, attribute: T
+  ) {
+    list.add(attribute)
+    scope.launch {
+      delay(attribute.duration)
+      list.remove(attribute)
+    }
   }
 
   @Synchronized
   override fun getAnnouncement(address: InetAddress?): String? {
     checkReload()
     val userAddress = address!!.hostAddress
-    for (userAccess in userList) {
-      if (userAccess.matches(userAddress)) return userAccess.message
-    }
-    return null
+    return userList.firstOrNull { it.matches(userAddress) }?.message
   }
 
   @Synchronized
@@ -192,10 +136,7 @@ class AccessManager2
       if (tempElevated.matches(userAddress) && !tempElevated.isExpired)
           return AccessManager.ACCESS_ELEVATED
     }
-    for (userAccess in userList) {
-      if (userAccess.matches(userAddress)) return userAccess.access
-    }
-    return AccessManager.ACCESS_NORMAL
+    return userList.firstOrNull { it.matches(userAddress) }?.access ?: AccessManager.ACCESS_NORMAL
   }
 
   @Synchronized
@@ -272,10 +213,7 @@ class AccessManager2
   @Synchronized
   override fun isGameAllowed(game: String?): Boolean {
     checkReload()
-    for (gameAccess in gameList) {
-      if (gameAccess.matches(game)) return gameAccess.access
-    }
-    return true
+    return gameList.firstOrNull { it.matches(game) }?.access ?: true
   }
 
   private class UserAccess(st: StringTokenizer) {
@@ -481,7 +419,7 @@ class AccessManager2
 
   init {
     val url = AccessManager2::class.java.getResource("/access.cfg")
-    require(url != null) { "Resource not found: /access.conf" }
+    requireNotNull(url) { "Resource not found: /access.conf" }
     accessFile =
         try {
           File(url.toURI())
@@ -495,6 +433,14 @@ class AccessManager2
       throw IllegalStateException(FileNotFoundException("Can not read: /access.conf"))
     }
     loadAccess()
-    threadPool.execute(this)
+
+    scope.launch {
+      while (true) {
+        delay(1.minutes)
+        logger.atFine().log("Refreshing DNS for all users and addresses")
+        userList.forEach { it.refreshDNS() }
+        addressList.forEach { it.refreshDNS() }
+      }
+    }
   }
 }

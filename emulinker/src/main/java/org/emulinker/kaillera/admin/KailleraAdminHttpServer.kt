@@ -2,7 +2,6 @@ package org.emulinker.kaillera.admin
 
 import com.google.common.flogger.FluentLogger
 import java.io.IOException
-import java.util.concurrent.ThreadPoolExecutor
 import org.apache.commons.configuration.Configuration
 import org.emulinker.kaillera.controller.connectcontroller.ConnectController
 import org.emulinker.kaillera.model.KailleraServer
@@ -19,10 +18,7 @@ import org.mortbay.util.InetAddrPort
 private val logger = FluentLogger.forEnclosingClass()
 
 class KailleraAdminHttpServer(
-    config: Configuration,
-    threadPool: ThreadPoolExecutor?,
-    connectController: ConnectController?,
-    kailleraServer: KailleraServer?
+    config: Configuration, connectController: ConnectController?, kailleraServer: KailleraServer?
 ) : AdminServer {
   private var appServer = Server()
 
@@ -98,7 +94,7 @@ class KailleraAdminHttpServer(
     appServer = Server()
     appServer.addListener(InetAddrPort(port))
     val context = appServer.getContext(jspDir) as ServletHttpContext
-    context.setAttribute("threadPool", threadPool)
+    //    context.setAttribute("threadPool", threadPool) // NUEFIXME
     context.setAttribute("connectController", connectController)
     context.setAttribute("kailleraServer", kailleraServer)
     setupSecurity(context, config)

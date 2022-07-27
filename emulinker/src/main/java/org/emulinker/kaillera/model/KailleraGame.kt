@@ -15,7 +15,7 @@ import org.emulinker.kaillera.model.impl.PlayerActionQueue
 interface KailleraGame {
   val clientType: String?
   val id: Int
-  val owner: KailleraUser?
+  val owner: KailleraUser
   val playerActionQueue: Array<PlayerActionQueue>?
   val players: MutableList<KailleraUser>
   val romName: String
@@ -39,10 +39,10 @@ interface KailleraGame {
   fun droppedPacket(user: KailleraUser)
 
   @Throws(JoinGameException::class)
-  fun join(user: KailleraUser): Int
+  suspend fun join(user: KailleraUser): Int
 
   @Throws(GameChatException::class)
-  fun chat(user: KailleraUser, message: String?)
+  fun chat(user: KailleraUser, message: String)
 
   @Throws(GameKickException::class)
   fun kick(requester: KailleraUser, userID: Int)

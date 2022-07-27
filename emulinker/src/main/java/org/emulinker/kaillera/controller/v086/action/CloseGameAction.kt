@@ -17,7 +17,7 @@ class CloseGameAction @Inject internal constructor() : V086ServerEventHandler<Ga
 
   override fun toString() = "CloseGameAction"
 
-  override fun handleEvent(event: GameClosedEvent, clientHandler: V086ClientHandler) {
+  override suspend fun handleEvent(event: GameClosedEvent, clientHandler: V086ClientHandler) {
     handledEventCount++
     try {
       clientHandler.send(CloseGame(clientHandler.nextMessageNumber, event.game.id, 0))

@@ -24,10 +24,10 @@ class JoinGameAction @Inject internal constructor() :
   override fun toString() = "JoinGameAction"
 
   @Throws(FatalActionException::class)
-  override fun performAction(message: JoinGame_Request, clientHandler: V086ClientHandler) {
+  override suspend fun performAction(message: JoinGame_Request, clientHandler: V086ClientHandler) {
     actionPerformedCount++
     try {
-      clientHandler.user!!.joinGame(message.gameId)
+      clientHandler.user.joinGame(message.gameId)
     } catch (e: JoinGameException) {
       logger.atSevere().withCause(e).log("Failed to join game.")
       try {
@@ -38,16 +38,14 @@ class JoinGameAction @Inject internal constructor() :
                 EmuLang.getString("JoinGameAction.JoinGameDenied", e.message)))
         clientHandler.send(
             QuitGame_Notification(
-                clientHandler.nextMessageNumber,
-                clientHandler.user!!.name!!,
-                clientHandler.user!!.id))
+                clientHandler.nextMessageNumber, clientHandler.user.name!!, clientHandler.user.id))
       } catch (e2: MessageFormatException) {
         logger.atSevere().withCause(e2).log("Failed to construct new Message")
       }
     }
   }
 
-  override fun handleEvent(event: UserJoinedGameEvent, clientHandler: V086ClientHandler) {
+  override suspend fun handleEvent(event: UserJoinedGameEvent, clientHandler: V086ClientHandler) {
     handledEventCount++
     val thisUser = clientHandler.user
     try {
@@ -55,13 +53,8 @@ class JoinGameAction @Inject internal constructor() :
       val user = event.user
       if (user == thisUser) {
         val players: MutableList<Player> = ArrayList()
-        for (player in game.players) {
-          if (player != thisUser) {
-            if (!player.inStealthMode)
-                players.add(
-                    PlayerInformation.Player(
-                        player.name!!, player.ping.toLong(), player.id, player.connectionType))
-          }
+        game.players.asSequence().filter { it != thisUser && !it.inStealthMode }.mapTo(players) {
+          PlayerInformation.Player(it.name!!, it.ping.toLong(), it.id, it.connectionType)
         }
         clientHandler.send(PlayerInformation(clientHandler.nextMessageNumber, players))
       }

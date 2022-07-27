@@ -32,7 +32,7 @@ data class GameData
 
     // TODO(nue): Get rid of this.
     @Throws(Exception::class)
-    fun main(args: Array<String>) {
+    fun main() {
       val data = ByteArray(9)
       val st = System.currentTimeMillis()
       val msg: GameData = create(0, data)

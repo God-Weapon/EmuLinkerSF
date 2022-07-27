@@ -4,7 +4,7 @@ import java.nio.Buffer
 import java.nio.ByteBuffer
 
 abstract class ByteBufferMessage {
-  private var buffer: ByteBuffer? = null
+  private lateinit var buffer: ByteBuffer
 
   abstract val length: Int
 
@@ -17,23 +17,19 @@ abstract class ByteBufferMessage {
   }
 
   fun releaseBuffer() {}
-  fun toBuffer(): ByteBuffer? {
+  fun toBuffer(): ByteBuffer {
     initBuffer()
     writeTo(buffer)
     // Cast to avoid issue with java version mismatch: https://stackoverflow.com/a/61267496/2875073
-    (buffer as Buffer?)!!.flip()
+    (buffer as Buffer).flip()
     return buffer
   }
 
-  abstract fun writeTo(buffer: ByteBuffer?)
+  abstract fun writeTo(buffer: ByteBuffer)
 
   companion object {
     fun getBuffer(size: Int): ByteBuffer {
       return ByteBuffer.allocateDirect(size)
-    }
-
-    fun releaseBuffer(buffer: ByteBuffer?) {
-      // nothing to do since we aren't caching buffers anymore
     }
   }
 }

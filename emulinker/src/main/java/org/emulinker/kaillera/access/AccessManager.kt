@@ -1,6 +1,7 @@
 package org.emulinker.kaillera.access
 
 import java.net.InetAddress
+import kotlin.time.Duration
 
 /**
  * An AccessManager is used retrieve, check, and store user access levels and permissions, and game
@@ -65,7 +66,7 @@ interface AccessManager {
    * @param addressPattern A pattern to match to an address
    * @param minutes Number of minutes this ban is valid from the time of addition
    */
-  fun addTempBan(addressPattern: String, minutes: Int)
+  fun addTempBan(addressPattern: String, duration: Duration)
 
   /**
    * Temporarily adds a user to the admin list using a pattern algorythm defined by the
@@ -74,9 +75,9 @@ interface AccessManager {
    * @param addressPattern A pattern to match to an address
    * @param minutes Number of minutes this grant is valid from the time of addition
    */
-  fun addTempAdmin(addressPattern: String, minutes: Int)
-  fun addTempModerator(addressPattern: String, minutes: Int)
-  fun addTempElevated(addressPattern: String, minutes: Int)
+  fun addTempAdmin(addressPattern: String, duration: Duration)
+  fun addTempModerator(addressPattern: String, duration: Duration)
+  fun addTempElevated(addressPattern: String, duration: Duration)
 
   /**
    * Temporarily adds a user to the silenced list using a pattern algorythm defined by the
@@ -85,7 +86,7 @@ interface AccessManager {
    * @param addressPattern A pattern to match to an address
    * @param minutes Number of minutes this grant is valid from the time of addition
    */
-  fun addSilenced(addressPattern: String, minutes: Int)
+  fun addSilenced(addressPattern: String, duration: Duration)
   fun clearTemp(address: InetAddress?, clearAll: Boolean): Boolean
 
   companion object {

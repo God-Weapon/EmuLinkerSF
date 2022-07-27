@@ -21,12 +21,12 @@ class GameDataAction @Inject internal constructor() :
   override fun toString() = "GameDataAction"
 
   @Throws(FatalActionException::class)
-  override fun performAction(message: GameData, clientHandler: V086ClientHandler) {
+  override suspend fun performAction(message: GameData, clientHandler: V086ClientHandler) {
     try {
       val user = clientHandler.user
       val data = message.gameData
       clientHandler.clientGameDataCache.add(data)
-      user!!.addGameData(data)
+      user.addGameData(data)
     } catch (e: GameDataException) {
       logger.atFine().withCause(e).log("Game data error")
       if (e.response != null) {
@@ -39,7 +39,7 @@ class GameDataAction @Inject internal constructor() :
     }
   }
 
-  override fun handleEvent(event: GameDataEvent, clientHandler: V086ClientHandler) {
+  override suspend fun handleEvent(event: GameDataEvent, clientHandler: V086ClientHandler) {
     val data = event.data
     val key = clientHandler.serverGameDataCache.indexOf(data)
     if (key < 0) {

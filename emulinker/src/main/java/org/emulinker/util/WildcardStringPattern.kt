@@ -13,15 +13,15 @@ class WildcardStringPattern(pattern: String?) {
   private var endString = ""
   private val containsStrings = LinkedList<String>()
 
-  fun match(s: String?): Boolean {
+  fun match(s: String): Boolean {
     var s = s
-    if (s == null || s == "") return false
+    if (s.isBlank()) return false
     if (equals && s != startString) return false
     if (startsWith && !s.startsWith(startString)) return false
     if (endsWith && !s.endsWith(endString)) return false
     if (contains) {
       for (pattern in containsStrings) {
-        val idx = s!!.indexOf(pattern)
+        val idx = s.indexOf(pattern)
         if (idx == -1) return false
         if (idx + pattern.length == s.length) {
           // Match occured at the end of the string.
@@ -48,7 +48,7 @@ class WildcardStringPattern(pattern: String?) {
     // with "*".
     var s = startString
     s += "*"
-    for (pattern in containsStrings) s += pattern + "*"
+    containsStrings.forEach { s += "$it*" }
     s += endString
     return s
   }

@@ -14,8 +14,8 @@ class ConnectMessage_TOO : ConnectMessage() {
   override val length: Int
     get() = ID.length + 1
 
-  override fun writeTo(buffer: ByteBuffer?) {
-    buffer!!.put(charset.encode(ID))
+  override fun writeTo(buffer: ByteBuffer) {
+    buffer.put(charset.encode(ID))
     buffer.put(0x00.toByte())
   }
 

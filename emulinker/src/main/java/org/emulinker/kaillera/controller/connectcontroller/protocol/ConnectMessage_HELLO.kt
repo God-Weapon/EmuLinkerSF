@@ -14,8 +14,8 @@ data class ConnectMessage_HELLO(val protocol: String) : ConnectMessage() {
 
   var clientSocketAddress: InetSocketAddress? = null
 
-  override fun writeTo(buffer: ByteBuffer?) {
-    buffer!!.put(charset.encode(iD))
+  override fun writeTo(buffer: ByteBuffer) {
+    buffer.put(charset.encode(iD))
     EmuUtil.writeString(buffer, protocol, 0x00, charset)
   }
 

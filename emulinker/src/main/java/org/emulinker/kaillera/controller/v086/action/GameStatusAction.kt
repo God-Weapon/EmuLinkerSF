@@ -18,7 +18,9 @@ class GameStatusAction @Inject internal constructor() :
 
   override fun toString() = "GameStatusAction"
 
-  override fun handleEvent(event: GameStatusChangedEvent, clientHandler: V086ClientHandler) {
+  override suspend fun handleEvent(
+      event: GameStatusChangedEvent, clientHandler: V086ClientHandler
+  ) {
     handledEventCount++
     try {
       val game = event.game

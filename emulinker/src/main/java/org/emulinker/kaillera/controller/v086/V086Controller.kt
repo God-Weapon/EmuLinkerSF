@@ -3,12 +3,14 @@ package org.emulinker.kaillera.controller.v086
 import com.google.common.collect.ImmutableMap
 import com.google.common.flogger.FluentLogger
 import java.net.InetSocketAddress
+import java.net.SocketException
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
-import java.util.concurrent.ThreadPoolExecutor
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.time.Duration.Companion.milliseconds
+import kotlinx.coroutines.*
 import org.apache.commons.configuration.Configuration
 import org.emulinker.config.RuntimeFlags
 import org.emulinker.kaillera.controller.KailleraServerController
@@ -18,16 +20,16 @@ import org.emulinker.kaillera.model.KailleraServer
 import org.emulinker.kaillera.model.event.*
 import org.emulinker.kaillera.model.exception.NewConnectionException
 import org.emulinker.kaillera.model.exception.ServerFullException
-import org.emulinker.net.BindException
+import org.emulinker.net.UdpSocketProvider
 
 private val logger = FluentLogger.forEnclosingClass()
 
+/** High level logic for handling messages on a port. Not tied to an individual user. */
 @Singleton
 class V086Controller
     @Inject
     internal constructor(
         override var server: KailleraServer,
-        var threadPool: ThreadPoolExecutor,
         config: Configuration,
         loginAction: LoginAction,
         ackAction: ACKAction,
@@ -52,7 +54,7 @@ class V086Controller
         gameTimeoutAction: GameTimeoutAction,
         infoMessageAction: InfoMessageAction,
         private val v086ClientHandlerFactory: V086ClientHandler.Factory,
-        private val flags: RuntimeFlags
+        flags: RuntimeFlags
     ) : KailleraServerController {
   var isRunning = false
     private set
@@ -60,7 +62,7 @@ class V086Controller
   override val clientTypes: Array<String> =
       config.getStringArray("controllers.v086.clientTypes.clientType")
 
-  var clientHandlers: MutableMap<Int, V086ClientHandler> = ConcurrentHashMap()
+  override val clientHandlers: MutableMap<Int, V086ClientHandler> = ConcurrentHashMap()
 
   private val portRangeStart: Int = config.getInt("controllers.v086.portRangeStart")
   private val extraPorts: Int = config.getInt("controllers.v086.extraPorts", 0)
@@ -82,12 +84,23 @@ class V086Controller
     return "V086Controller[clients=" + clientHandlers.size + " isRunning=" + isRunning + "]"
   }
 
+  /**
+   * Receives new connections and delegates to a new V086ClientHandler instance for communication
+   * over a separate port.
+   */
+  @OptIn(DelicateCoroutinesApi::class) // For GlobalScope.
   @Throws(ServerFullException::class, NewConnectionException::class)
-  override fun newConnection(clientSocketAddress: InetSocketAddress?, protocol: String?): Int {
+  override suspend fun newConnection(
+      udpSocketProvider: UdpSocketProvider, clientSocketAddress: InetSocketAddress, protocol: String
+  ): Int {
     if (!isRunning) throw NewConnectionException("Controller is not running")
+    logger
+        .atFine()
+        .log("Creating new connection for address %d, protocol %s", clientSocketAddress, protocol)
+
     val clientHandler = v086ClientHandlerFactory.create(clientSocketAddress, this)
     val user = server.newConnection(clientSocketAddress, protocol, clientHandler)
-    var boundPort = -1
+    var boundPort: Int? = null
     var bindAttempts = 0
     while (bindAttempts++ < 5) {
       val portInteger = portRangeQueue.poll()
@@ -97,28 +110,27 @@ class V086Controller
         val port = portInteger.toInt()
         logger.atInfo().log("Private port $port allocated to: $user")
         try {
-          clientHandler.bind(port)
+          clientHandler.bind(udpSocketProvider, port)
+          GlobalScope.launch(Dispatchers.IO) { clientHandler.run(coroutineContext) }
           boundPort = port
           break
-        } catch (e: BindException) {
+        } catch (e: SocketException) {
           logger.atSevere().withCause(e).log("Failed to bind to port $port for: $user")
           logger
               .atFine()
               .log(
-                  "${toString()} returning port $port to available port queue: ${portRangeQueue.size + 1} available")
+                  "$this returning port $port to available port queue: ${portRangeQueue.size + 1} available")
           portRangeQueue.add(port)
         }
       }
-      try {
-        // pause very briefly to give the OS a chance to free a port
-        Thread.sleep(5)
-      } catch (e: InterruptedException) {}
+      // pause very briefly to give the OS a chance to free a port
+      delay(5.milliseconds)
     }
-    if (boundPort < 0) {
+    if (boundPort == null) {
       clientHandler.stop()
       throw NewConnectionException("Failed to bind!")
     }
-    clientHandler.start(user!!)
+    clientHandler.start(user)
     return boundPort
   }
 
@@ -128,9 +140,9 @@ class V086Controller
   }
 
   @Synchronized
-  override fun stop() {
+  override suspend fun stop() {
     isRunning = false
-    for (clientHandler in clientHandlers.values) clientHandler.stop()
+    clientHandlers.values.forEach { it.stop() }
     clientHandlers.clear()
   }
 
@@ -148,7 +160,6 @@ class V086Controller
         .atWarning()
         .log(
             "Listening on UDP ports: $portRangeStart to $maxPort.  Make sure these ports are open in your firewall!")
-    require(flags.v086BufferSize > 0) { "controllers.v086.bufferSize must be > 0" }
 
     // array access should be faster than a hash and we won't have to create
     // a new Integer each time

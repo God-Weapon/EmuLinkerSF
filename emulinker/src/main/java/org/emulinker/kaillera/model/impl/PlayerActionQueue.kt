@@ -61,7 +61,7 @@ class PlayerActionQueue(
       return
     }
     if (!synched) return
-    throw PlayerTimeoutException(this.playerNumber, /* timeoutNumber= */ -1, player)
+    throw PlayerTimeoutException(this.playerNumber, timeoutNumber = -1, player)
   }
 
   private fun getSize(playerNumber: Int): Int {

@@ -48,8 +48,7 @@ internal class KailleraRelay
   override fun processClientToServer(
       receiveBuffer: ByteBuffer, fromAddress: InetSocketAddress, toAddress: InetSocketAddress
   ): ByteBuffer? {
-    var inMessage: ConnectMessage? = null
-    inMessage =
+    val inMessage: ConnectMessage? =
         try {
           parse(receiveBuffer)
         } catch (e: MessageFormatException) {
@@ -59,11 +58,10 @@ internal class KailleraRelay
     logger
         .atFine()
         .log(
-            formatSocketAddress(fromAddress) +
-                " -> " +
-                formatSocketAddress(toAddress) +
-                ": " +
-                inMessage)
+            "%s -> %s: %s",
+            lazy { formatSocketAddress(fromAddress) },
+            lazy { formatSocketAddress(toAddress) },
+            inMessage)
     if (inMessage is ConnectMessage_HELLO) {
       logger.atInfo().log("Client version is " + inMessage.protocol)
     } else {
@@ -82,8 +80,7 @@ internal class KailleraRelay
   override fun processServerToClient(
       receiveBuffer: ByteBuffer, fromAddress: InetSocketAddress, toAddress: InetSocketAddress
   ): ByteBuffer? {
-    var inMessage: ConnectMessage? = null
-    inMessage =
+    val inMessage: ConnectMessage? =
         try {
           parse(receiveBuffer)
         } catch (e: MessageFormatException) {
@@ -93,26 +90,28 @@ internal class KailleraRelay
     logger
         .atFine()
         .log(
-            formatSocketAddress(fromAddress) +
-                " -> " +
-                formatSocketAddress(toAddress) +
-                ": " +
-                inMessage)
-    if (inMessage is ConnectMessage_HELLOD00D) {
-      val portMsg = inMessage
-      logger.atInfo().log("Starting client relay on port " + (portMsg.port - 1))
-      try {
-        v086RelayFactory.create(
-            portMsg.port, InetSocketAddress(serverSocketAddress.address, portMsg.port))
-      } catch (e: Exception) {
-        logger.atSevere().withCause(e).log("Failed to start!")
+            "%s -> %s: %s",
+            formatSocketAddress(fromAddress),
+            lazy { formatSocketAddress(toAddress) },
+            inMessage)
+    when (inMessage) {
+      is ConnectMessage_HELLOD00D -> {
+        logger.atInfo().log("Starting client relay on port " + (inMessage.port - 1))
+        try {
+          v086RelayFactory.create(
+              inMessage.port, InetSocketAddress(serverSocketAddress.address, inMessage.port))
+        } catch (e: Exception) {
+          logger.atSevere().withCause(e).log("Failed to start!")
+          return null
+        }
+      }
+      is ConnectMessage_TOO -> {
+        logger.atWarning().log("Failed to connect: Server is FULL!")
+      }
+      else -> {
+        logger.atWarning().log("Server sent an invalid message: $inMessage")
         return null
       }
-    } else if (inMessage is ConnectMessage_TOO) {
-      logger.atWarning().log("Failed to connect: Server is FULL!")
-    } else {
-      logger.atWarning().log("Server sent an invalid message: $inMessage")
-      return null
     }
     val sendBuffer = ByteBuffer.allocate(receiveBuffer.limit())
     receiveBuffer.rewind()

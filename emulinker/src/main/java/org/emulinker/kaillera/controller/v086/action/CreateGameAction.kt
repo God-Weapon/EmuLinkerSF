@@ -27,10 +27,10 @@ class CreateGameAction @Inject internal constructor() :
   override fun toString() = "CreateGameAction"
 
   @Throws(FatalActionException::class)
-  override fun performAction(message: CreateGame, clientHandler: V086ClientHandler) {
+  override suspend fun performAction(message: CreateGame, clientHandler: V086ClientHandler) {
     actionPerformedCount++
     try {
-      clientHandler.user!!.createGame(message.romName)
+      clientHandler.user.createGame(message.romName)
     } catch (e: CreateGameException) {
       logger
           .atInfo()
@@ -44,9 +44,7 @@ class CreateGameAction @Inject internal constructor() :
                 EmuLang.getString("CreateGameAction.CreateGameDenied", e.message)))
         clientHandler.send(
             QuitGame_Notification(
-                clientHandler.nextMessageNumber,
-                clientHandler.user!!.name!!,
-                clientHandler.user!!.id))
+                clientHandler.nextMessageNumber, clientHandler.user.name!!, clientHandler.user.id))
       } catch (e2: MessageFormatException) {
         logger.atSevere().withCause(e2).log("Failed to construct message")
       }
@@ -63,16 +61,14 @@ class CreateGameAction @Inject internal constructor() :
                 EmuLang.getString("CreateGameAction.CreateGameDeniedFloodControl")))
         clientHandler.send(
             QuitGame_Notification(
-                clientHandler.nextMessageNumber,
-                clientHandler.user!!.name!!,
-                clientHandler.user!!.id))
+                clientHandler.nextMessageNumber, clientHandler.user.name!!, clientHandler.user.id))
       } catch (e2: MessageFormatException) {
         logger.atSevere().withCause(e2).log("Failed to construct message")
       }
     }
   }
 
-  override fun handleEvent(event: GameCreatedEvent, clientHandler: V086ClientHandler) {
+  override suspend fun handleEvent(event: GameCreatedEvent, clientHandler: V086ClientHandler) {
     handledEventCount++
     try {
       val game = event.game
@@ -80,7 +76,7 @@ class CreateGameAction @Inject internal constructor() :
       clientHandler.send(
           CreateGame_Notification(
               clientHandler.nextMessageNumber,
-              owner!!.name!!,
+              owner.name!!,
               game.romName,
               owner.clientType!!,
               game.id,

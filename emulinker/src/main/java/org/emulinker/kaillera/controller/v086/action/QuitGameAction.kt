@@ -3,6 +3,8 @@ package org.emulinker.kaillera.controller.v086.action
 import com.google.common.flogger.FluentLogger
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.time.Duration.Companion.milliseconds
+import kotlinx.coroutines.delay
 import org.emulinker.kaillera.controller.messaging.MessageFormatException
 import org.emulinker.kaillera.controller.v086.V086ClientHandler
 import org.emulinker.kaillera.controller.v086.protocol.QuitGame_Notification
@@ -16,9 +18,7 @@ import org.emulinker.kaillera.model.exception.QuitGameException
 private val logger = FluentLogger.forEnclosingClass()
 
 @Singleton
-class QuitGameAction
-    @Inject
-    internal constructor(private val lookingForGameReporter: TwitterBroadcaster) :
+class QuitGameAction @Inject constructor(private val lookingForGameReporter: TwitterBroadcaster) :
     V086Action<QuitGame_Request>, V086GameEventHandler<UserQuitGameEvent> {
   override var actionPerformedCount = 0
     private set
@@ -28,11 +28,11 @@ class QuitGameAction
   override fun toString() = "QuitGameAction"
 
   @Throws(FatalActionException::class)
-  override fun performAction(message: QuitGame_Request, clientHandler: V086ClientHandler) {
+  override suspend fun performAction(message: QuitGame_Request, clientHandler: V086ClientHandler) {
     actionPerformedCount++
     try {
-      clientHandler.user!!.quitGame()
-      lookingForGameReporter.cancelActionsForUser(clientHandler.user!!.id)
+      clientHandler.user.quitGame()
+      lookingForGameReporter.cancelActionsForUser(clientHandler.user.id)
     } catch (e: DropGameException) {
       logger.atSevere().withCause(e).log("Action failed")
     } catch (e: QuitGameException) {
@@ -40,21 +40,18 @@ class QuitGameAction
     } catch (e: CloseGameException) {
       logger.atSevere().withCause(e).log("Action failed")
     }
-    try {
-      Thread.sleep(100)
-    } catch (e: InterruptedException) {
-      logger.atSevere().withCause(e).log("Sleep Interrupted!")
-    }
+    delay(100.milliseconds)
   }
 
-  override fun handleEvent(event: UserQuitGameEvent, clientHandler: V086ClientHandler) {
+  override suspend fun handleEvent(event: UserQuitGameEvent, clientHandler: V086ClientHandler) {
     handledEventCount++
     val thisUser = clientHandler.user
     try {
       val user = event.user
-      if (!user.inStealthMode)
-          clientHandler.send(
-              QuitGame_Notification(clientHandler.nextMessageNumber, user.name!!, user.id))
+      if (!user.inStealthMode) {
+        clientHandler.send(
+            QuitGame_Notification(clientHandler.nextMessageNumber, user.name!!, user.id))
+      }
       if (thisUser === user) {
         if (user.inStealthMode)
             clientHandler.send(

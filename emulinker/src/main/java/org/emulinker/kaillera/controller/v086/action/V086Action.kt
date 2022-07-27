@@ -8,6 +8,6 @@ interface V086Action<T : V086Message> {
   override fun toString(): String
 
   @Throws(FatalActionException::class)
-  fun performAction(message: T, clientHandler: V086ClientHandler)
+  suspend fun performAction(message: T, clientHandler: V086ClientHandler)
   val actionPerformedCount: Int
 }

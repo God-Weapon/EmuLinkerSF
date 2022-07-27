@@ -18,7 +18,7 @@ class GameDesynchAction @Inject internal constructor() : V086GameEventHandler<Ga
 
   override fun toString() = "GameDesynchAction"
 
-  override fun handleEvent(event: GameDesynchEvent, clientHandler: V086ClientHandler) {
+  override suspend fun handleEvent(event: GameDesynchEvent, clientHandler: V086ClientHandler) {
     handledEventCount++
     try {
       clientHandler.send(

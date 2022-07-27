@@ -1,8 +1,10 @@
 package org.emulinker.kaillera.controller.v086.protocol
 
 import com.google.common.truth.Truth.assertThat
+import java.net.InetSocketAddress
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
+import java.util.*
 import org.emulinker.kaillera.controller.v086.V086Utils
 import org.emulinker.kaillera.model.ConnectionType
 import org.emulinker.kaillera.model.GameStatus
@@ -105,6 +107,52 @@ class V086BundleTest {
                                 status = GameStatus.PLAYING)))))
   }
 
+  /*
+   @Test
+   fun parseMyMessage() {
+     // TODO(nue): We should dagger-ize this and use the RuntimeFlags class.
+     AppModule.charsetDoNotUse = Charsets.UTF_8 // Charset.forName("Shift_JIS")
+     // f8 ac 65 18 56 28 28 bd 89 df ee 8d 08 00 45 00 00 b9 fa b0 00 00 73 11 2e 86 96 f9 6f af c0
+     // a8 56 ac ed 33 cc df 00 a5 67 ce
+
+     val hexInput =
+         "05 0E 02 06 00 12 00 02 00 00 00 0D 02 06 00 12 00 02 00 00 00 0C 02 06 00 12 00 02 00 00 00 0B 02 06 00 12 00 02 00 00 00 0A 02 06 00 12 00 02 00 00 00".lowercase(
+             Locale.getDefault())
+     val buffer = V086Utils.hexStringToByteBuffer(hexInput)
+     val parsedBundle = V086Bundle.parse(buffer, lastMessageID = -1)
+     assertThat(parsedBundle.messages)
+         .isEqualTo(
+             arrayOf(
+                 InformationMessage(messageNumber = 6, source = "Server", message = "定員30名"),
+                 UserJoined(
+                     messageNumber = 5,
+                     username = "jj",
+                     userId = 395,
+                     ping = 31,
+                     connectionType = ConnectionType.LAN),
+                 ServerStatus(
+                     messageNumber = 4,
+                     users =
+                         listOf(
+                             ServerStatus.User(
+                                 username = "test",
+                                 ping = 19,
+                                 status = UserStatus.CONNECTING,
+                                 userId = 392,
+                                 connectionType = ConnectionType.LAN),
+                         ),
+                     games =
+                         listOf(
+                             ServerStatus.Game(
+                                 romName = "Nintendo All-Star! Dairantou Smash Brothers (J)",
+                                 gameId = 61,
+                                 clientType = "Project 64k 0.13 (01 Aug 2003)",
+                                 username = "test",
+                                 playerCountOutOfMax = "1/2",
+                                 status = GameStatus.PLAYING)))))
+   }
+  */
+
   // TODO(nue): Move this into ServerStatusTest.kt. For some reason it will not pass if I do that.
   // I suspect a Kotlin bug related to nested data classes....
   @Test
@@ -132,5 +180,27 @@ class V086BundleTest {
                                 status = GameStatus.PLAYING)))
                 .bodyLength)
         .isEqualTo(115)
+  }
+
+  @Test
+  fun toJavaAddress() {
+    val address = io.ktor.network.sockets.InetSocketAddress("127.2.0.1", 42)
+
+    val converted = V086Utils.toJavaAddress(address)
+
+    assertThat(converted).isEqualTo(converted)
+    assertThat(converted.hostName).isEqualTo("127.2.0.1")
+    assertThat(converted.port).isEqualTo(42)
+  }
+
+  @Test
+  fun toKtorAddress() {
+    val address = InetSocketAddress("127.2.0.1", 42)
+
+    val converted = V086Utils.toKtorAddress(address)
+
+    assertThat(converted).isEqualTo(converted)
+    assertThat(converted.hostname).isEqualTo("127.2.0.1")
+    assertThat(converted.port).isEqualTo(42)
   }
 }

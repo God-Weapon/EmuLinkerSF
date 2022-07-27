@@ -3,6 +3,8 @@ package org.emulinker.kaillera.controller.v086.action
 import com.google.common.flogger.FluentLogger
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.time.Duration.Companion.milliseconds
+import kotlinx.coroutines.delay
 import org.emulinker.kaillera.controller.messaging.MessageFormatException
 import org.emulinker.kaillera.controller.v086.V086ClientHandler
 import org.emulinker.kaillera.controller.v086.protocol.ClientACK
@@ -28,10 +30,10 @@ class ACKAction @Inject internal constructor() :
   override fun toString() = "ACKAction"
 
   @Throws(FatalActionException::class)
-  override fun performAction(message: ClientACK, clientHandler: V086ClientHandler) {
+  override suspend fun performAction(message: ClientACK, clientHandler: V086ClientHandler) {
     actionPerformedCount++
     val user = clientHandler.user
-    if (user!!.loggedIn) return
+    if (user.loggedIn) return
     clientHandler.addSpeedMeasurement()
     if (clientHandler.speedMeasurementCount > clientHandler.numAcksForSpeedTest) {
       user.ping = clientHandler.averageNetworkSpeed
@@ -61,7 +63,7 @@ class ACKAction @Inject internal constructor() :
     }
   }
 
-  override fun handleEvent(event: UserEvent, clientHandler: V086ClientHandler) {
+  override suspend fun handleEvent(event: UserEvent, clientHandler: V086ClientHandler) {
     handledEventCount++
     val connectedEvent = event as ConnectedEvent
     val server = connectedEvent.server
@@ -124,9 +126,7 @@ class ACKAction @Inject internal constructor() :
         gamesSubList = ArrayList()
         counter = 0
         sent = true
-        try {
-          Thread.sleep(100)
-        } catch (e: Exception) {} // SF MOD
+        delay(100.milliseconds) // SF MOD
       }
       counter += user.numBytes
       usersSubList.add(user)
@@ -140,9 +140,7 @@ class ACKAction @Inject internal constructor() :
         gamesSubList = ArrayList()
         counter = 0
         sent = true
-        try {
-          Thread.sleep(100)
-        } catch (e: Exception) {} // SF MOD
+        delay(100.milliseconds) // SF MOD
       }
       counter += game.numBytes
       gamesSubList.add(game)
@@ -151,21 +149,21 @@ class ACKAction @Inject internal constructor() :
         sendServerStatus(clientHandler, usersSubList, gamesSubList, counter)
   }
 
-  private fun sendServerStatus(
-      clientHandler: V086ClientHandler?,
+  private suspend fun sendServerStatus(
+      clientHandler: V086ClientHandler,
       users: List<ServerStatus.User>,
       games: List<Game>,
       counter: Int
   ) {
-    val sb = StringBuilder()
-    for (game in games) {
-      sb.append(game.gameId)
-      sb.append(",")
-    }
     logger
         .atFine()
         .log(
-            "Sending ServerStatus to ${clientHandler!!.user}: ${users.size} users, ${games.size} games in $counter bytes, games: $sb")
+            "Sending ServerStatus to %s: %d users, %d games in %d bytes, games: %s",
+            clientHandler.user,
+            users.size,
+            games.size,
+            counter,
+            games.map { it.gameId })
     try {
       clientHandler.send(ServerStatus(clientHandler.nextMessageNumber, users, games))
     } catch (e: MessageFormatException) {
