@@ -9,9 +9,5 @@
         <module name="emulinkersf-netsma" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="emulinkersf-netosuma" target="8" />
-      <module name="emulinkersf-netsma" target="8" />
-    </bytecodeTargetLevel>
   </component>
 </project>

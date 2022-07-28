@@ -22,8 +22,8 @@ jobs:
         java-version: '11'
         distribution: 'adopt'
     - name: Build with Maven
-      run: mvn compile --file=emulinker/pom.xml
+      run: mvn compile
     - name: Run tests
-      run: mvn test --file=emulinker/pom.xml
+      run: mvn test
     - name: Lint
-      run: mvn spotless:check --file=emulinker/pom.xml
+      run: mvn spotless:check

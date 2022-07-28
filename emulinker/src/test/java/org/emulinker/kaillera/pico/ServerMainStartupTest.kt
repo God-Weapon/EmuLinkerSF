@@ -109,7 +109,7 @@ class ServerMainStartupTest {
 
         coroutineScope { users.forEach { launch { it.createGame() } } }
 
-        delay(1.seconds)
+        delay(3.seconds)
 
         val clientHandlers = server.controllers.first().clientHandlers
         assertThat(clientHandlers.size).isEqualTo(numUsers)

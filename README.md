@@ -12,8 +12,8 @@ EmuLinkerSF-netsma (ネトスマ) is a SSB64-specific (originally just Japan-foc
 
 The aim of this repository is to:
 
- - Add new features useful to SSB64 netplay.
- - Modernize the codebase and fix vulnerabilities while maintaining or increasing the level of performance.
+- Add new features useful to SSB64 netplay.
+- Modernize the codebase and fix vulnerabilities while maintaining or increasing the level of performance.
 
 EmuLinkerSF-netsma is maintained by [jonnjonn](https://twitter.com/6kRt62r2zvKp5Rh).
 
