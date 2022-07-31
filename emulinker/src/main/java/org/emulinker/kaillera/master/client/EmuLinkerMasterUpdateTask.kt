@@ -38,20 +38,20 @@ class EmuLinkerMasterUpdateTask(
     }
     val params =
         arrayOf(
-            NameValuePair("serverName", publicInfo.serverName),
-            NameValuePair("ipAddress", publicInfo.connectAddress),
-            NameValuePair("location", publicInfo.location),
-            NameValuePair("website", publicInfo.website),
-            NameValuePair("port", connectController.bindPort.toString()),
-            NameValuePair("numUsers", kailleraServer.users.size.toString()),
-            NameValuePair("maxUsers", kailleraServer.maxUsers.toString()),
-            NameValuePair("numGames", kailleraServer.games.size.toString()),
-            NameValuePair("maxGames", kailleraServer.maxGames.toString()),
-            NameValuePair("version", releaseInfo.shortVersionString),
+            "serverName" to publicInfo.serverName,
+            "ipAddress" to publicInfo.connectAddress,
+            "location" to publicInfo.location,
+            "website" to publicInfo.website,
+            "port" to connectController.bindPort.toString(),
+            "numUsers" to kailleraServer.users.size.toString(),
+            "maxUsers" to kailleraServer.maxUsers.toString(),
+            "numGames" to kailleraServer.games.size.toString(),
+            "maxGames" to kailleraServer.maxGames.toString(),
+            "version" to releaseInfo.shortVersionString,
         )
 
     val meth = GetMethod(url)
-    meth.setQueryString(params)
+    meth.setQueryString(params.map { NameValuePair(it.first, it.second) }.toTypedArray())
     meth.setRequestHeader("Waiting-games", waitingGames.toString())
     meth.followRedirects = true
     val props = Properties()

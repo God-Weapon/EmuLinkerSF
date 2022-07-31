@@ -5,13 +5,17 @@ import com.google.common.flogger.FluentLogger
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.nio.Buffer
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.util.concurrent.TimeUnit.MINUTES
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withTimeout
 import org.emulinker.config.RuntimeFlags
 import org.emulinker.kaillera.controller.messaging.MessageFormatException
 import org.emulinker.kaillera.controller.messaging.ParseException
@@ -22,11 +26,12 @@ import org.emulinker.kaillera.controller.v086.protocol.V086BundleFormatException
 import org.emulinker.kaillera.controller.v086.protocol.V086Message
 import org.emulinker.kaillera.model.KailleraUser
 import org.emulinker.kaillera.model.event.*
-import org.emulinker.net.PrivateUDPServer
+import org.emulinker.net.UDPServer
 import org.emulinker.net.UdpSocketProvider
 import org.emulinker.util.ClientGameDataCache
 import org.emulinker.util.EmuUtil.dumpBuffer
 import org.emulinker.util.EmuUtil.dumpBufferFromBeginning
+import org.emulinker.util.EmuUtil.formatSocketAddress
 import org.emulinker.util.GameDataCache
 
 private val logger = FluentLogger.forEnclosingClass()
@@ -36,11 +41,11 @@ class V086ClientHandler
     @AssistedInject
     constructor(
         metrics: MetricRegistry,
-        flags: RuntimeFlags,
+        private val flags: RuntimeFlags,
         @Assisted remoteSocketAddress: InetSocketAddress,
         /** The V086Controller that started this client handler. */
         @param:Assisted val controller: V086Controller
-    ) : PrivateUDPServer(remoteSocketAddress.address, metrics, flags), KailleraEventListener {
+    ) : UDPServer(), KailleraEventListener {
   lateinit var user: KailleraUser
     private set
 
@@ -81,11 +86,47 @@ class V086ClientHandler
   private var clientRetryCount = 0
   private var lastResend: Long = 0
 
+  private val clientRequestTimer =
+      metrics.timer(MetricRegistry.name(this.javaClass, "clientRequests"))
+
+  lateinit var remoteSocketAddress: InetSocketAddress
+    private set
+
+  val remoteInetAddress: InetAddress = remoteSocketAddress.address
+
   @AssistedFactory
   interface Factory {
     fun create(
         remoteSocketAddress: InetSocketAddress?, v086Controller: V086Controller?
     ): V086ClientHandler
+  }
+
+  override suspend fun handleReceived(
+      buffer: ByteBuffer, remoteSocketAddress: InetSocketAddress, requestScope: CoroutineScope
+  ) {
+    if (!this::remoteSocketAddress.isInitialized) {
+      this.remoteSocketAddress = remoteSocketAddress
+    } else if (remoteSocketAddress != this.remoteSocketAddress) {
+      logger
+          .atWarning()
+          .log(
+              "Rejecting packet received from wrong address. Expected=%s but was %s",
+              formatSocketAddress(this.remoteSocketAddress),
+              formatSocketAddress(remoteSocketAddress))
+
+      return
+    }
+    clientRequestTimer.time().use {
+      try {
+        withTimeout(flags.requestTimeout) { handleReceived(buffer) }
+      } catch (e: TimeoutCancellationException) {
+        logger.atSevere().withCause(e).log("Request timed out")
+      }
+    }
+  }
+
+  private suspend fun send(buffer: ByteBuffer) {
+    super.send(buffer, remoteSocketAddress)
   }
 
   override fun toString(): String {
@@ -156,12 +197,11 @@ class V086ClientHandler
   }
 
   override suspend fun stop() {
-    //    synchronized(this) {
     mutex.withLock {
+      logger.atFine().log("Stopping ClientHandler for %d", user.id)
       if (stopFlag) return
       var port = -1
       if (isBound) port = bindPort
-      logger.atFine().log("$this Stopping!")
       super.stop()
       if (port > 0) {
         logger
@@ -186,7 +226,7 @@ class V086ClientHandler
     return inBuffer
   }
 
-  override suspend fun handleReceived(buffer: ByteBuffer) {
+  private suspend fun handleReceived(buffer: ByteBuffer) {
     inMutex.withLock {
       val lastMessageNumberUsed = lastMessageNumber
       val inBundle =
@@ -359,7 +399,7 @@ class V086ClientHandler
       // Cast to avoid issue with java version mismatch:
       // https://stackoverflow.com/a/61267496/2875073
       (outBuffer as Buffer).flip()
-      super.send(outBuffer)
+      send(outBuffer)
       (outBuffer as Buffer).clear()
     }
   }

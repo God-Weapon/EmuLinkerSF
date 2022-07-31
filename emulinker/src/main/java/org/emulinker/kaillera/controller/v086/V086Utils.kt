@@ -72,23 +72,17 @@ object V086Utils {
 
   /** Gets the number of bytes to represent the string in the charset defined in emulinker.config */
   @Deprecated("You probably want getNumBytesPlusStopByte instead")
-  fun getNumBytes(s: String): Int {
-    return s.toByteArray(AppModule.charsetDoNotUse).size
-  }
+  fun getNumBytes(s: String): Int = s.toByteArray(AppModule.charsetDoNotUse).size
 
   /**
    * Gets the number of bytes to represent the string in the charset defined in emulinker.config,
    * plus one for the stop byte.
    */
-  fun getNumBytesPlusStopByte(s: String): Int {
-    return s.toByteArray(AppModule.charsetDoNotUse).size + 1
-  }
+  fun getNumBytesPlusStopByte(s: String): Int = s.toByteArray(AppModule.charsetDoNotUse).size + 1
 
-  fun toJavaAddress(address: io.ktor.network.sockets.InetSocketAddress): InetSocketAddress {
-    return InetSocketAddress(address.hostname, address.port)
-  }
+  fun toJavaAddress(address: io.ktor.network.sockets.InetSocketAddress) =
+      InetSocketAddress(address.hostname, address.port)
 
-  fun toKtorAddress(address: InetSocketAddress): io.ktor.network.sockets.InetSocketAddress {
-    return io.ktor.network.sockets.InetSocketAddress(address.hostname, address.port)
-  }
+  fun InetSocketAddress.toKtorAddress() =
+      io.ktor.network.sockets.InetSocketAddress(this.hostname, this.port)
 }

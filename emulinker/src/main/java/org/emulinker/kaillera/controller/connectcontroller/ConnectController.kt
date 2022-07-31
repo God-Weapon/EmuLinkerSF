@@ -42,7 +42,7 @@ class ConnectController
         private val accessManager: AccessManager,
         private val config: Configuration,
         flags: RuntimeFlags,
-    ) : UDPServer(flags) {
+    ) : UDPServer() {
 
   private val mutex = Mutex()
 

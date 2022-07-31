@@ -36,7 +36,7 @@ class GameChatAction
 
   @Throws(FatalActionException::class)
   override suspend fun performAction(message: GameChat_Request, clientHandler: V086ClientHandler) {
-    if (clientHandler::user == null) {
+    if (clientHandler.user == null) {
       throw FatalActionException("User does not exist: GameChatAction $message")
     }
     if (clientHandler.user.game == null) return

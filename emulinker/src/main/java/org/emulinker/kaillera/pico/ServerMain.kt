@@ -10,6 +10,7 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.*
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -19,6 +20,8 @@ private val logger = FluentLogger.forEnclosingClass()
 /** Main entry point for the Kaillera server. */
 fun main(): Unit =
     runBlocking {
+      // Change number of Dispatchers.IO coroutines.
+      System.setProperty(IO_PARALLELISM_PROPERTY_NAME, 1000.toString())
       System.setProperty(
           "flogger.backend_factory",
           "com.google.common.flogger.backend.log4j2.Log4j2BackendFactory#getInstance")
@@ -31,7 +34,7 @@ fun main(): Unit =
               "EmuLinker server is running @ ${DateTimeFormatter.ISO_ZONED_DATE_TIME.withZone(ZoneId.systemDefault()).format(Instant.now())}")
 
       component.kailleraServerController.start() // Apparently cannot be removed.
-      launch {
+      launch(Dispatchers.IO) {
         component.server.start(
             component.udpSocketProvider, coroutineContext + CoroutineName("ConnectServer"))
       }

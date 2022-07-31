@@ -371,8 +371,8 @@
           <kotlin>
             <!-- These are the defaults, you can override if you want -->
             <includes>
-              <include>src/main/java/**/*.kt</include>
-              <include>src/test/java/**/*.kt</include>
+              <include>emulinker/src/main/java/**/*.kt</include>
+              <include>emulinker/src/test/java/**/*.kt</include>
             </includes>
 
             <ktfmt>

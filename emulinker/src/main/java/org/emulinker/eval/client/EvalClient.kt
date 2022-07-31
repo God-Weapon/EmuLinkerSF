@@ -179,7 +179,7 @@ class EvalClient(
         }
       }
       is CachedGameData -> {
-        require(gameDataCache[message.key] != null)
+        requireNotNull(gameDataCache[message.key])
         if (simulateGameLag) {
           delay(delayBetweenPackets)
         }

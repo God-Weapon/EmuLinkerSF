@@ -1,11 +1,13 @@
 package org.emulinker.kaillera.controller.v086.protocol
 
 import com.google.common.truth.Truth.assertThat
+import io.ktor.network.sockets.*
+import io.ktor.util.network.*
 import java.net.InetSocketAddress
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
-import java.util.*
 import org.emulinker.kaillera.controller.v086.V086Utils
+import org.emulinker.kaillera.controller.v086.V086Utils.toKtorAddress
 import org.emulinker.kaillera.model.ConnectionType
 import org.emulinker.kaillera.model.GameStatus
 import org.emulinker.kaillera.model.UserStatus
@@ -186,10 +188,10 @@ class V086BundleTest {
   fun toJavaAddress() {
     val address = io.ktor.network.sockets.InetSocketAddress("127.2.0.1", 42)
 
-    val converted = V086Utils.toJavaAddress(address)
+    val converted = address.toJavaAddress()
 
     assertThat(converted).isEqualTo(converted)
-    assertThat(converted.hostName).isEqualTo("127.2.0.1")
+    assertThat(converted.hostname).isEqualTo("127.2.0.1")
     assertThat(converted.port).isEqualTo(42)
   }
 
@@ -197,7 +199,7 @@ class V086BundleTest {
   fun toKtorAddress() {
     val address = InetSocketAddress("127.2.0.1", 42)
 
-    val converted = V086Utils.toKtorAddress(address)
+    val converted = address.toKtorAddress()
 
     assertThat(converted).isEqualTo(converted)
     assertThat(converted.hostname).isEqualTo("127.2.0.1")

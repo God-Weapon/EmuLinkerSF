@@ -11,12 +11,19 @@ import kotlinx.coroutines.*
 import org.emulinker.eval.client.EvalClient
 import org.emulinker.kaillera.model.GameStatus
 import org.emulinker.kaillera.model.UserStatus
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.Timeout
 
 class ServerMainStartupTest {
   @get:Rule val timeout = Timeout(1.minutes.inWholeMilliseconds.toInt())
+
+  @Before
+  fun setup() {
+    // Set number of Dispatchers.IO coroutine workers.
+    System.setProperty(IO_PARALLELISM_PROPERTY_NAME, 1000.toString())
+  }
 
   @Test
   fun startup() =

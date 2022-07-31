@@ -1,17 +1,16 @@
 package org.emulinker.kaillera.model.impl
 
 import com.google.common.flogger.FluentLogger
+import com.google.common.flogger.StackSize
 import java.lang.InterruptedException
 import java.net.InetSocketAddress
 import java.time.Duration
 import java.time.Instant
 import java.util.ArrayList
-import java.util.concurrent.BlockingQueue
-import java.util.concurrent.LinkedBlockingQueue
-import java.util.concurrent.TimeUnit
 import kotlin.Throws
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration.Companion.milliseconds
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -121,7 +120,7 @@ class KailleraUserImpl(
     private set
 
   private var stopFlag = false
-  private val eventQueue: BlockingQueue<KailleraEvent> = LinkedBlockingQueue()
+  private val eventChannel = Channel<KailleraEvent>(5)
 
   override var tempDelay = 0
 
@@ -198,8 +197,8 @@ class KailleraUserImpl(
   }
 
   override suspend fun stop() {
-    //    synchronized(this) {
     mutex.withLock {
+      logger.atFine().log("Stopping KaillerUser for %d", id)
       if (!threadIsActive) {
         logger.atFine().log("$this  thread stop request ignored: not running!")
         return
@@ -213,15 +212,12 @@ class KailleraUserImpl(
       addEvent(StopFlagEvent())
     }
     listener.stop()
+    eventChannel.close()
   }
 
   @Synchronized
   override fun droppedPacket() {
-    if (game != null) {
-      // if(game.getStatus() == KailleraGame.STATUS_PLAYING){
-      game!!.droppedPacket(this)
-      // }
-    }
+    game?.droppedPacket(this)
   }
 
   // server actions
@@ -510,7 +506,13 @@ class KailleraUserImpl(
         if (event.toString() == "InfoMessageEvent") return
       }
     }
-    eventQueue.offer(event)
+    val trySend = eventChannel.trySend(event)
+    if (!trySend.isSuccess) {
+      logger
+          .atSevere()
+          .withStackTrace(StackSize.FULL)
+          .log("Failed to add event to queue: %s", trySend)
+    }
   }
 
   // TODO(nue): Get rid of this for loop. We should be able to trigger event listeners as soon as
@@ -520,9 +522,10 @@ class KailleraUserImpl(
     logger.atFine().log("$this thread running...")
     try {
       while (!stopFlag) {
-        // TODO(nue): Replace this eventQueue with a buffered Channel.
-        val event = eventQueue.poll(200, TimeUnit.SECONDS)
-        if (event == null) continue else if (event is StopFlagEvent) break
+        val event = eventChannel.receive()
+        if (event is StopFlagEvent) {
+          break
+        }
         listener.actionPerformed(event)
         if (event is GameStartedEvent) {
           status = UserStatus.PLAYING
