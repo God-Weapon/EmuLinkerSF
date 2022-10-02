@@ -40,11 +40,11 @@ fun main(): Unit =
       }
 
       component.masterListUpdater.start()
-      val metrics = component.metricRegistry
-      metrics.registerAll(ThreadStatesGaugeSet())
-      metrics.registerAll(MemoryUsageGaugeSet())
       val flags = component.runtimeFlags
       if (flags.metricsEnabled) {
+        val metrics = component.metricRegistry
+        metrics.registerAll(ThreadStatesGaugeSet())
+        metrics.registerAll(MemoryUsageGaugeSet())
         // TODO(nue): Pass this data to a central server so we can see how performance changes over
         // time in prod.
         // "graphite" is the name of a service in docker-compose.yaml.

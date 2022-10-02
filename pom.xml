@@ -15,10 +15,11 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <build-timestamp>${maven.build.timestamp}</build-timestamp>
     <maven.build.timestamp.format>yyyy-MM-dd'T'HH:mm:ss'Z'</maven.build.timestamp.format>
-    <kotlin.version>1.7.0</kotlin.version>
-    <dagger.version>2.42</dagger.version>
-    <log4j.version>2.17.2</log4j.version>
-    <ktor.version>2.0.2</ktor.version>
+    <kotlin.version>1.7.10</kotlin.version>
+    <dagger.version>2.43.2</dagger.version>
+    <log4j.version>2.19.0</log4j.version>
+    <ktor.version>2.1.1</ktor.version>
+    <flogger.version>0.7.4</flogger.version>
     <!-- Optional but gives us incremental builds. -->
     <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
   </properties>
@@ -68,14 +69,14 @@
     <dependency>
       <groupId>com.google.flogger</groupId>
       <artifactId>flogger</artifactId>
-      <version>0.7.1</version>
+      <version>${flogger.version}</version>
     </dependency>
 
     <!-- https://mvnrepository.com/artifact/com.google.flogger/flogger-system-backend -->
     <dependency>
       <groupId>com.google.flogger</groupId>
       <artifactId>flogger-system-backend</artifactId>
-      <version>0.7.1</version>
+      <version>${flogger.version}</version>
       <exclusions>
         <exclusion>
           <groupId>com.sun.jmx</groupId>
@@ -96,7 +97,7 @@
     <dependency>
       <groupId>com.google.flogger</groupId>
       <artifactId>flogger-log4j2-backend</artifactId>
-      <version>0.7.1</version>
+      <version>${flogger.version}</version>
     </dependency>
 
     <!-- https://mvnrepository.com/artifact/com.google.dagger/dagger -->
@@ -116,7 +117,7 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>30.1.1-jre</version>
+      <version>31.1-jre</version>
     </dependency>
 
     <dependency>
@@ -129,7 +130,7 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.11</version>
+      <version>4.13.2</version>
       <scope>test</scope>
     </dependency>
 
@@ -180,14 +181,14 @@
     <dependency>
       <groupId>org.jetbrains.kotlinx</groupId>
       <artifactId>kotlinx-coroutines-core</artifactId>
-      <version>1.6.3</version>
+      <version>1.6.4</version>
     </dependency>
 
     <!-- https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-test -->
     <dependency>
       <groupId>org.jetbrains.kotlinx</groupId>
       <artifactId>kotlinx-coroutines-test</artifactId>
-      <version>1.6.3</version>
+      <version>1.6.4</version>
       <type>pom</type>
       <scope>test</scope>
     </dependency>
