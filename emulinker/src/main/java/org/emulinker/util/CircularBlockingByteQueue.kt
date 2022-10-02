@@ -7,7 +7,6 @@ import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import kotlin.Throws
-import kotlin.jvm.JvmOverloads
 
 private val logger = FluentLogger.forEnclosingClass()
 
@@ -121,8 +120,7 @@ class CircularBlockingByteQueue(maxSize: Int) {
     array = newData
   }
 
-  @JvmOverloads
-  fun toArray(a: ByteArray = ByteArray(size)): ByteArray {
+  private fun toArray(a: ByteArray = ByteArray(size)): ByteArray {
     //		logger.atFine().log(this + " toArray("+Arrays.toString(a)+")");
     var a = a
     if (size == 0) return a

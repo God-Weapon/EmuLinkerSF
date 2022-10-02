@@ -3,7 +3,7 @@ package org.emulinker.kaillera.controller.connectcontroller
 import com.google.common.flogger.FluentLogger
 import java.net.InetSocketAddress
 import java.nio.ByteBuffer
-import java.util.Set
+import java.util.Set as JavaSet
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
@@ -38,7 +38,7 @@ class ConnectController
     @Inject
     internal constructor(
         // TODO(nue): This makes no sense because KailleraServerController is a singleton...
-        kailleraServerControllers: Set<KailleraServerController>,
+        kailleraServerControllers: JavaSet<KailleraServerController>,
         private val accessManager: AccessManager,
         private val config: Configuration,
         flags: RuntimeFlags,
@@ -46,7 +46,7 @@ class ConnectController
 
   private val mutex = Mutex()
 
-  private val controllersMap: MutableMap<String?, KailleraServerController> = HashMap()
+  private val controllersMap: MutableMap<String, KailleraServerController> = HashMap()
 
   override val bufferSize = flags.connectControllerBufferSize
 
@@ -110,36 +110,35 @@ class ConnectController
       buffer: ByteBuffer, remoteSocketAddress: InetSocketAddress, requestScope: CoroutineScope
   ) {
     requestCount++
-    val inMessage: ConnectMessage? =
+    val formattedSocketAddress = formatSocketAddress(remoteSocketAddress)
     // TODO(nue): Remove this catch logic.
-    try {
+    val inMessage: ConnectMessage =
+        try {
           parse(buffer)
         } catch (e: MessageFormatException) {
           messageFormatErrorCount++
           buffer.rewind()
           logger
               .atWarning()
-              .log(
-                  "Received invalid message from ${formatSocketAddress(remoteSocketAddress)}: ${dumpBuffer(buffer)}")
+              .log("Received invalid message from $formattedSocketAddress: ${dumpBuffer(buffer)}")
           return
         } catch (e: IllegalArgumentException) {
           messageFormatErrorCount++
           buffer.rewind()
           logger
               .atWarning()
-              .log(
-                  "Received invalid message from ${formatSocketAddress(remoteSocketAddress)}: ${dumpBuffer(buffer)}")
+              .log("Received invalid message from $formattedSocketAddress: ${dumpBuffer(buffer)}")
           return
         }
 
-    logger.atFinest().log("-> FROM %s: %s", formatSocketAddress(remoteSocketAddress), inMessage)
+    logger.atFinest().log("-> FROM %s: %s", formattedSocketAddress, inMessage)
 
     // the message set of the ConnectController isn't really complex enough to warrant a complicated
     // request/action class
     // structure, so I'm going to handle it  all in this class alone
     if (inMessage is ConnectMessage_PING) {
       pingCount++
-      logger.atFine().log("Ping from: " + formatSocketAddress(remoteSocketAddress))
+      logger.atFine().log("Ping from: $formattedSocketAddress")
       send(ConnectMessage_PONG(), remoteSocketAddress)
       return
     }
@@ -147,8 +146,7 @@ class ConnectController
       messageFormatErrorCount++
       logger
           .atWarning()
-          .log(
-              "Received unexpected message type from ${formatSocketAddress(remoteSocketAddress)}: $inMessage")
+          .log("Received unexpected message type from $formattedSocketAddress: $inMessage")
       return
     }
 
@@ -160,14 +158,12 @@ class ConnectController
       logger
           .atSevere()
           .log(
-              "Client requested an unhandled protocol ${formatSocketAddress(remoteSocketAddress)}: ${inMessage.protocol}")
+              "Client requested an unhandled protocol $formattedSocketAddress: ${inMessage.protocol}")
       return
     }
     if (!accessManager.isAddressAllowed(remoteSocketAddress.address)) {
       deniedOtherCount++
-      logger
-          .atWarning()
-          .log("AccessManager denied connection from ${formatSocketAddress(remoteSocketAddress)}")
+      logger.atWarning().log("AccessManager denied connection from $formattedSocketAddress")
       return
     } else {
       val privatePort: Int
@@ -183,8 +179,7 @@ class ConnectController
                 failedToStartCount++
                 logger
                     .atFine()
-                    .log(
-                        "SF MOD: HAMMER PROTECTION (2 Min Ban): ${formatSocketAddress(remoteSocketAddress)}")
+                    .log("SF MOD: HAMMER PROTECTION (2 Min Ban): $formattedSocketAddress")
                 accessManager.addTempBan(remoteSocketAddress.address.hostAddress, 2.minutes)
                 return
               }
@@ -198,10 +193,7 @@ class ConnectController
                   udpSocketProvider, remoteSocketAddress, inMessage.protocol)
           if (privatePort <= 0) {
             failedToStartCount++
-            logger
-                .atSevere()
-                .log(
-                    "$protocolController failed to start for ${formatSocketAddress(remoteSocketAddress)}")
+            logger.atSevere().log("$protocolController failed to start for $formattedSocketAddress")
             return
           }
           connectCount++
@@ -213,10 +205,7 @@ class ConnectController
         }
       } catch (e: ServerFullException) {
         deniedServerFullCount++
-        logger
-            .atFine()
-            .withCause(e)
-            .log("Sending server full response to ${formatSocketAddress(remoteSocketAddress)}")
+        logger.atFine().withCause(e).log("Sending server full response to $formattedSocketAddress")
         send(ConnectMessage_TOO(), remoteSocketAddress)
         return
       } catch (e: NewConnectionException) {
@@ -224,8 +213,7 @@ class ConnectController
         logger
             .atWarning()
             .withCause(e)
-            .log(
-                "$protocolController denied connection from ${formatSocketAddress(remoteSocketAddress)}")
+            .log("$protocolController denied connection from $formattedSocketAddress")
         return
       }
     }

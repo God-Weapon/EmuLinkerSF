@@ -24,8 +24,7 @@ class ConnectMessage_PONG : ConnectMessage() {
     fun parse(msg: String): ConnectMessage {
       if (msg.length != 5) throw MessageFormatException("Invalid message length!")
       if (!msg.startsWith(ID)) throw MessageFormatException("Invalid message identifier!")
-      if (msg[msg.length - 1].code != 0x00)
-          throw MessageFormatException("Invalid message stop byte!")
+      if (msg.last().code != 0x00) throw MessageFormatException("Invalid message stop byte!")
       return ConnectMessage_PONG()
     }
   }

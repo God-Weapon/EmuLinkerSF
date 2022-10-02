@@ -3,7 +3,6 @@ package org.emulinker.kaillera.model.impl
 import com.codahale.metrics.Gauge
 import com.codahale.metrics.MetricRegistry
 import com.google.common.base.Strings
-import com.google.common.collect.ImmutableList
 import com.google.common.flogger.FluentLogger
 import java.net.InetSocketAddress
 import java.time.Duration
@@ -52,7 +51,7 @@ class KailleraServerImpl
     ) : KailleraServer, Executable {
 
   private var allowedConnectionTypes = BooleanArray(7)
-  private val loginMessages: ImmutableList<String>
+  private val loginMessages: List<String>
   private var stopFlag = false
   override var threadIsActive = false
     private set
@@ -580,7 +579,6 @@ class KailleraServerImpl
   }
 
   override fun checkMe(user: KailleraUser, message: String): Boolean {
-    // >>>>>>>>>>>>>>>>>>>>
     var message = message
     if (!user.loggedIn) {
       logger.atSevere().log("$user chat failed: Not logged in")
@@ -593,13 +591,6 @@ class KailleraServerImpl
       return false
     }
 
-    // if (access == AccessManager.ACCESS_NORMAL && flags.getChatFloodTime() > 0 &&
-    // (System.currentTimeMillis()
-    // - ((KailleraUserImpl) user).getLastChatTime()) < (flags.getChatFloodTime() * 1000))
-    // {
-    //	logger.atWarning().log(user + " /me denied: Flood: " + message);
-    //	return false;
-    // }
     if (message == ":USER_COMMAND") {
       return false
     }
@@ -621,10 +612,6 @@ class KailleraServerImpl
     return true
   }
 
-  fun announceInGame(announcement: String?, user: KailleraUserImpl) {
-    user.game!!.announce(announcement!!, user)
-  }
-
   override fun announce(message: String, gamesAlso: Boolean) {
     announce(message, gamesAlso, targetUser = null)
   }
@@ -636,7 +623,6 @@ class KailleraServerImpl
 
         if (gamesAlso && kailleraUser.game != null) {
           kailleraUser.game!!.announce(message, kailleraUser)
-          //          Thread.yield() //nue removed
         }
       }
     } else {
@@ -704,7 +690,6 @@ class KailleraServerImpl
           logger.atSevere().withCause(e).log("Sleep Interrupted!")
         }
 
-        //				logger.atFine().log(this + " running maintenance...");
         if (stopFlag) break
         if (usersMap.isEmpty()) continue
         for (user in users) {
@@ -791,13 +776,13 @@ class KailleraServerImpl
   }
 
   init {
-    val loginMessagesBuilder = ImmutableList.builder<String>()
+    val loginMessagesBuilder = mutableListOf<String>()
     var i = 1
     while (hasString("KailleraServerImpl.LoginMessage.$i")) {
       loginMessagesBuilder.add(getString("KailleraServerImpl.LoginMessage.$i"))
       i++
     }
-    loginMessages = loginMessagesBuilder.build()
+    loginMessages = loginMessagesBuilder.toList()
     flags.connectionTypes.forEach(
         Consumer { type: String ->
           val ct = type.toInt()

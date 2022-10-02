@@ -13,7 +13,7 @@ abstract class ConnectMessage : ByteBufferMessage() {
 
   companion object {
     // TODO(nue): Check if this can be made a constant.
-    @JvmField var charset = Charsets.ISO_8859_1
+    var charset = Charsets.ISO_8859_1
 
     @Throws(MessageFormatException::class)
     fun parse(buffer: ByteBuffer): ConnectMessage {
@@ -25,19 +25,28 @@ abstract class ConnectMessage : ByteBufferMessage() {
             throw MessageFormatException("Invalid bytes received: failed to decode to a string!", e)
           }
 
-      if (messageStr.startsWith(ConnectMessage_TOO.ID)) {
-        return ConnectMessage_TOO.parse(messageStr)
-      } else if (messageStr.startsWith(ConnectMessage_HELLOD00D.ID)) {
-        return ConnectMessage_HELLOD00D.parse(messageStr)
-      } else if (messageStr.startsWith(ConnectMessage_HELLO.ID)) {
-        return ConnectMessage_HELLO.parse(messageStr)
-      } else if (messageStr.startsWith(ConnectMessage_PING.ID)) {
-        return ConnectMessage_PING.parse(messageStr)
-      } else if (messageStr.startsWith(ConnectMessage_PONG.ID)) {
-        return ConnectMessage_PONG.parse(messageStr)
+      when {
+        messageStr.startsWith(ConnectMessage_TOO.ID) -> {
+          return ConnectMessage_TOO.parse(messageStr)
+        }
+        messageStr.startsWith(ConnectMessage_HELLOD00D.ID) -> {
+          return ConnectMessage_HELLOD00D.parse(messageStr)
+        }
+        messageStr.startsWith(ConnectMessage_HELLO.ID) -> {
+          return ConnectMessage_HELLO.parse(messageStr)
+        }
+        messageStr.startsWith(ConnectMessage_PING.ID) -> {
+          return ConnectMessage_PING.parse(messageStr)
+        }
+        messageStr.startsWith(ConnectMessage_PONG.ID) -> {
+          return ConnectMessage_PONG.parse(messageStr)
+        }
+        else -> {
+          buffer.rewind()
+          throw MessageFormatException(
+              "Unrecognized connect message: " + EmuUtil.dumpBuffer(buffer))
+        }
       }
-      buffer.rewind()
-      throw MessageFormatException("Unrecognized connect message: " + EmuUtil.dumpBuffer(buffer))
     }
 
     @Throws(MessageFormatException::class)
@@ -51,20 +60,28 @@ abstract class ConnectMessage : ByteBufferMessage() {
             throw MessageFormatException("Invalid bytes received: failed to decode to a string!", e)
           }
 
-      if (messageStr.startsWith(ConnectMessage_TOO.ID)) {
-        return ConnectMessage_TOO.parse(messageStr)
-      } else if (messageStr.startsWith(ConnectMessage_HELLOD00D.ID)) {
-        return ConnectMessage_HELLOD00D.parse(messageStr)
-      } else if (messageStr.startsWith(ConnectMessage_HELLO.ID)) {
-        return ConnectMessage_HELLO.parse(messageStr)
-      } else if (messageStr.startsWith(ConnectMessage_PING.ID)) {
-        return ConnectMessage_PING.parse(messageStr)
-      } else if (messageStr.startsWith(ConnectMessage_PONG.ID)) {
-        return ConnectMessage_PONG.parse(messageStr)
+      when {
+        messageStr.startsWith(ConnectMessage_TOO.ID) -> {
+          return ConnectMessage_TOO.parse(messageStr)
+        }
+        messageStr.startsWith(ConnectMessage_HELLOD00D.ID) -> {
+          return ConnectMessage_HELLOD00D.parse(messageStr)
+        }
+        messageStr.startsWith(ConnectMessage_HELLO.ID) -> {
+          return ConnectMessage_HELLO.parse(messageStr)
+        }
+        messageStr.startsWith(ConnectMessage_PING.ID) -> {
+          return ConnectMessage_PING.parse(messageStr)
+        }
+        messageStr.startsWith(ConnectMessage_PONG.ID) -> {
+          return ConnectMessage_PONG.parse(messageStr)
+        }
+        //      byteReadPacket.rewind()
+        else ->
+            throw MessageFormatException(
+                "Unrecognized connect message: " +
+                    EmuUtil.dumpBuffer(byteReadPacket.readByteBuffer()))
       }
-      //      byteReadPacket.rewind()
-      throw MessageFormatException(
-          "Unrecognized connect message: " + EmuUtil.dumpBuffer(byteReadPacket.readByteBuffer()))
     }
   }
 }

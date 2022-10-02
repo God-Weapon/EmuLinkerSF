@@ -1,6 +1,5 @@
 package org.emulinker.kaillera.controller.v086
 
-import com.google.common.collect.ImmutableMap
 import com.google.common.flogger.FluentLogger
 import java.net.InetSocketAddress
 import java.net.SocketException
@@ -9,6 +8,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.reflect.KClass
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.*
 import org.apache.commons.configuration.Configuration
@@ -68,9 +68,35 @@ class V086Controller
   private val extraPorts: Int = config.getInt("controllers.v086.extraPorts", 0)
 
   var portRangeQueue: Queue<Int> = ConcurrentLinkedQueue()
-  val serverEventHandlers: ImmutableMap<Class<*>, V086ServerEventHandler<*>>
-  val gameEventHandlers: ImmutableMap<Class<*>, V086GameEventHandler<*>>
-  val userEventHandlers: ImmutableMap<Class<*>, V086UserEventHandler<*>>
+
+  val serverEventHandlers: Map<KClass<out ServerEvent>, V086ServerEventHandler<Nothing>> =
+      mapOf(
+          ChatEvent::class to chatAction,
+          GameCreatedEvent::class to createGameAction,
+          UserJoinedEvent::class to loginAction,
+          GameClosedEvent::class to closeGameAction,
+          UserQuitEvent::class to quitAction,
+          GameStatusChangedEvent::class to gameStatusAction,
+      )
+  val gameEventHandlers: Map<KClass<out GameEvent>, V086GameEventHandler<Nothing>> =
+      mapOf(
+          UserJoinedGameEvent::class to joinGameAction,
+          UserQuitGameEvent::class to quitGameAction,
+          GameStartedEvent::class to startGameAction,
+          GameChatEvent::class to gameChatAction,
+          AllReadyEvent::class to userReadyAction,
+          GameDataEvent::class to gameDataAction,
+          UserDroppedGameEvent::class to dropGameAction,
+          GameDesynchEvent::class to gameDesynchAction,
+          PlayerDesynchEvent::class to playerDesynchAction,
+          GameInfoEvent::class to gameInfoAction,
+          GameTimeoutEvent::class to gameTimeoutAction,
+      )
+  val userEventHandlers: Map<KClass<out UserEvent>, V086UserEventHandler<Nothing>> =
+      mapOf(
+          ConnectedEvent::class to ackAction,
+          InfoMessageEvent::class to infoMessageAction,
+      )
 
   var actions: Array<V086Action<*>?> = arrayOfNulls(25)
 
@@ -81,7 +107,7 @@ class V086Controller
   override val bufferSize = flags.v086BufferSize
 
   override fun toString(): String {
-    return "V086Controller[clients=" + clientHandlers.size + " isRunning=" + isRunning + "]"
+    return "V086Controller[clients=${clientHandlers.size} isRunning=$isRunning]"
   }
 
   /**
@@ -146,10 +172,6 @@ class V086Controller
     clientHandlers.clear()
   }
 
-  companion object {
-    const val MAX_BUNDLE_SIZE = 9
-  }
-
   init {
     var maxPort = 0
     for (i in portRangeStart..portRangeStart + server.maxUsers + extraPorts) {
@@ -178,34 +200,9 @@ class V086Controller
     actions[CachedGameData.ID.toInt()] = cachedGameDataAction
     actions[GameData.ID.toInt()] = gameDataAction
     actions[PlayerDrop.ID.toInt()] = dropGameAction
+  }
 
-    serverEventHandlers =
-        ImmutableMap.builder<Class<*>, V086ServerEventHandler<*>>()
-            .put(ChatEvent::class.java, chatAction)
-            .put(GameCreatedEvent::class.java, createGameAction)
-            .put(UserJoinedEvent::class.java, loginAction)
-            .put(GameClosedEvent::class.java, closeGameAction)
-            .put(UserQuitEvent::class.java, quitAction)
-            .put(GameStatusChangedEvent::class.java, gameStatusAction)
-            .build()
-    gameEventHandlers =
-        ImmutableMap.builder<Class<*>, V086GameEventHandler<*>>()
-            .put(UserJoinedGameEvent::class.java, joinGameAction)
-            .put(UserQuitGameEvent::class.java, quitGameAction)
-            .put(GameStartedEvent::class.java, startGameAction)
-            .put(GameChatEvent::class.java, gameChatAction)
-            .put(AllReadyEvent::class.java, userReadyAction)
-            .put(GameDataEvent::class.java, gameDataAction)
-            .put(UserDroppedGameEvent::class.java, dropGameAction)
-            .put(GameDesynchEvent::class.java, gameDesynchAction)
-            .put(PlayerDesynchEvent::class.java, playerDesynchAction)
-            .put(GameInfoEvent::class.java, gameInfoAction)
-            .put(GameTimeoutEvent::class.java, gameTimeoutAction)
-            .build()
-    userEventHandlers =
-        ImmutableMap.builder<Class<*>, V086UserEventHandler<*>>()
-            .put(ConnectedEvent::class.java, ackAction)
-            .put(InfoMessageEvent::class.java, infoMessageAction)
-            .build()
+  companion object {
+    const val MAX_BUNDLE_SIZE = 9
   }
 }

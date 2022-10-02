@@ -36,9 +36,6 @@ class GameChatAction
 
   @Throws(FatalActionException::class)
   override suspend fun performAction(message: GameChat_Request, clientHandler: V086ClientHandler) {
-    if (clientHandler.user == null) {
-      throw FatalActionException("User does not exist: GameChatAction $message")
-    }
     if (clientHandler.user.game == null) return
     if (message.message.startsWith(ADMIN_COMMAND_ESCAPE_STRING)) {
       // if(clientHandler.getUser().getAccess() >= AccessManager.ACCESS_ADMIN ||
@@ -176,7 +173,7 @@ class GameChatAction
           }
           var m = sb.toString()
           m = m.trim { it <= ' ' }
-          if (m.isNullOrBlank() || m.startsWith("�") || m.startsWith("�")) return
+          if (m.isBlank() || m.startsWith("�") || m.startsWith("�")) return
           if (access == AccessManager.ACCESS_NORMAL) {
             val chars = m.toCharArray()
             for (i in chars.indices) {
@@ -201,20 +198,15 @@ class GameChatAction
           // m, false, user1);
           // user.getServer().announce("<" + clientHandler.getUser().getName() + "> (" +
           // clientHandler.getUser().getID() + "): " + m, false, user);
-          if (user1.game != null) {
-            user1.game!!.announce(
-                "TO: <${user.name}>(${user.id}) <${clientHandler.user.name}> (${clientHandler.user.id}): $m",
-                user1)
-          }
-          if (user.game != null) {
-            user.game!!.announce(
-                "<${clientHandler.user.name}> (${clientHandler.user.id}): $m", user)
-          }
+          user1.game?.announce(
+              "TO: <${user.name}>(${user.id}) <${clientHandler.user.name}> (${clientHandler.user.id}): $m",
+              user1)
+          user.game?.announce("<${clientHandler.user.name}> (${clientHandler.user.id}): $m", user)
           return
         } catch (e: NoSuchElementException) {
           if (user1.lastMsgID != -1) {
             try {
-              val user = clientHandler.user.server.getUser(user1.lastMsgID) as KailleraUserImpl
+              val user = clientHandler.user.server.getUser(user1.lastMsgID) as KailleraUserImpl?
               val sb = StringBuilder()
               while (scanner.hasNext()) {
                 sb.append(scanner.next())
@@ -259,15 +251,11 @@ class GameChatAction
               // + m, false, user1);
               // user.getServer().announce("<" + clientHandler.getUser().getName() + "> (" +
               // clientHandler.getUser().getID() + "): " + m, false, user);
-              if (user1.game != null) {
-                user1.game!!.announce(
-                    "TO: <${user.name}>(${user.id}) <${clientHandler.user.name}> (${clientHandler.user.id}): $m",
-                    user1)
-              }
-              if (user.game != null) {
-                user.game!!.announce(
-                    "<${clientHandler.user.name}> (${clientHandler.user.id}): $m", user)
-              }
+              user1.game?.announce(
+                  "TO: <${user.name}>(${user.id}) <${clientHandler.user.name}> (${clientHandler.user.id}): $m",
+                  user1)
+              user.game?.announce(
+                  "<${clientHandler.user.name}> (${clientHandler.user.id}): $m", user)
               return
             } catch (e1: Exception) {
               user1.game!!.announce("Private Message Error: /msg <UserID> <message>", user1)

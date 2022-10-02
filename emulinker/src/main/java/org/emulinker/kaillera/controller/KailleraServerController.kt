@@ -10,7 +10,7 @@ import org.emulinker.net.UdpSocketProvider
 interface KailleraServerController {
   val server: KailleraServer
   val bufferSize: Int
-  val version: String?
+  val version: String
   val numClients: Int
   val clientTypes: Array<String>
 

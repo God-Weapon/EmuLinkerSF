@@ -56,12 +56,7 @@ class V086ClientHandler
   // TODO(nue): Add this to RuntimeFlags and increase to at least 5.
   val numAcksForSpeedTest = 3
 
-  /*
-  public List<V086Message> getLastMessage()
-  {
-  return lastMessages;
-  }
-  */ var prevMessageNumber = -1
+  private var prevMessageNumber = -1
     private set
   var lastMessageNumber = -1
     private set
@@ -70,7 +65,6 @@ class V086ClientHandler
   var serverGameDataCache: GameDataCache = ClientGameDataCache(256)
     private set
 
-  // private LinkedList<V086Message>	lastMessages			= new LinkedList<V086Message>();
   private val lastMessageBuffer = LastMessageBuffer(V086Controller.MAX_BUNDLE_SIZE)
   private val outMessages = arrayOfNulls<V086Message>(V086Controller.MAX_BUNDLE_SIZE)
   private val inBuffer: ByteBuffer = ByteBuffer.allocateDirect(flags.v086BufferSize)
@@ -326,7 +320,7 @@ class V086ClientHandler
   override suspend fun actionPerformed(event: KailleraEvent) {
     when (event) {
       is GameEvent -> {
-        val eventHandler = controller.gameEventHandlers[event.javaClass]
+        val eventHandler = controller.gameEventHandlers[event::class]
         if (eventHandler == null) {
           logger
               .atSevere()
@@ -339,7 +333,7 @@ class V086ClientHandler
         (eventHandler as V086GameEventHandler<GameEvent>).handleEvent(event, this)
       }
       is ServerEvent -> {
-        val eventHandler = controller.serverEventHandlers[event.javaClass]
+        val eventHandler = controller.serverEventHandlers[event::class]
         if (eventHandler == null) {
           logger
               .atSevere()
@@ -352,7 +346,7 @@ class V086ClientHandler
         (eventHandler as V086ServerEventHandler<ServerEvent>).handleEvent(event, this)
       }
       is UserEvent -> {
-        val eventHandler = controller.userEventHandlers[event.javaClass]
+        val eventHandler = controller.userEventHandlers[event::class]
         if (eventHandler == null) {
           logger
               .atSevere()

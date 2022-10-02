@@ -14,10 +14,7 @@ class MasterListStatsCollector @Inject internal constructor() : StatsCollector {
     startedGamesList.add(game.romName)
   }
 
-  @Synchronized
-  override fun getStartedGamesList(): MutableList<String> {
-    return startedGamesList
-  }
+  @Synchronized override fun getStartedGamesList(): MutableList<String> = startedGamesList
 
   @Synchronized
   override fun clearStartedGamesList() {

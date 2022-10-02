@@ -21,7 +21,7 @@ private val logger = FluentLogger.forEnclosingClass()
 fun main(): Unit =
     runBlocking {
       // Change number of Dispatchers.IO coroutines.
-      System.setProperty(IO_PARALLELISM_PROPERTY_NAME, 1000.toString())
+      System.setProperty(IO_PARALLELISM_PROPERTY_NAME, 130.toString())
       System.setProperty(
           "flogger.backend_factory",
           "com.google.common.flogger.backend.log4j2.Log4j2BackendFactory#getInstance")

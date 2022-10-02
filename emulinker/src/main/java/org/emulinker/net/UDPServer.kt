@@ -104,7 +104,8 @@ abstract class UDPServer : Executable {
     {
     	return;
     }
-    */ try {
+    */
+    try {
       //			logger.atFine().log("send("+EmuUtil.INSTANCE.dumpBuffer(buffer, false)+")");
       //      channel!!.send(buffer, toSocketAddress)
       serverSocket.send(Datagram(ByteReadPacket(buffer), toSocketAddress.toKtorAddress()))
@@ -127,8 +128,8 @@ abstract class UDPServer : Executable {
 
         val buffer = datagram.packet.readByteBuffer()
 
-        val requestContext =
-            CoroutineScope(coroutineContext) // TODO(nue): Can we just pass coroutineContext?
+        // TODO(nue): Can we just pass coroutineContext?
+        val requestContext = CoroutineScope(coroutineContext)
         try {
           handleReceived(
               buffer,
