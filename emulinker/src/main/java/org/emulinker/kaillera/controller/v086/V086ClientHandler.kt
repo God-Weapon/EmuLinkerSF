@@ -324,10 +324,7 @@ class V086ClientHandler
         if (eventHandler == null) {
           logger
               .atSevere()
-              .log(
-                  toString() +
-                      " found no GameEventHandler registered to handle game event: " +
-                      event)
+              .log("%s found no GameEventHandler registered to handle game event: %s", this, event)
           return
         }
         (eventHandler as V086GameEventHandler<GameEvent>).handleEvent(event, this)
@@ -338,9 +335,9 @@ class V086ClientHandler
           logger
               .atSevere()
               .log(
-                  toString() +
-                      " found no ServerEventHandler registered to handle server event: " +
-                      event)
+                  "%s found no ServerEventHandler registered to handle server event: %s",
+                  this,
+                  event)
           return
         }
         (eventHandler as V086ServerEventHandler<ServerEvent>).handleEvent(event, this)
@@ -350,10 +347,7 @@ class V086ClientHandler
         if (eventHandler == null) {
           logger
               .atSevere()
-              .log(
-                  toString() +
-                      " found no UserEventHandler registered to handle user event: " +
-                      event)
+              .log("%s found no UserEventHandler registered to handle user event: ", this, event)
           return
         }
         (eventHandler as V086UserEventHandler<UserEvent>).handleEvent(event, this)

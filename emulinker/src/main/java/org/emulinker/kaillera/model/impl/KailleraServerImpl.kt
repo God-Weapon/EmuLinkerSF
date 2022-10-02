@@ -9,7 +9,6 @@ import java.time.Duration
 import java.time.Instant
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
-import java.util.function.Consumer
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
@@ -783,11 +782,10 @@ class KailleraServerImpl
       i++
     }
     loginMessages = loginMessagesBuilder.toList()
-    flags.connectionTypes.forEach(
-        Consumer { type: String ->
-          val ct = type.toInt()
-          allowedConnectionTypes[ct] = true
-        })
+    flags.connectionTypes.forEach {
+      val ct = it.toInt()
+      allowedConnectionTypes[ct] = true
+    }
     if (flags.touchKaillera) {
       this.statsCollector = statsCollector
     }

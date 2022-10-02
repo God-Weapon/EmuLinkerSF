@@ -4,10 +4,10 @@ import java.util.LinkedList
 import java.util.StringTokenizer
 
 class WildcardStringPattern(pattern: String?) {
-  protected var equals = false
-  protected var startsWith = false
-  protected var endsWith = false
-  protected var contains = false
+  private var equals = false
+  private var startsWith = false
+  private var endsWith = false
+  private var contains = false
 
   private var startString = ""
   private var endString = ""

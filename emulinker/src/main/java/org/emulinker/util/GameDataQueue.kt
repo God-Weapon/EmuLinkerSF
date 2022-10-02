@@ -6,7 +6,8 @@ import java.util.concurrent.TimeoutException
 class GameDataQueue(
     val gameID: Int, val numPlayers: Int, val timeoutMillis: Int, val retries: Int
 ) {
-  private val playerQueues: Array<PlayerDataQueue?> = arrayOfNulls(numPlayers)
+  private val playerQueues: Array<PlayerDataQueue> =
+      (1..numPlayers).map { PlayerDataQueue(it) }.toTypedArray()
   private var gameDesynched = false
 
   fun setGameDesynched() {
@@ -18,12 +19,14 @@ class GameDataQueue(
   }
 
   fun addData(playerNumber: Int, data: Byte) {
-    for (i in 0 until numPlayers) playerQueues[i]!!.addData(playerNumber, data)
+    for (i in 0 until numPlayers) {
+      playerQueues[i].addData(playerNumber, data)
+    }
   }
 
   @Throws(PlayerTimeoutException::class, DesynchException::class)
   fun getData(playerNumber: Int, byteCount: Int, bytesPerAction: Int): ByteArray? {
-    return playerQueues[playerNumber - 1]!!.getData(byteCount, bytesPerAction)
+    return playerQueues[playerNumber - 1].getData(byteCount, bytesPerAction)
   }
 
   private inner class PlayerDataQueue internal constructor(playerNumber: Int) {
@@ -79,8 +82,4 @@ class GameDataQueue(
       Exception(e)
   class DesynchException(msg: String, val playerNumber: Int, e: TimeoutException) :
       Exception(msg, e)
-
-  init {
-    for (i in playerQueues.indices) playerQueues[i] = PlayerDataQueue(i + 1)
-  }
 }

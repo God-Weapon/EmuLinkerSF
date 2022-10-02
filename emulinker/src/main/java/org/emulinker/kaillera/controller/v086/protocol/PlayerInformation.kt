@@ -1,7 +1,6 @@
 package org.emulinker.kaillera.controller.v086.protocol
 
 import java.nio.ByteBuffer
-import java.util.function.Consumer
 import org.emulinker.kaillera.controller.messaging.MessageFormatException
 import org.emulinker.kaillera.controller.messaging.ParseException
 import org.emulinker.kaillera.controller.v086.V086Utils
@@ -24,12 +23,12 @@ data class PlayerInformation
     get() = players.size
 
   override val bodyLength: Int
-    get() = 5 + players.stream().mapToInt { p: Player -> p.numBytes }.sum()
+    get() = 5 + players.sumOf { it.numBytes }
 
   override fun writeBodyTo(buffer: ByteBuffer) {
     buffer.put(0x00.toByte())
     buffer.putInt(players.size)
-    players.forEach(Consumer { p: Player -> p.writeTo(buffer) })
+    players.forEach { it.writeTo(buffer) }
   }
 
   data class Player

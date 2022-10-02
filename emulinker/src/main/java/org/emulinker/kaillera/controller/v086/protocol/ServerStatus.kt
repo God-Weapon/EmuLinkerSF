@@ -26,8 +26,8 @@ data class ServerStatus
           V086Utils.Bytes.INTEGER +
           // Number of games.
           V086Utils.Bytes.INTEGER +
-          users.stream().mapToInt { it.numBytes }.sum() +
-          games.stream().mapToInt { it.numBytes }.sum())
+          users.sumOf { it.numBytes } +
+          games.sumOf { it.numBytes })
 
   public override fun writeBodyTo(buffer: ByteBuffer) {
     buffer.put(0x00.toByte())
