@@ -309,16 +309,6 @@ public final class KailleraGameImpl implements KailleraGame
 			log.warn(user + " game chat denied: not in " + this); //$NON-NLS-1$
 			throw new GameChatException(EmuLang.getString("KailleraGameImpl.GameChatErrorNotInGame")); //$NON-NLS-1$
 		}
-		
-		if (user.getAccess() == AccessManager.ACCESS_NORMAL)
-		{
-			if (server.getMaxGameChatLength() > 0 && message.length() > server.getMaxGameChatLength())
-			{
-				log.warn(user + " gamechat denied: Message Length > " + server.getMaxGameChatLength());
-				addEvent(new GameInfoEvent(this, EmuLang.getString("KailleraGameImpl.GameChatDeniedMessageTooLong"), user));
-				throw new GameChatException(EmuLang.getString("KailleraGameImpl.GameChatDeniedMessageTooLong"));
-			}
-		}
 
 		log.info(user + ", " + this + " gamechat: " + message); //$NON-NLS-1$ //$NON-NLS-2$
 		addEvent(new GameChatEvent(this, user, message));
@@ -470,7 +460,7 @@ public final class KailleraGameImpl implements KailleraGame
 		//if(user.equals(owner))
 		//{
 
-			announce("Help: " + getServer().getReleaseInfo().getProductName() + " v" + getServer().getReleaseInfo().getVersionString() + ": " + getServer().getReleaseInfo().getReleaseDate() + " - Visit: www.EmuLinker.org", user);
+			announce("Help: " + getServer().getReleaseInfo().getProductName() + " v" + getServer().getReleaseInfo().getVersionString() + ": " + getServer().getReleaseInfo().getReleaseDate() + " - Visit: https://god-weapon.github.io", user);
 			announce("************************", user);
 			announce("Type /p2pon to ignore ALL server activity during gameplay.", user);
 			announce("This will reduce lag that you contribute due to a busy server.", user);

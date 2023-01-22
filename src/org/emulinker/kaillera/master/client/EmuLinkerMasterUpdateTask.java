@@ -16,7 +16,7 @@ import org.emulinker.util.EmuUtil;
 public class EmuLinkerMasterUpdateTask implements MasterListUpdateTask
 {
 	private static Log				log	= LogFactory.getLog(EmuLinkerMasterUpdateTask.class);
-	private static final String		url	= "http://master.emulinker.org/touch_list.php";
+	private static final String		url	= "http://kaillerareborn.2manygames.fr/touch_list.php";
 
 	private PublicServerInformation	publicInfo;
 	private ConnectController		connectController;

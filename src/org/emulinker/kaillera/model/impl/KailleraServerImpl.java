@@ -29,7 +29,6 @@ public class KailleraServerImpl implements KailleraServer, Executable
 	protected int								createGameFloodTime;
 	protected int								maxUserNameLength;
 	protected int								maxChatLength;
-	protected int								maxGameChatLength;
 	protected int								maxGameNameLength;
 	protected int								maxQuitMessageLength;
 	protected int								maxClientNameLength;
@@ -84,7 +83,6 @@ public class KailleraServerImpl implements KailleraServer, Executable
 		if(maxUserNameLength > 31)
 			maxUserNameLength = 31;
 		maxChatLength = config.getInt("server.maxChatLength");
-		maxGameChatLength = config.getInt("server.maxGameChatLength");
 		maxGameNameLength = config.getInt("server.maxGameNameLength");
 		if(maxGameNameLength > 127)
 			maxGameNameLength = 127;
@@ -258,11 +256,6 @@ public class KailleraServerImpl implements KailleraServer, Executable
 	protected int getMaxChatLength()
 	{
 		return maxChatLength;
-	}
-	
-	protected int getMaxGameChatLength()
-	{
-		return maxGameChatLength;
 	}
 
 	protected int getMaxGameNameLength()
@@ -615,7 +608,7 @@ public class KailleraServerImpl implements KailleraServer, Executable
 			userImpl.addEvent(new InfoMessageEvent(user, EmuLang.getString("KailleraServerImpl.AdminWelcomeMessage")));
 		
 		try { Thread.sleep(20); } catch(Exception e) {}
-		userImpl.addEvent(new InfoMessageEvent(user, getReleaseInfo().getProductName() + " v" + getReleaseInfo().getVersionString() + ": " + getReleaseInfo().getReleaseDate() + " - Visit: www.EmuLinker.org"));		
+		userImpl.addEvent(new InfoMessageEvent(user, getReleaseInfo().getProductName() + " v" + getReleaseInfo().getVersionString() + ": " + getReleaseInfo().getReleaseDate() + " - Visit: https://god-weapon.github.io"));		
 		
 		try { Thread.sleep(20); } catch(Exception e) {}
 		addEvent(new UserJoinedEvent(this, user));
@@ -649,7 +642,7 @@ public class KailleraServerImpl implements KailleraServer, Executable
 		
 		int access = user.getServer().getAccessManager().getAccess(user.getSocketAddress().getAddress());
 		if (access < AccessManager.ACCESS_SUPERADMIN && user.getServer().getAccessManager().isSilenced(user.getSocketAddress().getAddress())){
-			quitMsg = "www.EmuLinker.org";
+			quitMsg = "https://god-weapon.github.io";
 		}
 
 		log.info(user + " quit: " + quitMsg);
