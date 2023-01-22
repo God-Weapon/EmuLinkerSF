@@ -21,7 +21,7 @@
 		<delete>
 			<fileset dir="./build" includes="**/*.class" />
 		</delete>
-		<javac srcdir="./src" destdir="./build" includes="**/*.java" failonerror="true" debug="on">
+		<javac srcdir="./src" destdir="./build" includes="**/*.java" failonerror="true" debug="on" encoding="iso-8859-1" includeantruntime="false">
 			<classpath refid="project.class.path" />
 		</javac>
 		<echo message="Compiling complete." />
